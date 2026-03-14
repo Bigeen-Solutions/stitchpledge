@@ -4,6 +4,7 @@ import { DeadlineCard } from '../components/ui/DeadlineCard.tsx';
 import { WorkflowStages } from '../features/workflow/components/WorkflowStages.tsx';
 import { MaterialHistory } from '../features/materials/components/MaterialHistory.tsx';
 import { MeasurementHistory } from '../features/measurements/components/MeasurementHistory.tsx';
+import { RecordMeasurementForm } from '../features/measurements/components/RecordMeasurementForm.tsx';
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -23,13 +24,14 @@ export function OrderDetailPage() {
       </header>
 
       <div className="grid grid-cols-3 mb-xl">
-        <div className="col-span-1">
+        <div className="col-span-1 grid gap-lg">
           <DeadlineCard 
             orderId={order.orderNumber} 
             deadline={order.deadline} 
             riskLevel={order.riskLevel} 
             customer={order.customerName} 
           />
+          <RecordMeasurementForm orderId={order.id} />
         </div>
         <div className="col-span-2">
           <WorkflowStages orderId={order.id} />

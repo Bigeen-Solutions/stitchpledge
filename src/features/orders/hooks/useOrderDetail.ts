@@ -1,8 +1,6 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { ordersApi } from '../orders.api.ts';
-import type { Order } from '../orders.api.ts';
 import { keys } from '../../../query/keys.ts';
-import { queryClient } from '../../../query/queryClient.ts';
 
 export function useOrderDetail(id: string) {
   return useQuery({
@@ -24,12 +22,10 @@ export function useMaterials(orderId: string) {
 }
 
 export function useMeasurements(orderId: string) {
+  // REDUNDANT: USE measurement/hooks/useMeasurementMutation instead
   return useQuery({
-    queryKey: keys.measurements.list(orderId),
-    queryFn: async () => {
-      const { data } = await (await import('../../../api/client.ts')).apiClient.get(`/orders/${orderId}/measurements`);
-      return data;
-    },
-    enabled: !!orderId,
+    queryKey: ['DEPRECATED_measurements', orderId],
+    queryFn: async () => [],
+    enabled: false
   });
 }

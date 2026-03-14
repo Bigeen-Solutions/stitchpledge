@@ -1,4 +1,4 @@
-import { useMeasurements } from '../../orders/hooks/useOrderDetail.ts';
+import { useMeasurements } from '../hooks/useMeasurementMutation';
 import { Timeline, TimelineItem } from '../../../components/timeline/Timeline.tsx';
 
 interface MeasurementVersion {
@@ -12,7 +12,7 @@ interface MeasurementVersion {
 export function MeasurementHistory({ orderId }: { orderId: string }) {
   const { data: versions, isLoading } = useMeasurements(orderId);
 
-  if (isLoading) return <div>Synchronizing Measurement Versions...</div>;
+  if (isLoading) return <div>Synchronizing Measurement Archive...</div>;
 
   return (
     <div className="measurement-history">
