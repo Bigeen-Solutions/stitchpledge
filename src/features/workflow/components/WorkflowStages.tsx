@@ -1,4 +1,4 @@
-import { useWorkflow, useCompleteStage } from '../../orders/hooks/useOrderDetail.ts';
+import { useWorkflow, useCompleteStage } from '../hooks/useWorkflowMutation';
 import { StageStepper } from '../../../components/ui/StageStepper.tsx';
 
 interface Stage {
@@ -8,12 +8,6 @@ interface Stage {
   isWarning: boolean;
   isComplete: boolean;
   isActive: boolean;
-}
-
-interface WorkflowProjection {
-  stages: Stage[];
-  activeStageIndex: number;
-  isWarning: boolean;
 }
 
 export function WorkflowStages({ orderId }: { orderId: string }) {
@@ -36,7 +30,7 @@ export function WorkflowStages({ orderId }: { orderId: string }) {
 
       <div className="stages-list grid gap-md">
         {workflow.stages.map((stage: Stage) => (
-          <div key={stage.id} className="stage-item flex justify-between items-center p-md sf-glass card">
+          <div key={stage.id} className="stage-item flex justify-between items-center p-md sf-glass mb-md" style={{ borderRadius: 'var(--radius-card)' }}>
             <div>
               <span className="text-sm font-bold">{stage.name}</span>
               <p className="text-xs text-muted">{stage.status}</p>
@@ -47,7 +41,7 @@ export function WorkflowStages({ orderId }: { orderId: string }) {
                 disabled={completeStage.isPending}
                 className="btn btn-accent btn-sm"
               >
-                {completeStage.isPending ? 'Processing...' : 'Complete Stage'}
+                {completeStage.isPending ? 'Syncing...' : 'Complete Stage'}
               </button>
             ) : stage.isComplete ? (
               <span className="badge badge-ontrack">Done</span>

@@ -29,9 +29,5 @@ export const ordersApi = {
   getOrderDetail: async (id: string) => {
     const { data } = await apiClient.get<Order>(`/orders/${id}`);
     return data;
-  },
-  
-  completeStage: async (orderId: string, stageId: string) => {
-    await apiClient.post(`/orders/${orderId}/workflow/stages/${stageId}/complete`);
   }
 };

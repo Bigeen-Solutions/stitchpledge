@@ -12,29 +12,6 @@ export function useOrderDetail(id: string) {
   });
 }
 
-export function useCompleteStage(orderId: string) {
-  return useMutation({
-    mutationFn: (stageId: string) => ordersApi.completeStage(orderId, stageId),
-    onSuccess: () => {
-      // PURE REFRESH: Invalidate and refetch everything related to this order
-      queryClient.invalidateQueries({ queryKey: keys.orders.detail(orderId) });
-      queryClient.invalidateQueries({ queryKey: keys.workflow.stages(orderId) });
-      queryClient.invalidateQueries({ queryKey: keys.orders.all });
-    },
-  });
-}
-
-export function useWorkflow(orderId: string) {
-  return useQuery({
-    queryKey: keys.workflow.stages(orderId),
-    queryFn: async () => {
-      const { data } = await (await import('../../../api/client.ts')).apiClient.get(`/orders/${orderId}/workflow/stages`);
-      return data;
-    },
-    enabled: !!orderId,
-  });
-}
-
 export function useMaterials(orderId: string) {
   return useQuery({
     queryKey: keys.materials.ledger(orderId),
