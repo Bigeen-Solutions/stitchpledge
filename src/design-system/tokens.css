@@ -1,0 +1,48 @@
+/* src/design-system/tokens.css */
+
+:root {
+  /* Brand Colors */
+  --color-primary: #111827;
+  --color-accent: #2563EB;
+  
+  /* Semantic Colors */
+  --color-success: #16A34A;
+  --color-warning: #F59E0B;
+  --color-danger: #DC2626;
+  
+  /* Neutral Palette */
+  --color-bg: #F9FAFB;
+  --color-surface: #FFFFFF;
+  --color-border: #E5E7EB;
+  
+  --color-text-primary: #111827;
+  --color-text-secondary: #4B5563;
+  --color-text-muted: #9CA3AF;
+
+  /* Risk States (The Operating Logic) */
+  --risk-ontrack: var(--color-success);
+  --risk-atrisk: var(--color-warning);
+  --risk-overdue: var(--color-danger);
+
+  /* Spacing (StitchFlow Scale) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+
+  /* Radius */
+  --radius-card: 12px;
+  --radius-btn: 8px;
+  --radius-pill: 9999px;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  
+  /* Z-Index */
+  --z-sidebar: 50;
+  --z-header: 40;
+  --z-overlay: 1000;
+}

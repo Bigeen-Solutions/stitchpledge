@@ -1,0 +1,30 @@
+/* src/design-system/components/badge.css */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-ontrack {
+  background-color: rgba(22, 163, 74, 0.1);
+  color: var(--risk-ontrack);
+  border: 1px solid var(--risk-ontrack);
+}
+
+.badge-atrisk {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--risk-atrisk);
+  border: 1px solid var(--risk-atrisk);
+}
+
+.badge-overdue {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: var(--risk-overdue);
+  border: 1px solid var(--risk-overdue);
+}

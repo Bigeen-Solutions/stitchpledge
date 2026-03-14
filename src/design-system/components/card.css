@@ -1,0 +1,26 @@
+/* src/design-system/components/card.css */
+
+.sf-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease;
+}
+
+.sf-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.deadline-card {
+  border-left: 6px solid var(--color-primary);
+}
+
+.deadline-card.at-risk {
+  border-left-color: var(--risk-atrisk);
+}
+
+.deadline-card.overdue {
+  border-left-color: var(--risk-overdue);
+}

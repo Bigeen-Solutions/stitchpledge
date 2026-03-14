@@ -1,0 +1,239 @@
+/* StitchFlow Shell Layout */
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.public-layout {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.protected-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sf-sidebar {
+  width: 280px;
+  height: 100%;
+  border-right: 1px solid var(--sf-border);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+  z-index: var(--sf-z-sidebar);
+}
+
+.sidebar-closed .sf-sidebar {
+  transform: translateX(-100%);
+}
+
+.sf-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sf-header {
+  height: 64px;
+  border-bottom: 1px solid var(--sf-border);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sf-space-lg);
+  z-index: var(--sf-z-header);
+}
+
+.sf-page-container {
+  flex: 1;
+  padding: var(--sf-space-xl);
+  overflow-y: auto;
+}
+
+.sf-loading-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sf-background);
+  color: var(--sf-primary);
+  font-weight: 600;
+  font-size: 1.25rem;
+  z-index: 9999;
+}
+
+/* Auth Pages */
+.login-page {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-card {
+  padding: var(--sf-space-xl);
+  text-align: center;
+}
+
+.login-card h1 {
+  font-size: 2.5rem;
+  margin-bottom: var(--sf-space-xs);
+}
+
+.subtitle {
+  color: var(--sf-text-secondary);
+  margin-bottom: var(--sf-space-xl);
+  font-weight: 500;
+}
+
+.form-group {
+  text-align: left;
+  margin-bottom: var(--sf-space-md);
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: var(--sf-space-xs);
+}
+
+.form-group input {
+  width: 100%;
+  padding: var(--sf-space-sm) var(--sf-space-md);
+  border: 1px solid var(--sf-border);
+  border-radius: var(--sf-radius-button);
+  font-size: 1rem;
+}
+
+.primary-button {
+  width: 100%;
+  background-color: var(--sf-primary);
+  color: white;
+  padding: var(--sf-space-md);
+  border-radius: var(--sf-radius-button);
+  font-weight: 600;
+  margin-top: var(--sf-space-md);
+  transition: opacity 0.2s;
+}
+
+.primary-button:hover {
+  opacity: 0.9;
+}
+
+.primary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.text-button {
+  color: var(--sf-accent);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.text-button:hover {
+  text-decoration: underline;
+}
+
+.error-message {
+  color: var(--sf-danger);
+  font-size: 0.875rem;
+  margin-bottom: var(--sf-space-md);
+}
+
+/* Dashboard & Welcome Panel */
+.welcome-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--sf-space-lg);
+  margin-bottom: var(--sf-space-xl);
+}
+
+.welcome-panel h1 {
+  font-size: 1.5rem;
+  margin-bottom: var(--sf-space-xs);
+}
+
+.active-store {
+  color: var(--sf-text-secondary);
+  font-size: 0.875rem;
+}
+
+.active-store strong {
+  color: var(--sf-primary);
+}
+
+/* Core Components */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sf-space-lg);
+}
+
+.timeline-item {
+  display: flex;
+  gap: var(--sf-space-md);
+}
+
+.timeline-marker {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--sf-border);
+  margin-top: 6px;
+  position: relative;
+}
+
+.timeline-marker::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 5px;
+  width: 2px;
+  height: calc(100% + var(--sf-space-lg));
+  background: var(--sf-border);
+}
+
+.timeline-item:last-child .timeline-marker::after {
+  display: none;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--sf-space-xs);
+}
+
+.timeline-actor {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.timeline-time {
+  color: var(--sf-text-muted);
+  font-size: 0.75rem;
+}
+
+.evidence-photo {
+  margin-top: var(--sf-space-sm);
+  border-radius: var(--sf-radius-card);
+  overflow: hidden;
+  border: 1px solid var(--sf-border);
+}
+
+.evidence-photo img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+}
