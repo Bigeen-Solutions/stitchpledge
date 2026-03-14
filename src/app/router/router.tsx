@@ -3,6 +3,8 @@ import { PublicLayout } from '../layouts/PublicLayout.tsx';
 import { ProtectedLayout } from '../layouts/ProtectedLayout.tsx';
 import { LoginPage } from '../../pages/LoginPage.tsx';
 import { NotFoundPage } from '../../pages/NotFoundPage.tsx';
+import { OrdersPage } from '../../pages/OrdersPage.tsx';
+import { OrderDetailPage } from '../../pages/OrderDetailPage.tsx';
 import { Timeline, TimelineItem } from '../../components/timeline/Timeline.tsx';
 import { WelcomePanel } from '../../features/dashboard/components/WelcomePanel.tsx';
 import { WorkshopTable } from '../../components/ui/WorkshopTable.tsx';
@@ -88,8 +90,8 @@ export const router = createBrowserRouter([
           </div>
         ) 
       },
-      { path: '/orders', element: <div>Orders List</div> },
-      { path: '/orders/:id', element: <div>Order Detail</div> },
+      { path: '/orders', element: <OrdersPage /> },
+      { path: '/orders/:id', element: <OrderDetailPage /> },
     ],
   },
   { path: '/404', element: <NotFoundPage /> },

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { apiClient } from '../api/client';
+import { mapErrorCode } from '../utils/errorMapper';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -17,7 +18,8 @@ export function LoginPage() {
       localStorage.setItem('access_token', data.accessToken);
       window.location.href = '/dashboard';
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      const code = err.response?.data?.code;
+      setError(mapErrorCode(code));
     } finally {
       setLoading(false);
     }
