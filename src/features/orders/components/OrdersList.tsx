@@ -1,12 +1,24 @@
 import { useOrders } from '../hooks/useOrders.ts';
 import { WorkshopTable } from '../../../components/ui/WorkshopTable.tsx';
 import { RiskBadge } from '../../../components/ui/RiskBadge.tsx';
+import { WorkshopTableSkeleton } from '../../../components/ui/WorkshopTableSkeleton.tsx';
 
 export function OrdersList() {
   const { data: orders, isLoading, isError } = useOrders();
 
-  if (isLoading) return <div>Synchronizing Order Ledger...</div>;
-  if (isError) return <div>Failed to load orders.</div>;
+  if (isLoading) {
+    return (
+      <div className="orders-ledger">
+        <div className="flex justify-between items-center mb-md px-md">
+          <h2 className="text-h2">Production Ledger</h2>
+          <div className="text-sm text-muted">Synchronizing Order Ledger...</div>
+        </div>
+        <WorkshopTableSkeleton headers={['Order #', 'Customer', 'Garment', 'Deadline', 'Risk State']} />
+      </div>
+    );
+  }
+
+  if (isError) return <div className="p-md text-danger">Failed to load orders.</div>;
 
   return (
     <div className="orders-ledger">

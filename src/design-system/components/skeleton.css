@@ -1,0 +1,48 @@
+/* src/design-system/components/skeleton.css */
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(229, 231, 235, 0.5) 25%,
+    rgba(229, 231, 235, 1) 50%,
+    rgba(229, 231, 235, 0.5) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-text {
+  height: 1rem;
+  width: 100%;
+  background-color: #f3f4f6;
+}
+
+.skeleton-badge {
+  height: 24px;
+  width: 80px;
+  border-radius: 9999px;
+  background-color: #f3f4f6;
+}
+
+.skeleton-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}

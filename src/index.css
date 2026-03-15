@@ -13,6 +13,7 @@
 @import './design-system/components/form.css';
 @import './design-system/components/table.css';
 @import './design-system/components/stepper.css';
+@import './design-system/components/skeleton.css';
 
 /* Base Overrides */
 * {
