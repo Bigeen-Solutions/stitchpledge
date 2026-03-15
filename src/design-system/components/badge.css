@@ -12,19 +12,19 @@
 }
 
 .badge-ontrack {
-  background-color: rgba(22, 163, 74, 0.1);
-  color: var(--risk-ontrack);
+  background-color: var(--risk-ontrack);
+  color: white;
   border: 1px solid var(--risk-ontrack);
 }
 
 .badge-atrisk {
-  background-color: rgba(245, 158, 11, 0.1);
-  color: var(--risk-atrisk);
+  background-color: var(--risk-atrisk);
+  color: white;
   border: 1px solid var(--risk-atrisk);
 }
 
 .badge-overdue {
-  background-color: rgba(220, 38, 38, 0.1);
-  color: var(--risk-overdue);
+  background-color: var(--risk-overdue);
+  color: white;
   border: 1px solid var(--risk-overdue);
 }
