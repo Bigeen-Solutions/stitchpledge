@@ -11,13 +11,11 @@ export function useOrderDetail(id: string) {
 }
 
 export function useMaterials(orderId: string) {
+  // REDUNDANT: USE materials/hooks/useMaterialMutation instead
   return useQuery({
-    queryKey: keys.materials.ledger(orderId),
-    queryFn: async () => {
-      const { data } = await (await import('../../../api/client.ts')).apiClient.get(`/orders/${orderId}/materials/ledger`);
-      return data;
-    },
-    enabled: !!orderId,
+    queryKey: ['DEPRECATED_materials', orderId],
+    queryFn: async () => [],
+    enabled: false
   });
 }
 

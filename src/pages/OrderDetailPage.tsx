@@ -3,6 +3,7 @@ import { useOrderDetail } from '../features/orders/hooks/useOrderDetail.ts';
 import { DeadlineCard } from '../components/ui/DeadlineCard.tsx';
 import { WorkflowStages } from '../features/workflow/components/WorkflowStages.tsx';
 import { MaterialHistory } from '../features/materials/components/MaterialHistory.tsx';
+import { MaterialAdjustmentForm } from '../features/materials/components/MaterialAdjustmentForm.tsx';
 import { MeasurementHistory } from '../features/measurements/components/MeasurementHistory.tsx';
 import { RecordMeasurementForm } from '../features/measurements/components/RecordMeasurementForm.tsx';
 
@@ -39,8 +40,11 @@ export function OrderDetailPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-xl">
-        <div className="sf-card">
-          <MaterialHistory orderId={order.id} />
+        <div className="grid gap-lg">
+          <div className="sf-card">
+            <MaterialHistory orderId={order.id} />
+          </div>
+          <MaterialAdjustmentForm orderId={order.id} />
         </div>
         <div className="sf-card">
           <MeasurementHistory orderId={order.id} />
