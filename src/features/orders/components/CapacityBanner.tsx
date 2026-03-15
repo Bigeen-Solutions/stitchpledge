@@ -1,69 +1,46 @@
-import { useCapacityWarning } from '../hooks/useOrders.ts';
+import { useState, useEffect } from 'react';
+import { useOrders } from '../hooks/useOrders.ts';
 
 export function CapacityBanner() {
-  const { data: capacity, isLoading } = useCapacityWarning();
+  const { data: orders } = useOrders();
+  const [commandError, setCommandError] = useState(false);
+  
+  const isOverCapacity = orders?.capacityWarning || commandError;
 
-  if (isLoading) return (
-    <div className="skeleton-loader" style={{ height: '80px', marginBottom: 'var(--space-lg)', borderRadius: 'var(--radius-card)' }}></div>
-  );
+  useEffect(() => {
+    const handleError = () => setCommandError(true);
+    window.addEventListener('sf-capacity-exceeded', handleError);
+    return () => window.removeEventListener('sf-capacity-exceeded', handleError);
+  }, []);
 
-  const isCritical = capacity?.isOverCapacity;
+  if (!isOverCapacity) return null;
 
   return (
-    <div className={`sf-card capacity-indicator ${isCritical ? 'critical' : 'healthy'}`} style={{ 
-      background: isCritical 
-        ? 'linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, rgba(220, 38, 38, 0.03) 100%)' 
-        : 'linear-gradient(135deg, rgba(22, 163, 74, 0.08) 0%, rgba(22, 163, 74, 0.03) 100%)',
-      border: `1px solid ${isCritical ? 'var(--risk-overdue)' : 'var(--risk-ontrack)'}`,
-      borderLeftWidth: '6px',
-      marginBottom: 'var(--space-lg)',
+    <div className="capacity-banner-sticky" style={{ 
+      position: 'sticky',
+      top: 0,
+      zIndex: 100,
+      backgroundColor: 'var(--color-warning)',
+      color: 'var(--color-primary)',
+      padding: 'var(--space-sm) var(--space-lg)',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: 'var(--space-md) var(--space-lg)',
+      justifyContent: 'center',
+      gap: 'var(--space-md)',
+      boxShadow: 'var(--shadow-md)',
+      fontWeight: 800,
+      textAlign: 'center',
       backdropFilter: 'blur(8px)',
+      borderBottom: '1px solid rgba(0,0,0,0.1)',
+      animation: 'slideDown 0.3s ease-out'
     }}>
-      <div className="flex items-center gap-lg">
-        <div style={{ 
-          width: '48px', 
-          height: '48px', 
-          borderRadius: '12px', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          backgroundColor: isCritical ? 'rgba(220, 38, 38, 0.1)' : 'rgba(22, 163, 74, 0.1)',
-          color: isCritical ? 'var(--risk-overdue)' : 'var(--risk-ontrack)',
-          fontSize: '1.5rem'
-        }}>
-          {isCritical ? '⚠️' : '⚡'}
-        </div>
-        <div>
-          <div className="flex items-center gap-sm">
-            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: isCritical ? 'var(--risk-overdue)' : 'var(--risk-ontrack)' }}>
-              Workshop Capacity Status
-            </span>
-            <div className={`badge ${isCritical ? 'badge-overdue' : 'badge-ontrack'}`}>
-              {isCritical ? 'AT CAPACITY' : 'STABLE'}
-            </div>
-          </div>
-          <p className="text-lg font-bold" style={{ color: 'var(--color-primary)', marginTop: 'var(--space-xs)' }}>
-            {capacity?.message}
-          </p>
-        </div>
-      </div>
-
-      <div className="text-right">
-        <div className={`badge ${isCritical ? 'badge-overdue' : 'badge-ontrack'}`} style={{ padding: 'var(--space-sm) var(--space-md)', fontSize: '0.75rem' }}>
-          {isCritical ? '⚠️ HIGH RISK' : '✅ STABLE'}
-        </div>
-      </div>
-
+      <span style={{ fontSize: '1.25rem' }}>⚠️</span>
+      <span>Workshop capacity exceeded. Consider delaying intake.</span>
+      
       <style>{`
-        .capacity-indicator {
-          transition: all 0.3s ease;
-        }
-        .critical {
-          box-shadow: 0 4px 20px -5px rgba(220, 38, 38, 0.2);
+        @keyframes slideDown {
+          from { transform: translateY(-100%); }
+          to { transform: translateY(0); }
         }
       `}</style>
     </div>

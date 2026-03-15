@@ -80,6 +80,11 @@ export const setupInterceptors = (apiClient: AxiosInstance) => {
         }
       }
 
+      // Catch domain-specific errors for UI alerts
+      if (error.response?.data && (error.response.data as any).code === 'CAPACITY_EXCEEDED') {
+        window.dispatchEvent(new CustomEvent('sf-capacity-exceeded'));
+      }
+
       return Promise.reject(error);
     }
   );

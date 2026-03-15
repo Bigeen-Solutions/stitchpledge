@@ -21,6 +21,7 @@ export interface OrdersResponse {
   total: number;
   page: number;
   totalPages: number;
+  capacityWarning: boolean;
 }
 
 export const ordersApi = {
