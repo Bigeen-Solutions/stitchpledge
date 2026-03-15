@@ -3,6 +3,7 @@ import { measurementApi } from '../measurement.api';
 import { keys } from '../../../query/keys';
 import { queryClient } from '../../../query/queryClient';
 import { useToastStore } from '../../../components/feedback/Toast';
+import { mapErrorCode } from '../../../utils/errorMapper';
 
 export function useMeasurements(orderId: string) {
   return useQuery({
@@ -22,7 +23,7 @@ export function useRecordMeasurement(orderId: string) {
       showToast('New measurement version recorded successfully.');
     },
     onError: (err: any) => {
-      showToast(err.response?.data?.message || 'Failed to record measurement.', 'error');
+      showToast(mapErrorCode(err.response?.data?.code), 'error');
     }
   });
 }

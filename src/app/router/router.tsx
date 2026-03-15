@@ -11,6 +11,8 @@ import { WorkshopTable } from '../../components/ui/WorkshopTable.tsx';
 import { StageStepper } from '../../components/ui/StageStepper.tsx';
 import { DeadlineCard } from '../../components/ui/DeadlineCard.tsx';
 import { RiskBadge } from '../../components/ui/RiskBadge.tsx';
+import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
+import { CustomerOrderPage } from '../../features/customer/pages/CustomerOrderPage.tsx';
 
 export const router = createBrowserRouter([
   {
@@ -92,6 +94,12 @@ export const router = createBrowserRouter([
       },
       { path: '/orders', element: <OrdersPage /> },
       { path: '/orders/:id', element: <OrderDetailPage /> },
+    ],
+  },
+  {
+    element: <CustomerPortalLayout />,
+    children: [
+      { path: '/portal/orders/:id', element: <CustomerOrderPage /> },
     ],
   },
   { path: '/404', element: <NotFoundPage /> },
