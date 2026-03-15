@@ -2,9 +2,10 @@ import { useOrders } from '../hooks/useOrders.ts';
 import { WorkshopTable } from '../../../components/ui/WorkshopTable.tsx';
 import { RiskBadge } from '../../../components/ui/RiskBadge.tsx';
 import { WorkshopTableSkeleton } from '../../../components/ui/WorkshopTableSkeleton.tsx';
+import { ErrorState } from '../../../components/feedback/ErrorState.tsx';
 
 export function OrdersList() {
-  const { data: orders, isLoading, isError } = useOrders();
+  const { data: orders, isLoading, isError, error, refetch } = useOrders();
 
   if (isLoading) {
     return (
@@ -18,7 +19,15 @@ export function OrdersList() {
     );
   }
 
-  if (isError) return <div className="p-md text-danger">Failed to load orders.</div>;
+  if (isError) {
+    return (
+      <ErrorState 
+        error={error} 
+        onRetry={() => refetch()} 
+        title="Ledger Synchronization Failed"
+      />
+    );
+  }
 
   return (
     <div className="orders-ledger">
