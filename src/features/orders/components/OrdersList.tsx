@@ -16,7 +16,7 @@ export function OrdersList() {
       </div>
       
       <WorkshopTable headers={['Order #', 'Customer', 'Garment', 'Deadline', 'Risk State']}>
-        {orders?.map(order => (
+        {orders?.items?.map(order => (
           <tr key={order.id} className={`ledger-row risk-${order.riskLevel.toLowerCase()}`}>
             <td>
               <div className="font-bold">{order.orderNumber}</div>

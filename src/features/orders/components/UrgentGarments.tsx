@@ -6,7 +6,7 @@ export function UrgentGarments() {
 
   if (isLoading) return null;
 
-  const urgentOrders = orders?.slice(0, 5);
+  const urgentOrders = orders?.items?.filter(o => o.isUrgent);
 
   if (!urgentOrders || urgentOrders.length === 0) return null;
 
@@ -15,9 +15,9 @@ export function UrgentGarments() {
       <div className="flex justify-between items-center mb-md">
         <h2 className="text-h2" style={{ color: 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
           <span className="pulse-dot"></span>
-          Urgent Workshop Focus
+          High-Risk Production Focus
         </h2>
-        <span className="text-sm font-medium text-muted">{urgentOrders.length} garments requiring immediate action</span>
+        <span className="text-sm font-medium text-muted">{urgentOrders.length} garments requiring attention</span>
       </div>
       
       <div className="urgent-grid" style={{ 

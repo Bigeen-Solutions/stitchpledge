@@ -47,7 +47,7 @@ export function CapacityBanner() {
             </div>
           </div>
           <p className="text-lg font-bold" style={{ color: 'var(--color-primary)', marginTop: 'var(--space-xs)' }}>
-            {capacity?.message || 'Workshop is operating within safe capacity limits.'}
+            {capacity?.message}
           </p>
         </div>
       </div>

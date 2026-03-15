@@ -7,6 +7,7 @@ export interface Order {
   garmentName: string;
   deadline: string;
   riskLevel: 'ON_TRACK' | 'AT_RISK' | 'OVERDUE';
+  isUrgent: boolean;
   status: string;
 }
 
@@ -15,9 +16,18 @@ export interface CapacityStatus {
   message: string;
 }
 
+export interface OrdersResponse {
+  items: Order[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
 export const ordersApi = {
-  getOrders: async () => {
-    const { data } = await apiClient.get<Order[]>('/orders');
+  getOrders: async (page = 1, limit = 10) => {
+    const { data } = await apiClient.get<OrdersResponse>('/orders', {
+      params: { page, limit }
+    });
     return data;
   },
   
