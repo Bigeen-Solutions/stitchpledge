@@ -1,73 +1,35 @@
-# React + TypeScript + Vite
+# 🎨 StitchFlow Web Engine
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The high-trust frontend projection layer for the StitchFlow workshop engine.
 
-Currently, two official plugins are available:
+## 🏗️ Architecture: Pure Projection
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Following the **API Consumption Doctrine**, this frontend performs zero business logic. It is a logic-less interface that projects the production reality defined by the Backend API.
 
-## React Compiler
+### Features
+- **Production Dashboard**: High-density view of workshop targets and deadline risks.
+- **Workflow Orchestration**: Linear and parallel stage management with reactive status updates.
+- **Material Ledger**: Immutable audit trail with photo evidence and delta-based stock tracking.
+- **Measurement archives**: Version-controlled measurement logs with actor attribution.
+- **Customer Portal**: A strictly read-only environment for client order tracking.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
+- **Framework**: React 19 (Vite)
+- **Data Fetching**: TanStack Query (v5) - The core engine for cache invalidation and "Pure Refresh".
+- **State Management**: Zustand (Minimal global state).
+- **Styling**: Modular CSS System with centralized design tokens (`src/design-system`).
+- **Networking**: Axios with robust interceptors for JWT rotation and silent refreshing.
 
-## Expanding the ESLint configuration
+## 📂 Directory Structure
+- `src/app`: Routing and global configuration.
+- `src/components`: UI primitives (Timeline, Stepper, RiskBadges).
+- `src/features`: Domain-specific modules (Auth, Orders, Workflow, Materials, Measurements, Customer).
+- `src/design-system`: Token-driven CSS architecture.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 Commands
+- `npm run dev`: Start Vite development server.
+- `npm run build`: Production build.
+- `npm run lint`: ESLint check.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+© 2026 Bigeen Solutions — Pure Projection Architecture.
