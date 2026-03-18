@@ -1,4 +1,6 @@
+// src/pages/LoginPage.tsx
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../api/client';
 import { mapErrorCode } from '../utils/errorMapper';
 
@@ -7,6 +9,8 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate()
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,11 +19,15 @@ export function LoginPage() {
 
     try {
       const { data } = await apiClient.post('/auth/login', { email, password });
-      localStorage.setItem('access_token', data.accessToken);
-      window.location.href = '/dashboard';
+      setAccessToken(data.accessToken)
+      navigate('/dashboard')
     } catch (err: any) {
-      const code = err.response?.data?.code;
-      setError(mapErrorCode(code));
+      if (!err.response) {
+  setError('Network error. Please check your connection.')
+  return
+}
+const code = err.response.data?.code
+setError(mapErrorCode(code))
     } finally {
       setLoading(false);
     }
@@ -30,7 +38,7 @@ export function LoginPage() {
       <div className="login-card card sf-glass">
         <h1>StitchFlow</h1>
         <p className="subtitle">Production Operating System</p>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -43,7 +51,7 @@ export function LoginPage() {
               placeholder="workshop@stitchflow.io"
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input

@@ -1,3 +1,4 @@
+// src/api/interceptors.ts
 import type { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 let isRefreshing = false;
@@ -34,6 +35,11 @@ export const setupInterceptors = (apiClient: AxiosInstance) => {
     async (error: AxiosError) => {
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+      // Never attempt to refresh if the 401 came from the login or refresh endpoints themselves!
+      if (originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/auth/refresh')) {
+        return Promise.reject(error);
+      }
+
       // If error is 401 and not already retrying
       if (error.response?.status === 401 && !originalRequest._retry) {
         if (isRefreshing) {
@@ -60,20 +66,20 @@ export const setupInterceptors = (apiClient: AxiosInstance) => {
 
           localStorage.setItem('access_token', accessToken);
           apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-          
+
           processQueue(null, accessToken);
-          
+
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           }
           return apiClient(originalRequest);
         } catch (refreshError) {
           processQueue(refreshError, null);
-          
+
           // If refresh fails, clear state and redirect
           localStorage.removeItem('access_token');
           window.location.href = '/login';
-          
+
           return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;
