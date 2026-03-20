@@ -1,6 +1,7 @@
 // src/pages/LoginPage.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom'
+// import { useAuth } from '../contexts/AuthContext';
 import { apiClient } from '../api/client';
 import { mapErrorCode } from '../utils/errorMapper';
 
@@ -10,7 +11,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate()
-
+  // const { setAccessToken } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +20,10 @@ export function LoginPage() {
 
     try {
       const { data } = await apiClient.post('/auth/login', { email, password });
-      setAccessToken(data.accessToken)
+      console.log('Login response:', data)
+      localStorage.setItem('access_token', data.accessToken)
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`
+      console.log('Token stored:', localStorage.getItem('access_token'))
       navigate('/dashboard')
     } catch (err: any) {
       if (!err.response) {

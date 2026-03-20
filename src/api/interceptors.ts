@@ -20,14 +20,17 @@ export const setupInterceptors = (apiClient: AxiosInstance) => {
   // Request Interceptor: Attach access token
   apiClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      const token = localStorage.getItem('access_token');
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => Promise.reject(error)
-  );
+    const token = localStorage.getItem('access_token');
+    console.log('🔑 Request to:', config.url)
+    console.log('🔑 Token in localStorage:', token ? token.substring(0, 20) + '...' : 'NULL')
+    console.log('🔑 Auth header being set:', !!token)
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
   // Response Interceptor: Handle Silence Refresh
   apiClient.interceptors.response.use(
