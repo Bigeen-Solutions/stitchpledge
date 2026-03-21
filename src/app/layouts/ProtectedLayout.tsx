@@ -1,27 +1,24 @@
-import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useUIStore } from '../store';
-import { useMe } from '../../features/auth/hooks/useAuth';
+import { useAuthStore } from '../../features/auth/auth.store';
+import { usePermissions } from '../../features/auth/use-permissions';
 
 export function ProtectedLayout() {
-  const { data: user, isLoading, isError } = useMe();
+  const user = useAuthStore((state) => state.user);
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
   const location = useLocation();
+  const { can } = usePermissions();
 
-  if (isLoading) {
-    return <div className="sf-loading-overlay sf-glass">Syncing Production OS...</div>;
-  }
-
-  if (isError || !user) {
-    return <Navigate to="/login" replace />;
-  }
-
+  // Auth-gating is handled upstream by <ProtectedRoute>.
+  // This layout only renders when the user is confirmed authenticated.
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: '📊' },
     { label: 'Orders', path: '/orders', icon: '📦' },
     { label: 'New Order', path: '/orders/new', icon: '➕' },
   ];
 
-  if (user.role === 'COMPANY_ADMIN') {
+  // FE-3 FIX: Use can() — never raw role string comparison
+  if (can('staff:read')) {
     navItems.push({ label: 'Staff', path: '/staff', icon: '👥' });
   }
 
@@ -51,8 +48,8 @@ export function ProtectedLayout() {
 
         <div className="sidebar-footer mt-auto p-md sf-glass rounded-lg border border-sf-border shadow-inner">
           <div className="text-xs text-muted uppercase font-bold mb-xs">Authenticated</div>
-          <div className="font-bold text-sm truncate">{user.email}</div>
-          <div className="text-[10px] text-muted uppercase">{user.role.replace('_', ' ')}</div>
+          <div className="font-bold text-sm truncate">{user?.email}</div>
+          <div className="text-[10px] text-muted uppercase">{user?.role?.replace('_', ' ')}</div>
         </div>
       </aside>
       

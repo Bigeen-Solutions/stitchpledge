@@ -1,35 +1,28 @@
 // src/features/auth/hooks/useAuth.ts
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { authApi } from '../auth.api';
-import { keys } from '../../../query/keys';
+import { useMutation } from '@tanstack/react-query';
+import { logoutApi } from '../auth.api';
+import { useAuthStore } from '../auth.store';
 import { queryClient } from '../../../query/queryClient';
 import { useDomainError } from '../../../lib/errors';
 
-export function useMe() {
-  return useQuery({
-    queryKey: keys.auth.me,
-    queryFn: async () => {
-      try {
-        const data = await authApi.getMe();
-        console.log('✅ getMe success:', data);
-        return data;
-      } catch (err: any) {
-        console.log('❌ getMe failed:', err.response?.status, err.response?.data);
-        throw err;
-      }
-    },
-    retry: false,
-    staleTime: 1000 * 60 * 10,
-  });
-}
+/**
+ * FE-4/FE-5 FIX:
+ * useMe() was a redundant TanStack Query that duplicated user identity
+ * already held in Zustand auth store. Removed in favour of useAuthStore().
+ *
+ * If you need the user object in a component, use:
+ *   const user = useAuthStore(state => state.user)
+ */
 
 export function useLogout() {
   const { handleError } = useDomainError();
+  const { clearAuth } = useAuthStore();
+
   return useMutation({
-    mutationFn: authApi.logout,
+    mutationFn: logoutApi,
     onSettled: () => {
-      // WIPE EVERYTHING
-      localStorage.removeItem('access_token');
+      // FE-5 FIX: clear Zustand store — NOT localStorage
+      clearAuth();
       queryClient.clear();
       window.location.href = '/login';
     },

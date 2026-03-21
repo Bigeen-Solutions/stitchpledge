@@ -1,4 +1,4 @@
-import { apiClient } from '../../api/client';
+import { apiClient } from '../../infrastructure/http/axios.client';
 
 export interface MaterialEntry {
   id: string;

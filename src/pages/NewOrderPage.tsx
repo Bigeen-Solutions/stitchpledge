@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCustomerSearch, useCreateCustomer, useCreateMeasurement } from "../features/customers/hooks/useCustomerIntake";
 import { useWorkflowTemplates } from "../features/workflow/hooks/useWorkflowTemplates";
-import { useMe } from "../features/auth/hooks/useAuth";
+import { useAuthStore } from "../features/auth/auth.store";
 import { useStores } from "../features/auth/hooks/useStaff";
 import { ordersApi } from "../features/orders/orders.api";
 import { useToastStore } from "../components/feedback/Toast";
@@ -12,7 +12,8 @@ type Step = "CUSTOMER" | "MEASUREMENTS" | "GARMENTS" | "SUMMARY";
 export function NewOrderPage() {
   const navigate = useNavigate();
   const showToast = useToastStore((state) => state.showToast);
-  const { data: user } = useMe();
+  // AuthUser has no storeId — store is always selected via the dropdown
+  useAuthStore((state) => state.user);
   const { data: stores } = useStores();
   const { data: templates } = useWorkflowTemplates();
   const createCustomer = useCreateCustomer();
@@ -55,9 +56,9 @@ export function NewOrderPage() {
 
       // 2. Generate Locked Measurement Version
       showToast("Recording immutable measurements...", "success");
-      const mv = await createMeasurement.mutateAsync({ 
-        customerId: finalCustomerId, 
-        measurements 
+      const mv = await createMeasurement.mutateAsync({
+        customerId: finalCustomerId,
+        measurements
       });
 
       if (!mv?.id) {
@@ -65,11 +66,11 @@ export function NewOrderPage() {
       }
 
       // 3. Finalize Order & Risk Projection
-      const storeId = user?.storeId || selectedStoreId;
+      const storeId = selectedStoreId;
       if (!storeId) {
         throw new Error("Store assignment is required.");
       }
-      
+
       showToast("Finalizing order & calculating risk...", "success");
       await ordersApi.createOrder({
         customerId: finalCustomerId,
@@ -109,8 +110,8 @@ export function NewOrderPage() {
       <div className="flex justify-between mb-xl px-xl relative">
         <div className="absolute top-1/2 left-0 w-full h-0.5 bg-sf-border -z-10" />
         {["CUSTOMER", "MEASUREMENTS", "GARMENTS", "SUMMARY"].map((s, idx) => (
-          <div 
-            key={s} 
+          <div
+            key={s}
             className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all shadow-md ${
               step === s ? "bg-primary text-white scale-110" : idx < ["CUSTOMER", "MEASUREMENTS", "GARMENTS", "SUMMARY"].indexOf(step) ? "bg-success text-white" : "bg-sf-glass text-muted"
             }`}
@@ -124,13 +125,13 @@ export function NewOrderPage() {
         {step === "CUSTOMER" && (
           <section className="space-y-xl animate-in fade-in duration-500">
             <h2 className="text-h2">1. Identify the Client</h2>
-            
+
             <div className="grid grid-cols-2 gap-xl">
               <div className="space-y-md">
                 <label className="text-xs uppercase font-bold text-muted">Search Existing</label>
                 <div className="relative">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="sf-input w-full"
                     placeholder="Search by name, email or phone..."
                     value={searchQuery}
@@ -138,10 +139,10 @@ export function NewOrderPage() {
                   />
                   {isSearching && <div className="absolute right-3 top-3 text-xs">...</div>}
                 </div>
-                
+
                 <div className="max-h-60 overflow-y-auto space-y-sm">
                   {searchResults?.map(c => (
-                    <button 
+                    <button
                       key={c.id}
                       onClick={() => setSelectedCustomer(c)}
                       className={`w-full text-left p-md rounded-lg border transition-all ${
@@ -157,24 +158,24 @@ export function NewOrderPage() {
 
               <div className="space-y-md border-l border-sf-border pl-xl">
                 <label className="text-xs uppercase font-bold text-muted">Create New Customer</label>
-                <input 
-                  type="text" 
-                  className="sf-input w-full" 
-                  placeholder="Full Name" 
+                <input
+                  type="text"
+                  className="sf-input w-full"
+                  placeholder="Full Name"
                   value={newCustomer.name}
                   onChange={(e) => { setNewCustomer({...newCustomer, name: e.target.value}); setSelectedCustomer(null); }}
                 />
-                <input 
-                  type="email" 
-                  className="sf-input w-full" 
-                  placeholder="Email" 
+                <input
+                  type="email"
+                  className="sf-input w-full"
+                  placeholder="Email"
                   value={newCustomer.email}
                   onChange={(e) => { setNewCustomer({...newCustomer, email: e.target.value}); setSelectedCustomer(null); }}
                 />
-                <input 
-                  type="tel" 
-                  className="sf-input w-full" 
-                  placeholder="Phone" 
+                <input
+                  type="tel"
+                  className="sf-input w-full"
+                  placeholder="Phone"
                   value={newCustomer.phone}
                   onChange={(e) => { setNewCustomer({...newCustomer, phone: e.target.value}); setSelectedCustomer(null); }}
                 />
@@ -182,7 +183,7 @@ export function NewOrderPage() {
             </div>
 
             <div className="flex justify-end pt-lg">
-              <button 
+              <button
                 className="btn btn-primary px-xl"
                 disabled={!selectedCustomer && !newCustomer.name}
                 onClick={() => setStep("MEASUREMENTS")}
@@ -197,13 +198,13 @@ export function NewOrderPage() {
           <section className="space-y-xl animate-in fade-in duration-500">
             <h2 className="text-h2">2. Capture Measurements (cm)</h2>
             <p className="text-muted text-sm italic">Recording an immutable measurement version for {selectedCustomer?.name || newCustomer.name || "New Client"}.</p>
-            
+
             <div className="grid grid-cols-3 gap-lg">
               {Object.keys(measurements).map(key => (
                 <div key={key} className="form-group">
                   <label>{key}</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     className="sf-input mt-xs"
                     value={measurements[key]}
                     onChange={(e) => setMeasurements({...measurements, [key]: Number(e.target.value)})}
@@ -222,34 +223,31 @@ export function NewOrderPage() {
         {step === "GARMENTS" && (
           <section className="space-y-xl animate-in fade-in duration-500">
             <h2 className="text-h2">3. Config Garments & Deadline</h2>
-            
+
             <div className="grid grid-cols-2 gap-xl">
               <div className="form-group">
                 <label className="block mb-xs">Requested Event Date</label>
-                <input 
-                  type="datetime-local" 
-                  className="sf-input w-full" 
+                <input
+                  type="datetime-local"
+                  className="sf-input w-full"
                   value={eventDate}
                   onChange={(e) => setEventDate(e.target.value)}
-                  required
-                />
+                  required />
                 <p className="text-[10px] text-muted mt-xs uppercase font-bold">Mandatory for Risk Projection</p>
               </div>
+            </div>
 
-              {!user?.storeId && (
-                <div className="form-group">
-                  <label className="block mb-xs">Store Assignment (Admin Only)</label>
-                  <select 
-                    className="sf-input w-full"
-                    value={selectedStoreId}
-                    onChange={(e) => setSelectedStoreId(e.target.value)}
-                    required
-                  >
-                    <option value="">Select Target Store...</option>
-                    {stores?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
-                </div>
-              )}
+            <div className="form-group">
+              <label className="block mb-xs">Store Assignment</label>
+              <select
+                className="sf-input w-full"
+                value={selectedStoreId}
+                onChange={(e) => setSelectedStoreId(e.target.value)}
+                required
+              >
+                <option value="">Select Target Store...</option>
+                {stores?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
             </div>
 
             <div className="space-y-md">
@@ -262,7 +260,7 @@ export function NewOrderPage() {
                 <div key={idx} className="flex gap-md items-end bg-white/5 p-md rounded-lg border border-sf-border shadow-inner">
                   <div className="flex-1">
                     <label className="text-xs font-bold text-muted uppercase">Template</label>
-                    <select 
+                    <select
                       className="sf-input w-full mt-xs"
                       value={g.workflowTemplateId}
                       onChange={(e) => {
@@ -282,9 +280,9 @@ export function NewOrderPage() {
 
             <div className="flex justify-between pt-lg">
               <button className="btn btn-muted" onClick={() => setStep("MEASUREMENTS")}>Back</button>
-              <button 
-                className="btn btn-primary px-xl" 
-                disabled={garments.length === 0 || !eventDate || (!user?.storeId && !selectedStoreId)}
+              <button
+                className="btn btn-primary px-xl"
+                disabled={garments.length === 0 || !eventDate || !selectedStoreId}
                 onClick={() => setStep("SUMMARY")}
               >
                 Review Order
@@ -296,7 +294,7 @@ export function NewOrderPage() {
         {step === "SUMMARY" && (
           <section className="space-y-xl animate-in zoom-in-95 duration-300">
             <h2 className="text-h2">Summary & Commitment</h2>
-            
+
             <div className="grid grid-cols-2 gap-lg bg-white/5 p-lg rounded-xl border border-sf-border">
               <div>
                 <div className="text-xs text-muted uppercase font-bold">Customer</div>
@@ -306,7 +304,7 @@ export function NewOrderPage() {
               <div>
                 <div className="text-xs text-muted uppercase font-bold">Production Deadline</div>
                 <div className="font-bold text-lg text-primary">{new Date(eventDate).toLocaleDateString()}</div>
-                <div className="text-sm text-muted">@ {user?.storeId ? "Assigned Store" : stores?.find(s => s.id === selectedStoreId)?.name}</div>
+                <div className="text-sm text-muted">@ {stores?.find(s => s.id === selectedStoreId)?.name}</div>
               </div>
             </div>
 
@@ -322,8 +320,8 @@ export function NewOrderPage() {
 
             <div className="flex justify-between pt-lg">
               <button className="btn btn-muted" onClick={() => setStep("GARMENTS")}>Back</button>
-              <button 
-                className="btn btn-primary px-xl shadow-[0_0_20px_var(--sf-primary)]" 
+              <button
+                className="btn btn-primary px-xl shadow-[0_0_20px_var(--sf-primary)]"
                 onClick={handleCreateOrder}
               >
                 Formalize Order

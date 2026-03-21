@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useStaffList, useInviteStaff, useUpdateStaffStatus, useStores } from "../features/auth/hooks/useStaff";
-import { useMe } from "../features/auth/hooks/useAuth";
+import { useAuthStore } from "../features/auth/auth.store";
 
 export function StaffManagementPage() {
-  const { data: currentUser } = useMe();
+  // FE-4 FIX: read from Zustand store. Route is already guarded by ProtectedRoute requiredPermission="staff:read".
+  const currentUser = useAuthStore((state) => state.user);
   const { data: staff, isLoading: isLoadingStaff } = useStaffList();
   const { data: stores, isLoading: isLoadingStores } = useStores();
   const inviteStaff = useInviteStaff();
@@ -15,15 +16,6 @@ export function StaffManagementPage() {
     storeId: "",
     initialPassword: "",
   });
-
-  if (currentUser?.role !== "COMPANY_ADMIN") {
-    return (
-      <div className="container p-xl text-center">
-        <h1 className="text-h1">Access Denied</h1>
-        <p className="text-muted">Only Company Admins can manage staff.</p>
-      </div>
-    );
-  }
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();

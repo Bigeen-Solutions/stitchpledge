@@ -1,7 +1,8 @@
-import { useMe, useLogout } from '../../auth/hooks/useAuth';
+import { useAuthStore } from '../../auth/auth.store';
+import { useLogout } from '../../auth/hooks/useAuth';
 
 export function WelcomePanel() {
-  const { data: user } = useMe();
+  const user = useAuthStore((state) => state.user);
   const logout = useLogout();
 
   if (!user) return null;
@@ -9,9 +10,9 @@ export function WelcomePanel() {
   return (
     <div className="welcome-panel card sf-glass">
       <div className="welcome-content">
-        <h1>Welcome back, {user.name}</h1>
+        <h1>Welcome back, {user.fullName}</h1>
         <p className="active-store">
-          Active Store: <strong>{user.activeStore?.name || 'No Store Selected'}</strong>
+          Role: <strong>{user.role.replace('_', ' ')}</strong>
         </p>
       </div>
       <button 
