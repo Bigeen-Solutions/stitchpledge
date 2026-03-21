@@ -1,41 +1,40 @@
 // src/pages/LoginPage.tsx
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 // import { useAuth } from '../contexts/AuthContext';
-import { apiClient } from '../api/client';
-import { mapErrorCode } from '../utils/errorMapper';
+import { apiClient } from "../api/client"
+import { mapErrorCode } from "../utils/errorMapper"
 
 export function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   // const { setAccessToken } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
 
     try {
-      const { data } = await apiClient.post('/auth/login', { email, password });
-      console.log('Login response:', data)
-      localStorage.setItem('access_token', data.accessToken)
-      apiClient.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`
-      console.log('Token stored:', localStorage.getItem('access_token'))
-      navigate('/dashboard')
+      const { data } = await apiClient.post("/auth/login", { email, password })
+      localStorage.setItem("access_token", data.accessToken)
+      apiClient.defaults.headers.common["Authorization"] =
+        `Bearer ${data.accessToken}`
+      navigate("/dashboard")
     } catch (err: any) {
       if (!err.response) {
-  setError('Network error. Please check your connection.')
-  return
-}
-const code = err.response.data?.code
-setError(mapErrorCode(code))
+        setError("Network error. Please check your connection.")
+        return
+      }
+      const code = err.response.data?.code
+      setError(mapErrorCode(code))
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="login-page">
@@ -70,10 +69,10 @@ setError(mapErrorCode(code))
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" disabled={loading} className="primary-button">
-            {loading ? 'Authenticating...' : 'Sign In'}
+            {loading ? "Authenticating..." : "Sign In"}
           </button>
         </form>
       </div>
     </div>
-  );
+  )
 }
