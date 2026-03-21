@@ -16,11 +16,14 @@ import { RiskBadge } from '../../components/ui/RiskBadge.tsx';
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
 import { CustomerOrderPage } from '../../features/customer/pages/CustomerOrderPage.tsx';
 
+import { DesignSystemPage } from '../../pages/DesignSystemPage.tsx';
+
 export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
     children: [
       { path: '/login', element: <LoginPage /> },
+      { path: '/design-system', element: <DesignSystemPage /> },
     ],
   },
   {

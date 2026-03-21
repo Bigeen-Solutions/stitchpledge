@@ -1,0 +1,42 @@
+import React from 'react';
+import { Chip, ChipProps, useTheme } from '@mui/material';
+
+export type RiskStatus = 'ON_TRACK' | 'AT_RISK' | 'OVERDUE' | 'UNKNOWN';
+
+interface RiskChipProps extends Omit<ChipProps, 'color'> {
+  status: RiskStatus;
+}
+
+/**
+ * RiskChip component derived from the custom 'risk' palette tokens.
+ * This is the ONLY component allowed to use risk coloring for status.
+ */
+export function RiskChip({ status, sx, ...props }: RiskChipProps) {
+  const theme = useTheme();
+
+  const getStatusColor = () => {
+    switch (status) {
+      case 'ON_TRACK':
+        return theme.palette.risk.onTrack;
+      case 'AT_RISK':
+        return theme.palette.risk.atRisk;
+      case 'OVERDUE':
+        return theme.palette.risk.overdue;
+      case 'UNKNOWN':
+      default:
+        return theme.palette.risk.unknown;
+    }
+  };
+
+  return (
+    <Chip
+      {...props}
+      sx={{
+        backgroundColor: getStatusColor(),
+        color: '#FFFFFF',
+        fontWeight: 600,
+        ...sx,
+      }}
+    />
+  );
+}
