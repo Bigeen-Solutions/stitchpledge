@@ -3,7 +3,7 @@ import { materialsApi } from '../materials.api';
 import { keys } from '../../../query/keys';
 import { queryClient } from '../../../query/queryClient';
 import { useToastStore } from '../../../components/feedback/Toast';
-import { mapErrorCode } from '../../../utils/errorMapper';
+import { useDomainError } from '../../../lib/errors';
 
 export function useMaterials(orderId: string) {
   return useQuery({
@@ -15,15 +15,16 @@ export function useMaterials(orderId: string) {
 
 export function useAdjustMaterial(orderId: string) {
   const showToast = useToastStore((state) => state.showToast);
+  const { handleError } = useDomainError();
 
   return useMutation({
     mutationFn: (data: { delta: number, reason: string }) => materialsApi.adjustMaterial(orderId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.materials.ledger(orderId) });
-      showToast('Material stock adjustment synchronized.');
+      showToast('Adjustment Synchronized', 'Material stock adjustment synchronized.');
     },
     onError: (err: any) => {
-      showToast(mapErrorCode(err.response?.data?.code), 'error');
+      handleError(err);
     }
   });
 }

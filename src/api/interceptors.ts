@@ -1,5 +1,5 @@
-// src/api/interceptors.ts
 import type { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { parseApiError } from '../lib/errors';
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
@@ -89,10 +89,8 @@ export const setupInterceptors = (apiClient: AxiosInstance) => {
         }
       }
 
-      // Catch domain-specific errors for UI alerts
-      if (error.response?.data && (error.response.data as any).code === 'CAPACITY_EXCEEDED') {
-        window.dispatchEvent(new CustomEvent('sf-capacity-exceeded'));
-      }
+      // Attach pre-parsed domain error for easier UI consumption
+      (error as any).parsedError = parseApiError(error);
 
       return Promise.reject(error);
     }

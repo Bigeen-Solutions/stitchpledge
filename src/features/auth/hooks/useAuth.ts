@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { authApi } from '../auth.api';
 import { keys } from '../../../query/keys';
 import { queryClient } from '../../../query/queryClient';
+import { useDomainError } from '../../../lib/errors';
 
 export function useMe() {
   return useQuery({
@@ -23,6 +24,7 @@ export function useMe() {
 }
 
 export function useLogout() {
+  const { handleError } = useDomainError();
   return useMutation({
     mutationFn: authApi.logout,
     onSettled: () => {
@@ -31,5 +33,6 @@ export function useLogout() {
       queryClient.clear();
       window.location.href = '/login';
     },
+    onError: (err: any) => handleError(err),
   });
 }

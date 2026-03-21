@@ -3,7 +3,7 @@ import { measurementApi } from '../measurement.api';
 import { keys } from '../../../query/keys';
 import { queryClient } from '../../../query/queryClient';
 import { useToastStore } from '../../../components/feedback/Toast';
-import { mapErrorCode } from '../../../utils/errorMapper';
+import { useDomainError } from '../../../lib/errors';
 
 export function useMeasurements(orderId: string) {
   return useQuery({
@@ -15,15 +15,16 @@ export function useMeasurements(orderId: string) {
 
 export function useRecordMeasurement(orderId: string) {
   const showToast = useToastStore((state) => state.showToast);
+  const { handleError } = useDomainError();
 
   return useMutation({
     mutationFn: (data: any) => measurementApi.recordMeasurement(orderId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.measurements.list(orderId) });
-      showToast('New measurement version recorded successfully.');
+      showToast('Measurement Recorded', 'New measurement version recorded successfully.');
     },
     onError: (err: any) => {
-      showToast(mapErrorCode(err.response?.data?.code), 'error');
+      handleError(err);
     }
   });
 }

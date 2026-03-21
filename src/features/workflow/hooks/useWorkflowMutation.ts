@@ -3,7 +3,7 @@ import { workflowApi } from '../workflow.api';
 import { keys } from '../../../query/keys';
 import { queryClient } from '../../../query/queryClient';
 import { useToastStore } from '../../../components/feedback/Toast';
-import { mapErrorCode } from '../../../utils/errorMapper';
+import { useDomainError } from '../../../lib/errors';
 
 export function useGarmentWorkflow(garmentId: string) {
   return useQuery({
@@ -15,6 +15,7 @@ export function useGarmentWorkflow(garmentId: string) {
 
 export function useReportStageCompletion(garmentId: string, orderId?: string) {
   const showToast = useToastStore((state) => state.showToast);
+  const { handleError } = useDomainError();
 
   return useMutation({
     mutationFn: (params: { stageId: string; evidencePhotoUrls?: string[] }) => 
@@ -28,10 +29,10 @@ export function useReportStageCompletion(garmentId: string, orderId?: string) {
       }
       queryClient.invalidateQueries({ queryKey: keys.orders.all });
       
-      showToast('Stage completion synchronized.');
+      showToast('Action Successful', 'Information updated.');
     },
     onError: (err: any) => {
-      showToast(mapErrorCode(err.response?.data?.code), 'error');
+      handleError(err);
     }
   });
 }

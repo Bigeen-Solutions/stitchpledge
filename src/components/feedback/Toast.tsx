@@ -2,20 +2,21 @@ import { create } from 'zustand';
 
 interface Toast {
   type: 'success' | 'error';
-  message: string;
+  title: string;
+  detail: string;
 }
 
 interface ToastState {
   toast: Toast | null;
-  showToast: (message: string, type?: 'success' | 'error') => void;
+  showToast: (title: string, detail: string, type?: 'success' | 'error') => void;
   hideToast: () => void;
 }
 
 export const useToastStore = create<ToastState>((set) => ({
   toast: null,
-  showToast: (message, type = 'success') => {
-    set({ toast: { message, type } });
-    setTimeout(() => set({ toast: null }), 3000);
+  showToast: (title, detail, type = 'success') => {
+    set({ toast: { title, detail, type } });
+    setTimeout(() => set({ toast: null }), 5000); // 5 seconds for structured toasts
   },
   hideToast: () => set({ toast: null }),
 }));
@@ -30,16 +31,30 @@ export function Toast() {
       position: 'fixed',
       bottom: '24px',
       right: '24px',
-      padding: '12px 24px',
+      padding: '16px 24px',
       borderRadius: 'var(--radius-card)',
       zIndex: 9999,
       border: `1px solid ${toast.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)'}`,
-      color: toast.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)',
-      fontWeight: 'bold',
-      boxShadow: 'var(--shadow-md)',
-      animation: 'slideIn 0.3s ease-out'
+      color: 'var(--color-text)',
+      backgroundColor: 'white',
+      boxShadow: 'var(--shadow-lg)',
+      animation: 'slideIn 0.3s ease-out',
+      minWidth: '320px',
+      maxWidth: '450px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '4px'
     }}>
-      {toast.message}
+      <div style={{ 
+        fontWeight: 'bold', 
+        color: toast.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)',
+        fontSize: '1rem'
+      }}>
+        {toast.title}
+      </div>
+      <div style={{ fontSize: '0.875rem', opacity: 0.8, color: 'var(--color-text-secondary)' }}>
+        {toast.detail}
+      </div>
     </div>
   );
 }
