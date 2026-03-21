@@ -22,4 +22,7 @@ export const keys = {
     stages: (orderId: string) => ['workflow', orderId, 'stages'] as const,
     garment: (garmentId: string) => ['workflow', 'garment', garmentId] as const,
   },
+  staff: {
+    all: ['staff'] as const,
+  },
 };
