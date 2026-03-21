@@ -72,4 +72,16 @@ describe('parseApiError', () => {
     expect(result).toEqual(errorMessages.MATERIAL_PHOTO_REQUIRED);
     expect(result.field).toBe('photoUrl');
   });
+
+  it('maps AUTH_SESSION_EXPIRED correctly', () => {
+    const error = {
+      isAxiosError: true,
+      response: {
+        data: { code: ErrorCodes.AUTH_SESSION_EXPIRED },
+      },
+    };
+    
+    const result = parseApiError(error);
+    expect(result).toEqual(errorMessages.AUTH_SESSION_EXPIRED);
+  });
 });

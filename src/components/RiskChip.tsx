@@ -1,5 +1,5 @@
-import React from 'react';
-import { Chip, ChipProps, useTheme } from '@mui/material';
+import type { ChipProps } from '@mui/material';
+import { Chip, useTheme } from '@mui/material';
 
 export type RiskStatus = 'ON_TRACK' | 'AT_RISK' | 'OVERDUE' | 'UNKNOWN';
 

@@ -15,6 +15,7 @@ import { DeadlineCard } from '../../components/ui/DeadlineCard.tsx';
 import { RiskBadge } from '../../components/ui/RiskBadge.tsx';
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
 import { CustomerOrderPage } from '../../features/customer/pages/CustomerOrderPage.tsx';
+import { ProtectedRoute } from '../../features/auth/ProtectedRoute.tsx';
 
 import { DesignSystemPage } from '../../pages/DesignSystemPage.tsx';
 
@@ -27,7 +28,11 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    element: <ProtectedLayout />,
+    element: (
+      <ProtectedRoute>
+        <ProtectedLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { path: '/', element: <Navigate to="/dashboard" replace /> },
       { 
@@ -83,7 +88,7 @@ export const router = createBrowserRouter([
                     <TimelineItem 
                       actor="John Cutter" 
                       action="Recorded New Measurement Version" 
-                      timestamp="10 minutes ago" 
+                      timestamp="100 minutes ago" 
                     />
                     <TimelineItem 
                       actor="Sarah Stitch" 
@@ -97,14 +102,46 @@ export const router = createBrowserRouter([
           </div>
         ) 
       },
-      { path: '/orders', element: <OrdersPage /> },
-      { path: '/orders/new', element: <NewOrderPage /> },
-      { path: '/orders/:id', element: <OrderDetailPage /> },
-      { path: '/staff', element: <StaffManagementPage /> },
+      { 
+        path: '/orders', 
+        element: (
+          <ProtectedRoute requiredPermission="orders:read">
+            <OrdersPage />
+          </ProtectedRoute>
+        ) 
+      },
+      { 
+        path: '/orders/new', 
+        element: (
+          <ProtectedRoute requiredPermission="orders:write">
+            <NewOrderPage />
+          </ProtectedRoute>
+        ) 
+      },
+      { 
+        path: '/orders/:id', 
+        element: (
+          <ProtectedRoute requiredPermission="orders:read">
+            <OrderDetailPage />
+          </ProtectedRoute>
+        ) 
+      },
+      { 
+        path: '/staff', 
+        element: (
+          <ProtectedRoute requiredPermission="staff:read">
+            <StaffManagementPage />
+          </ProtectedRoute>
+        ) 
+      },
     ],
   },
   {
-    element: <CustomerPortalLayout />,
+    element: (
+      <ProtectedRoute requiredPermission="customer:portal">
+        <CustomerPortalLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { path: '/portal/orders/:id', element: <CustomerOrderPage /> },
     ],

@@ -1,4 +1,4 @@
-import { Shadows } from '@mui/material/styles';
+import type { Shadows } from '@mui/material/styles';
 
 const defaultShadow = '0 1px 3px rgba(0,0,0,0.3)';
 
