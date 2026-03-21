@@ -18,6 +18,7 @@ export function ProtectedLayout() {
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: '📊' },
     { label: 'Orders', path: '/orders', icon: '📦' },
+    { label: 'New Order', path: '/orders/new', icon: '➕' },
   ];
 
   if (user.role === 'COMPANY_ADMIN') {

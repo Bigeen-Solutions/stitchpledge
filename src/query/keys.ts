@@ -21,8 +21,12 @@ export const keys = {
   workflow: {
     stages: (orderId: string) => ['workflow', orderId, 'stages'] as const,
     garment: (garmentId: string) => ['workflow', 'garment', garmentId] as const,
+    templates: ['workflow', 'templates'] as const,
   },
   staff: {
     all: ['staff'] as const,
+  },
+  customers: {
+    search: (query: string) => ['customers', 'search', query] as const,
   },
 };

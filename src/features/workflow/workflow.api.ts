@@ -30,5 +30,10 @@ export const workflowApi = {
   reportStageCompletion: async (params: { garmentId: string; stageId: string; evidencePhotoUrls?: string[] }) => {
     const { data } = await apiClient.post('/workflows/stages/complete', params);
     return data;
+  },
+
+  getTemplates: async () => {
+    const { data } = await apiClient.get<any[]>('/workflow-templates');
+    return data;
   }
 };

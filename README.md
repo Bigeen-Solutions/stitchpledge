@@ -8,9 +8,11 @@ Following the **API Consumption Doctrine**, this frontend performs zero business
 
 ### Features
 - **Production Dashboard**: High-density view of workshop targets and deadline risks.
-- **Workflow Orchestration**: Linear and parallel stage management with reactive status updates.
-- **Material Ledger**: Immutable audit trail with photo evidence and delta-based stock tracking.
-- **Measurement archives**: Version-controlled measurement logs with actor attribution.
+- **Order Detail View**: Deep-drill view of specific orders with interactive Workflow Graphs (Phase 3).
+- **Intake Engine**: Multi-step wizard for customer lookup, measurement capture, and order creation (Phase 5).
+- **Staff Management**: RBAC-protected roster for managing company users and invitations (Phase 4).
+- **Workflow Orchestration**: Visual DAG renderer reflecting PENDING, ACTIVE, and COMPLETED states (Phase 3).
+- **Measurement Archives**: Version-controlled measurement logs with immutable order locking (Phase 5).
 - **Customer Portal**: A strictly read-only environment for client order tracking.
 
 ## 🛠️ Tech Stack

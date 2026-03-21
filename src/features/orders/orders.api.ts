@@ -68,5 +68,10 @@ export const ordersApi = {
   getOrderGarments: async (id: string) => {
     const { data } = await apiClient.get<Garment[]>(`/orders/${id}/garments`);
     return data;
+  },
+
+  createOrder: async (data: any) => {
+    const { data: result } = await apiClient.post('/orders', data);
+    return result;
   }
 };
