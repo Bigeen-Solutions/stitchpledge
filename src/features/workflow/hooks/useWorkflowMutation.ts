@@ -5,26 +5,30 @@ import { queryClient } from '../../../query/queryClient';
 import { useToastStore } from '../../../components/feedback/Toast';
 import { mapErrorCode } from '../../../utils/errorMapper';
 
-export function useWorkflow(orderId: string) {
+export function useGarmentWorkflow(garmentId: string) {
   return useQuery({
-    queryKey: keys.workflow.stages(orderId),
-    queryFn: () => workflowApi.getWorkflow(orderId),
-    enabled: !!orderId,
+    queryKey: keys.workflow.garment(garmentId),
+    queryFn: () => workflowApi.getGarmentWorkflow(garmentId),
+    enabled: !!garmentId,
   });
 }
 
-export function useCompleteStage(orderId: string) {
+export function useReportStageCompletion(garmentId: string, orderId?: string) {
   const showToast = useToastStore((state) => state.showToast);
 
   return useMutation({
-    mutationFn: (stageId: string) => workflowApi.completeStage(orderId, stageId),
+    mutationFn: (params: { stageId: string; evidencePhotoUrls?: string[] }) => 
+      workflowApi.reportStageCompletion({ garmentId, ...params }),
     onSuccess: () => {
       // PURE REFRESH
-      queryClient.invalidateQueries({ queryKey: keys.workflow.stages(orderId) });
-      queryClient.invalidateQueries({ queryKey: keys.orders.detail(orderId) });
+      queryClient.invalidateQueries({ queryKey: keys.workflow.garment(garmentId) });
+      if (orderId) {
+        queryClient.invalidateQueries({ queryKey: keys.orders.detail(orderId) });
+        queryClient.invalidateQueries({ queryKey: keys.orders.garments(orderId) });
+      }
       queryClient.invalidateQueries({ queryKey: keys.orders.all });
       
-      showToast('Stage completion synchronized with backend.');
+      showToast('Stage completion synchronized.');
     },
     onError: (err: any) => {
       showToast(mapErrorCode(err.response?.data?.code), 'error');

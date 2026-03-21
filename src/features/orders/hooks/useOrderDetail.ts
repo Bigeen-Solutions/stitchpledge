@@ -27,3 +27,10 @@ export function useMeasurements(orderId: string) {
     enabled: false
   });
 }
+export function useOrderGarments(orderId: string) {
+  return useQuery({
+    queryKey: keys.orders.garments(orderId),
+    queryFn: () => ordersApi.getOrderGarments(orderId),
+    enabled: !!orderId,
+  });
+}

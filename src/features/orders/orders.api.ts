@@ -2,12 +2,35 @@ import { apiClient } from '../../api/client.ts';
 
 export interface Order {
   id: string;
-  orderNumber: string;
+  companyId: string;
+  customerId: string;
   customerName: string;
-  garmentName: string;
-  deadline: string;
+  eventDate: string;
+  lockedMeasurementVersionId: string | null;
+  orderNumber: string; // From projection/dto
+  status: string;
+}
+
+export interface OrderDeadlineProjection {
+  id: string;
+  orderId: string;
+  remainingDurationHours: number;
+  availableCapacityHours: number;
+  hoursUntilDeadline: number;
   riskLevel: 'ON_TRACK' | 'AT_RISK' | 'OVERDUE';
-  isUrgent: boolean;
+  calculatedAt: string;
+}
+
+export interface OrderDetailResponse {
+  order: Order;
+  projection: OrderDeadlineProjection;
+}
+
+export interface Garment {
+  id: string;
+  orderId: string;
+  storeId: string;
+  name: string;
   status: string;
 }
 
@@ -38,7 +61,12 @@ export const ordersApi = {
   },
 
   getOrderDetail: async (id: string) => {
-    const { data } = await apiClient.get<Order>(`/orders/${id}`);
+    const { data } = await apiClient.get<OrderDetailResponse>(`/orders/${id}`);
+    return data;
+  },
+
+  getOrderGarments: async (id: string) => {
+    const { data } = await apiClient.get<Garment[]>(`/orders/${id}/garments`);
     return data;
   }
 };

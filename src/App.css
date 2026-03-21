@@ -237,3 +237,14 @@
   max-height: 200px;
   object-fit: cover;
 }
+
+/* Workflow Pulse */
+@keyframes pulse-active {
+  0% { box-shadow: 0 0 0 0 rgba(0, 102, 255, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 102, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 102, 255, 0); }
+}
+
+.animate-pulse {
+  animation: pulse-active 2s infinite;
+}

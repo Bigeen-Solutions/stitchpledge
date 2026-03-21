@@ -1,27 +1,34 @@
 import { apiClient } from '../../api/client';
 
-export interface Stage {
+export interface StageInstance {
   id: string;
-  name: string;
-  status: string;
-  isWarning: boolean;
-  isComplete: boolean;
-  isActive: boolean;
+  workflowInstanceId: string;
+  stageId: string;
+  status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'BLOCKED';
+  completedBy: string | null;
+  completedAt: string | null;
+  evidencePhotoUrls: string[] | null;
 }
 
-export interface WorkflowProjection {
-  stages: Stage[];
-  activeStageIndex: number;
-  isWarning: boolean;
+export interface WorkflowInstance {
+  id: string;
+  garmentId: string;
+  templateVersionId: string;
+}
+
+export interface GarmentWorkflowResponse {
+  instance: WorkflowInstance;
+  stages: StageInstance[];
 }
 
 export const workflowApi = {
-  getWorkflow: async (orderId: string) => {
-    const { data } = await apiClient.get<WorkflowProjection>(`/orders/${orderId}/workflow`);
+  getGarmentWorkflow: async (garmentId: string) => {
+    const { data } = await apiClient.get<GarmentWorkflowResponse>(`/garments/${garmentId}/workflow`);
     return data;
   },
   
-  completeStage: async (orderId: string, stageId: string) => {
-    await apiClient.post(`/orders/${orderId}/workflow/stages/${stageId}/complete`);
+  reportStageCompletion: async (params: { garmentId: string; stageId: string; evidencePhotoUrls?: string[] }) => {
+    const { data } = await apiClient.post('/workflows/stages/complete', params);
+    return data;
   }
 };
