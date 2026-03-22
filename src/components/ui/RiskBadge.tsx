@@ -1,18 +1,16 @@
-
-
-type RiskLevel = 'ON_TRACK' | 'AT_RISK' | 'OVERDUE';
+type RiskLevel = "ON_TRACK" | "AT_RISK" | "OVERDUE" | "UNKNOWN"
 
 interface RiskBadgeProps {
-  level: RiskLevel;
+  level: RiskLevel
 }
 
 export function RiskBadge({ level }: RiskBadgeProps) {
-  const label = level.replace('_', ' ').toUpperCase();
-  const className = `badge badge-${level.toLowerCase().replace('_', '')}`;
-  
+  const label = level.replace("_", " ").toUpperCase()
+  const className = `badge badge-${level.toLowerCase().replace("_", "")}`
+
   return (
-    <span className={className} style={{ transition: 'all 0.2s ease' }}>
+    <span className={className} style={{ transition: "all 0.2s ease" }}>
       {label}
     </span>
-  );
+  )
 }

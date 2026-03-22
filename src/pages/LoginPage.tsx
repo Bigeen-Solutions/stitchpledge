@@ -1,8 +1,8 @@
 // src/pages/LoginPage.tsx
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-// import { useAuth } from '../contexts/AuthContext';
-import { apiClient } from "../api/client"
+import { loginApi } from "../features/auth/auth.api"
+import { useAuthStore } from "../features/auth/auth.store"
 import { mapErrorCode } from "../utils/errorMapper"
 
 export function LoginPage() {
@@ -11,7 +11,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  // const { setAccessToken } = useAuth();
+  const { setAuth } = useAuthStore()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -19,11 +19,10 @@ export function LoginPage() {
     setError(null)
 
     try {
-      const { data } = await apiClient.post("/auth/login", { email, password })
-      localStorage.setItem("access_token", data.accessToken)
-      apiClient.defaults.headers.common["Authorization"] =
-        `Bearer ${data.accessToken}`
-      navigate("/dashboard")
+      const { accessToken, user } = await loginApi({ email, password })
+      setAuth(accessToken, user)
+      console.log("auth state after setAuth:", useAuthStore.getState())
+      navigate("/dashboard", { replace: true })
     } catch (err: any) {
       if (!err.response) {
         setError("Network error. Please check your connection.")

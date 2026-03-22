@@ -1,42 +1,58 @@
-import { useState } from "react";
-import { useStaffList, useInviteStaff, useUpdateStaffStatus, useStores } from "../features/auth/hooks/useStaff";
-import { useAuthStore } from "../features/auth/auth.store";
+import { useState } from "react"
+import {
+  useStaffList,
+  useInviteStaff,
+  useUpdateStaffStatus,
+  useStores,
+} from "../features/auth/hooks/useStaff"
+import { useAuthStore } from "../features/auth/auth.store"
 
 export function StaffManagementPage() {
   // FE-4 FIX: read from Zustand store. Route is already guarded by ProtectedRoute requiredPermission="staff:read".
-  const currentUser = useAuthStore((state) => state.user);
-  const { data: staff, isLoading: isLoadingStaff } = useStaffList();
-  const { data: stores, isLoading: isLoadingStores } = useStores();
-  const inviteStaff = useInviteStaff();
-  const updateStatus = useUpdateStaffStatus();
+  const currentUser = useAuthStore((state) => state.user)
+
+  if (!currentUser) return <div>Loading...</div>
+  const { data: staff, isLoading: isLoadingStaff } = useStaffList()
+  const { data: stores, isLoading: isLoadingStores } = useStores()
+  const inviteStaff = useInviteStaff()
+  const updateStatus = useUpdateStaffStatus()
 
   const [inviteData, setInviteData] = useState({
     email: "",
     role: "TAILOR",
     storeId: "",
     initialPassword: "",
-  });
+  })
 
   const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!inviteData.storeId && stores && stores.length > 0) {
       // Auto-select first store if none selected
-      await inviteStaff.mutateAsync({ ...inviteData, storeId: stores[0].id });
+      await inviteStaff.mutateAsync({ ...inviteData, storeId: stores[0].id })
     } else {
-      await inviteStaff.mutateAsync(inviteData as any);
+      await inviteStaff.mutateAsync(inviteData as any)
     }
-    setInviteData({ email: "", role: "TAILOR", storeId: "", initialPassword: "" });
-  };
+    setInviteData({
+      email: "",
+      role: "TAILOR",
+      storeId: "",
+      initialPassword: "",
+    })
+  }
 
   if (isLoadingStaff || isLoadingStores) {
-    return <div className="sf-loading-overlay sf-glass">Syncing Staff Roster...</div>;
+    return (
+      <div className="sf-loading-overlay sf-glass">Syncing Staff Roster...</div>
+    )
   }
 
   return (
     <div className="staff-management-page container">
       <header className="mb-lg">
         <h1 className="text-h1">Identity & Access Perimeter</h1>
-        <p className="text-muted">Manage your production team and store assignments.</p>
+        <p className="text-muted">
+          Manage your production team and store assignments.
+        </p>
       </header>
 
       <div className="grid grid-cols-12 gap-xl">
@@ -62,7 +78,9 @@ export function StaffManagementPage() {
                         <div className="flex items-center gap-xs">
                           <div
                             className={`w-2 h-2 rounded-full ${
-                              member.isActive ? "bg-success shadow-[0_0_8px_var(--sf-success)]" : "bg-danger"
+                              member.isActive
+                                ? "bg-success shadow-[0_0_8px_var(--sf-success)]"
+                                : "bg-danger"
                             }`}
                           />
                           <span className="text-xs uppercase font-bold">
@@ -77,15 +95,28 @@ export function StaffManagementPage() {
                         </span>
                       </td>
                       <td className="text-muted text-sm">
-                        {stores?.find((s) => s.id === member.storeId)?.name || "Global / HQ"}
+                        {stores?.find((s) => s.id === member.storeId)?.name ||
+                          "Global / HQ"}
                       </td>
                       <td>
                         <button
-                          onClick={() => updateStatus.mutate({ id: member.id, isActive: !member.isActive })}
-                          disabled={updateStatus.isPending || member.id === currentUser.id}
+                          onClick={() =>
+                            updateStatus.mutate({
+                              id: member.id,
+                              isActive: !member.isActive,
+                            })
+                          }
+                          disabled={
+                            updateStatus.isPending ||
+                            member.id === currentUser.userId
+                          }
                           className={`btn btn-sm ${member.isActive ? "btn-outline-danger" : "btn-accent"}`}
                         >
-                          {updateStatus.isPending ? "..." : member.isActive ? "Revoke" : "Restore"}
+                          {updateStatus.isPending
+                            ? "..."
+                            : member.isActive
+                              ? "Revoke"
+                              : "Restore"}
                         </button>
                       </td>
                     </tr>
@@ -107,7 +138,9 @@ export function StaffManagementPage() {
                   type="email"
                   required
                   value={inviteData.email}
-                  onChange={(e) => setInviteData({ ...inviteData, email: e.target.value })}
+                  onChange={(e) =>
+                    setInviteData({ ...inviteData, email: e.target.value })
+                  }
                   placeholder="tailor@stitchflow.io"
                   className="sf-input"
                 />
@@ -117,7 +150,9 @@ export function StaffManagementPage() {
                 <label>Role</label>
                 <select
                   value={inviteData.role}
-                  onChange={(e) => setInviteData({ ...inviteData, role: e.target.value })}
+                  onChange={(e) =>
+                    setInviteData({ ...inviteData, role: e.target.value })
+                  }
                   className="sf-input"
                 >
                   <option value="STORE_MANAGER">Store Manager</option>
@@ -130,7 +165,9 @@ export function StaffManagementPage() {
                 <label>Store Assignment</label>
                 <select
                   value={inviteData.storeId}
-                  onChange={(e) => setInviteData({ ...inviteData, storeId: e.target.value })}
+                  onChange={(e) =>
+                    setInviteData({ ...inviteData, storeId: e.target.value })
+                  }
                   className="sf-input"
                   required
                 >
@@ -149,7 +186,12 @@ export function StaffManagementPage() {
                   type="text"
                   required
                   value={inviteData.initialPassword}
-                  onChange={(e) => setInviteData({ ...inviteData, initialPassword: e.target.value })}
+                  onChange={(e) =>
+                    setInviteData({
+                      ...inviteData,
+                      initialPassword: e.target.value,
+                    })
+                  }
                   placeholder="Set temp password"
                   className="sf-input"
                 />
@@ -160,12 +202,14 @@ export function StaffManagementPage() {
                 disabled={inviteStaff.isPending}
                 className="btn btn-primary w-full mt-md"
               >
-                {inviteStaff.isPending ? "Sending Invitation..." : "Issue Credentials"}
+                {inviteStaff.isPending
+                  ? "Sending Invitation..."
+                  : "Issue Credentials"}
               </button>
             </form>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
