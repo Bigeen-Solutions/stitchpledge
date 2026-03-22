@@ -122,14 +122,14 @@ export function NewOrderPage() {
         ))}
       </div>
 
-      <div className="sf-card sf-glass p-xl shadow-2xl border border-white/10">
+      <div className="sf-card sf-glass p-xl shadow-2xl border border-white/10 text-black">
         {step === "CUSTOMER" && (
           <section className="space-y-xl animate-in fade-in duration-500">
             <h2 className="text-h2">1. Identify the Client</h2>
 
             <div className="grid grid-cols-2 gap-xl">
               <div className="space-y-md">
-                <label className="text-xs uppercase font-bold text-muted">Search Existing</label>
+                <label className="text-xs uppercase font-bold text-black">Search Existing</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -150,15 +150,15 @@ export function NewOrderPage() {
                         selectedCustomer?.id === c.id ? "bg-primary/20 border-primary" : "border-sf-border hover:bg-white/5"
                       }`}
                     >
-                      <div className="font-bold">{c.name}</div>
-                      <div className="text-xs text-muted">{c.email || c.phone || "No contact info"}</div>
+                      <div className="font-bold text-black">{c.name}</div>
+                      <div className="text-xs text-black">{c.email || c.phone || "No contact info"}</div>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="space-y-md border-l border-sf-border pl-xl">
-                <label className="text-xs uppercase font-bold text-muted">Create New Customer</label>
+                <label className="text-xs uppercase font-bold text-black">Create New Customer</label>
                 <input
                   type="text"
                   className="sf-input w-full"
@@ -197,8 +197,8 @@ export function NewOrderPage() {
 
         {step === "MEASUREMENTS" && (
           <section className="space-y-xl animate-in fade-in duration-500">
-            <h2 className="text-h2">2. Capture Measurements (cm)</h2>
-            <p className="text-muted text-sm italic">Recording an immutable measurement version for {selectedCustomer?.name || newCustomer.name || "New Client"}.</p>
+            <h2 className="text-h2 text-black">2. Capture Measurements (cm)</h2>
+            <p className="text-black text-sm italic">Recording an immutable measurement version for {selectedCustomer?.name || newCustomer.name || "New Client"}.</p>
 
             <div className="grid grid-cols-3 gap-lg">
               {Object.keys(measurements).map(key => (
@@ -223,24 +223,24 @@ export function NewOrderPage() {
 
         {step === "GARMENTS" && (
           <section className="space-y-xl animate-in fade-in duration-500">
-            <h2 className="text-h2">3. Config Garments & Deadline</h2>
+            <h2 className="text-h2 text-black">3. Config Garments & Deadline</h2>
 
             <div className="grid grid-cols-2 gap-xl">
               <div className="form-group">
-                <label className="block mb-xs">Requested Event Date</label>
+                <label className="block mb-xs text-black">Requested Event Date</label>
                 <input
                   type="datetime-local"
                   className="sf-input w-full"
                   value={eventDate}
                   onChange={(e) => setEventDate(e.target.value)}
                   required />
-                <p className="text-[10px] text-muted mt-xs uppercase font-bold">Mandatory for Risk Projection</p>
+                <p className="text-[10px] text-black mt-xs uppercase font-bold">Mandatory for Risk Projection</p>
               </div>
             </div>
 
             {user?.role === 'OWNER' && (
               <div className="form-group">
-                <label className="block mb-xs">Store Assignment</label>
+                <label className="block mb-xs text-black">Store Assignment</label>
                 <select
                   className="sf-input w-full"
                   value={selectedStoreId}
@@ -255,14 +255,14 @@ export function NewOrderPage() {
 
             <div className="space-y-md">
               <div className="flex justify-between items-center">
-                <h3 className="text-h3">Order Items</h3>
+                <h3 className="text-h3 text-black">Order Items</h3>
                 <button className="btn btn-sm btn-accent" onClick={addGarment}>+ Add Garment</button>
               </div>
 
               {garments.map((g, idx) => (
                 <div key={idx} className="flex gap-md items-end bg-white/5 p-md rounded-lg border border-sf-border shadow-inner">
                   <div className="flex-1">
-                    <label className="text-xs font-bold text-muted uppercase">Template</label>
+                    <label className="text-xs font-bold text-black uppercase">Template</label>
                     <select
                       className="sf-input w-full mt-xs"
                       value={g.workflowTemplateId}
@@ -278,7 +278,7 @@ export function NewOrderPage() {
                   <button className="btn btn-icon btn-outline-danger" onClick={() => setGarments(garments.filter((_, i) => i !== idx))}>🗑️</button>
                 </div>
               ))}
-              {garments.length === 0 && <div className="text-center p-xl border border-dashed border-sf-border rounded-lg text-muted">No garments added yet.</div>}
+              {garments.length === 0 && <div className="text-center p-xl border border-dashed border-sf-border rounded-lg text-black">No garments added yet.</div>}
             </div>
 
             <div className="flex justify-between pt-lg">
@@ -296,26 +296,26 @@ export function NewOrderPage() {
 
         {step === "SUMMARY" && (
           <section className="space-y-xl animate-in zoom-in-95 duration-300">
-            <h2 className="text-h2">Summary & Commitment</h2>
+            <h2 className="text-h2 text-black">Summary & Commitment</h2>
 
             <div className="grid grid-cols-2 gap-lg bg-white/5 p-lg rounded-xl border border-sf-border">
               <div>
-                <div className="text-xs text-muted uppercase font-bold">Customer</div>
-                <div className="font-bold text-lg">{selectedCustomer?.name || newCustomer.name}</div>
-                <div className="text-sm text-muted">{selectedCustomer?.email || newCustomer.email}</div>
+                <div className="text-xs text-black uppercase font-bold">Customer</div>
+                <div className="font-bold text-lg text-black">{selectedCustomer?.name || newCustomer.name}</div>
+                <div className="text-sm text-black">{selectedCustomer?.email || newCustomer.email}</div>
               </div>
               <div>
-                <div className="text-xs text-muted uppercase font-bold">Production Deadline</div>
+                <div className="text-xs text-black uppercase font-bold">Production Deadline</div>
                 <div className="font-bold text-lg text-primary">{new Date(eventDate).toLocaleDateString()}</div>
-                <div className="text-sm text-muted">@ {stores?.find(s => s.id === selectedStoreId)?.name}</div>
+                <div className="text-sm text-black">@ {stores?.find(s => s.id === selectedStoreId)?.name}</div>
               </div>
             </div>
 
             <div className="space-y-sm">
-              <div className="text-xs text-muted uppercase font-bold">Line Items ({garments.length})</div>
+              <div className="text-xs text-black uppercase font-bold">Line Items ({garments.length})</div>
               {garments.map((g, i) => (
                 <div key={i} className="flex justify-between p-md sf-glass border border-sf-border rounded-lg">
-                  <span className="font-medium">{templates?.find(t => t.id === g.workflowTemplateId)?.name}</span>
+                  <span className="font-medium text-black">{templates?.find(t => t.id === g.workflowTemplateId)?.name}</span>
                   <span className="badge badge-secondary">Pending Start</span>
                 </div>
               ))}
