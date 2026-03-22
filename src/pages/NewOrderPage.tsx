@@ -6,6 +6,7 @@ import { useAuthStore } from "../features/auth/auth.store";
 import { useStores } from "../features/auth/hooks/useStaff";
 import { ordersApi } from "../features/orders/orders.api";
 import { useToastStore } from "../components/feedback/Toast";
+import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 type Step = "CUSTOMER" | "MEASUREMENTS" | "GARMENTS" | "SUMMARY";
 
@@ -239,18 +240,35 @@ export function NewOrderPage() {
             </div>
 
             {user?.role === 'COMPANY_ADMIN' && (
-              <div className="form-group">
-                <label className="block mb-xs text-black">Store Assignment</label>
-                <select
-                  className="sf-input w-full"
-                  value={selectedStoreId}
-                  onChange={(e) => setSelectedStoreId(e.target.value)}
-                  required
+              <FormControl 
+                fullWidth 
+                variant="outlined" 
+                sx={{ 
+                  mb: 3,
+                  '& .MuiOutlinedInput-root': {
+                    color: 'black',
+                    '& fieldset': { borderColor: 'rgba(0, 0, 0, 0.23)' },
+                    '&:hover fieldset': { borderColor: 'var(--sf-primary)' },
+                  },
+                  '& .MuiInputLabel-root': { color: 'rgba(0, 0, 0, 0.6)' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: 'var(--sf-primary)' },
+                }}
+              >
+                <InputLabel id="store-select-label">Store Assignment</InputLabel>
+                <Select
+                  labelId="store-select-label"
+                  id="store-select"
+                  value={selectedStoreId || ''}
+                  label="Store Assignment"
+                  onChange={(e) => setSelectedStoreId(e.target.value as string)}
                 >
-                  <option value="">Select Target Store...</option>
-                  {stores?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </select>
-              </div>
+                  {stores?.map((store: any) => (
+                    <MenuItem key={store.id} value={store.id}>
+                      {store.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             )}
 
             <div className="space-y-md">
@@ -262,18 +280,26 @@ export function NewOrderPage() {
               {garments.map((g, idx) => (
                 <div key={idx} className="flex gap-md items-end bg-white/5 p-md rounded-lg border border-sf-border shadow-inner">
                   <div className="flex-1">
-                    <label className="text-xs font-bold text-black uppercase">Template</label>
-                    <select
-                      className="sf-input w-full mt-xs"
-                      value={g.workflowTemplateId}
-                      onChange={(e) => {
-                        const newGarments = [...garments];
-                        newGarments[idx].workflowTemplateId = e.target.value;
-                        setGarments(newGarments);
-                      }}
-                    >
-                      {templates?.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </select>
+                    <FormControl fullWidth variant="outlined" size="small">
+                      <InputLabel id={`garment-template-label-${idx}`}>Template</InputLabel>
+                      <Select
+                        labelId={`garment-template-label-${idx}`}
+                        value={g.workflowTemplateId}
+                        label="Template"
+                        onChange={(e) => {
+                          const newGarments = [...garments];
+                          newGarments[idx].workflowTemplateId = e.target.value as string;
+                          setGarments(newGarments);
+                        }}
+                        sx={{ color: 'black' }}
+                      >
+                        {templates?.map(t => (
+                          <MenuItem key={t.id} value={t.id}>
+                            {t.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
                   </div>
                   <button className="btn btn-icon btn-outline-danger" onClick={() => setGarments(garments.filter((_, i) => i !== idx))}>🗑️</button>
                 </div>
