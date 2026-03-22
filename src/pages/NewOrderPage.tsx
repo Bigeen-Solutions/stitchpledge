@@ -13,7 +13,7 @@ export function NewOrderPage() {
   const navigate = useNavigate();
   const showToast = useToastStore((state) => state.showToast);
   // AuthUser has no storeId — store is always selected via the dropdown
-  useAuthStore((state) => state.user);
+  const user = useAuthStore((state) => state.user);
   const { data: stores } = useStores();
   const { data: templates } = useWorkflowTemplates();
   const createCustomer = useCreateCustomer();
@@ -66,7 +66,8 @@ export function NewOrderPage() {
       }
 
       // 3. Finalize Order & Risk Projection
-      const storeId = selectedStoreId;
+      const finalStoreId = user?.role === 'OWNER' ? selectedStoreId : user?.storeId;
+      const storeId = finalStoreId;
       if (!storeId) {
         throw new Error("Store assignment is required.");
       }
@@ -237,18 +238,20 @@ export function NewOrderPage() {
               </div>
             </div>
 
-            <div className="form-group">
-              <label className="block mb-xs">Store Assignment</label>
-              <select
-                className="sf-input w-full"
-                value={selectedStoreId}
-                onChange={(e) => setSelectedStoreId(e.target.value)}
-                required
-              >
-                <option value="">Select Target Store...</option>
-                {stores?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
-            </div>
+            {user?.role === 'OWNER' && (
+              <div className="form-group">
+                <label className="block mb-xs">Store Assignment</label>
+                <select
+                  className="sf-input w-full"
+                  value={selectedStoreId}
+                  onChange={(e) => setSelectedStoreId(e.target.value)}
+                  required
+                >
+                  <option value="">Select Target Store...</option>
+                  {stores?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
+            )}
 
             <div className="space-y-md">
               <div className="flex justify-between items-center">
@@ -282,7 +285,7 @@ export function NewOrderPage() {
               <button className="btn btn-muted" onClick={() => setStep("MEASUREMENTS")}>Back</button>
               <button
                 className="btn btn-primary px-xl"
-                disabled={garments.length === 0 || !eventDate || !selectedStoreId}
+                disabled={garments.length === 0 || !eventDate || (user?.role === 'OWNER' && !selectedStoreId)}
                 onClick={() => setStep("SUMMARY")}
               >
                 Review Order

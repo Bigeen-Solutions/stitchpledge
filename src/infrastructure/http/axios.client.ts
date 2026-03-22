@@ -2,6 +2,7 @@ import axios from "axios"
 import type { AxiosError, InternalAxiosRequestConfig } from "axios"
 import { useAuthStore } from "../../features/auth/auth.store"
 import { parseApiError } from "../../lib/errors/parse-api-error"
+import { useToastStore } from "../../components/feedback/Toast"
 
 // Helper for queuing requests during refresh
 let isRefreshing = false
@@ -100,7 +101,17 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // 2. Attach parsed error for all other failures
+    // 2. Handle 403 Forbidden (Valid Token, Insufficient Permissions)
+    if (error.response?.status === 403) {
+      useToastStore.getState().showToast("Access Denied: You do not have permission for this area", "error")
+      
+      if (window.location.pathname !== "/dashboard" && window.location.pathname !== "/login") {
+        window.location.href = "/dashboard"
+      }
+      return Promise.reject(error)
+    }
+
+    // 3. Attach parsed error for all other failures
     const parsedError = parseApiError(error)
     ;(error as any).parsedError = parsedError
 

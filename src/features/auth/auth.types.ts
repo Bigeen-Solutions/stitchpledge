@@ -21,6 +21,7 @@ export interface AuthUser {
   email: string;
   fullName: string;
   role: StitchFlowRole;
+  storeId?: string;
   permissions: Permission[]; // Explicit list from backend — never derived locally
   avatarUrl?: string;
 }

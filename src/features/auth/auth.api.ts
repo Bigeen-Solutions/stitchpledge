@@ -12,12 +12,12 @@ export async function loginApi(dto: LoginDTO): Promise<AuthResponse> {
   return {
     accessToken: raw.accessToken,
     user: {
-      userId: raw.userId,
-      tenantId: raw.companyId, // Map companyId to tenantId
-      email: raw.email,
-      fullName: raw.fullName,
-      role: raw.role,
-      permissions: raw.permissions ?? [],
+      userId: raw.user.userId,
+      tenantId: raw.user.tenantId,
+      email: raw.user.email,
+      fullName: raw.user.fullName,
+      role: raw.user.role,
+      permissions: raw.user.permissions ?? [],
     },
   }
 }
@@ -33,12 +33,12 @@ export async function refreshApi(): Promise<AuthResponse> {
   return {
     accessToken: raw.accessToken,
     user: {
-      userId: raw.userId,
-      tenantId: raw.companyId, // Map companyId to tenantId
-      email: raw.email,
-      fullName: raw.fullName,
-      role: raw.role,
-      permissions: raw.permissions ?? [],
+      userId: raw.user.userId,
+      tenantId: raw.user.tenantId,
+      email: raw.user.email,
+      fullName: raw.user.fullName,
+      role: raw.user.role,
+      permissions: raw.user.permissions ?? [],
     },
   }
 }

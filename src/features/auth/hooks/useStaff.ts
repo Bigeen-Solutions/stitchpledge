@@ -3,6 +3,7 @@ import { staffApi } from "../staff.api";
 import type { InviteStaffRequest } from "../staff.api";
 import { keys } from "../../../query/keys";
 import { useDomainError } from "../../../lib/errors";
+import { useAuthStore } from "../auth.store";
 
 export function useStaffList() {
   return useQuery({
@@ -37,8 +38,10 @@ export function useUpdateStaffStatus() {
 }
 
 export function useStores() {
+  const user = useAuthStore((state) => state.user);
   return useQuery({
     queryKey: ["stores"],
     queryFn: () => staffApi.getStores(),
+    enabled: user?.role === 'OWNER',
   });
 }
