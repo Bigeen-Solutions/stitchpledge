@@ -23,6 +23,6 @@ export function usePermissions() {
     can,
     role,
     isCustomer: role === 'CUSTOMER',
-    isOwnerOrManager: role === 'OWNER' || role === 'MANAGER',
+    isCompanyAdminOrManager: role === 'COMPANY_ADMIN' || role === 'STORE_MANAGER',
   };
 }

@@ -66,7 +66,7 @@ export function NewOrderPage() {
       }
 
       // 3. Finalize Order & Risk Projection
-      const finalStoreId = user?.role === 'OWNER' ? selectedStoreId : user?.storeId;
+      const finalStoreId = user?.role === 'COMPANY_ADMIN' ? selectedStoreId : user?.storeId;
       const storeId = finalStoreId;
       if (!storeId) {
         throw new Error("Store assignment is required.");
@@ -238,7 +238,7 @@ export function NewOrderPage() {
               </div>
             </div>
 
-            {user?.role === 'OWNER' && (
+            {user?.role === 'COMPANY_ADMIN' && (
               <div className="form-group">
                 <label className="block mb-xs text-black">Store Assignment</label>
                 <select
@@ -285,7 +285,7 @@ export function NewOrderPage() {
               <button className="btn btn-muted" onClick={() => setStep("MEASUREMENTS")}>Back</button>
               <button
                 className="btn btn-primary px-xl"
-                disabled={garments.length === 0 || !eventDate || (user?.role === 'OWNER' && !selectedStoreId)}
+                disabled={garments.length === 0 || !eventDate || (user?.role === 'COMPANY_ADMIN' && !selectedStoreId)}
                 onClick={() => setStep("SUMMARY")}
               >
                 Review Order

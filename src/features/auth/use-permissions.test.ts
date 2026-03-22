@@ -9,7 +9,7 @@ const mockUser: AuthUser = {
   tenantId: 't1',
   email: 'test@example.com',
   fullName: 'Test User',
-  role: 'MANAGER',
+  role: 'STORE_MANAGER',
   permissions: ['orders:read', 'staff:read'],
 };
 
@@ -50,13 +50,13 @@ describe('usePermissions', () => {
     useAuthStore.setState({ user: mockCustomer, isAuthenticated: true });
     const { result } = renderHook(() => usePermissions());
     expect(result.current.isCustomer).toBe(true);
-    expect(result.current.isOwnerOrManager).toBe(false);
+    expect(result.current.isCompanyAdminOrManager).toBe(false);
   });
 
   it('should correctly identify manager role', () => {
     useAuthStore.setState({ user: mockUser, isAuthenticated: true });
     const { result } = renderHook(() => usePermissions());
     expect(result.current.isCustomer).toBe(false);
-    expect(result.current.isOwnerOrManager).toBe(true);
+    expect(result.current.isCompanyAdminOrManager).toBe(true);
   });
 });

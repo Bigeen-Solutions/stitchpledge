@@ -42,6 +42,6 @@ export function useStores() {
   return useQuery({
     queryKey: ["stores"],
     queryFn: () => staffApi.getStores(),
-    enabled: user?.role === 'OWNER',
+    enabled: user?.role === 'COMPANY_ADMIN',
   });
 }

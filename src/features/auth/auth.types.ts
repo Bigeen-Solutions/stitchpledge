@@ -13,7 +13,7 @@ export type Permission =
   | 'reports:read'
   | 'customer:portal'; // read-only customer role
 
-export type StitchFlowRole = 'OWNER' | 'MANAGER' | 'TAILOR' | 'CUSTOMER';
+export type StitchFlowRole = 'COMPANY_ADMIN' | 'STORE_MANAGER' | 'TAILOR' | 'CUSTOMER';
 
 export interface AuthUser {
   userId: string;
