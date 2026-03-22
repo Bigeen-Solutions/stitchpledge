@@ -21,6 +21,18 @@ export interface GarmentWorkflowResponse {
   stages: StageInstance[];
 }
 
+export interface ActiveFloorTask {
+  stageInstanceId: string;
+  stageId: string;
+  stageName: string;
+  garmentId: string;
+  garmentName: string;
+  orderId: string;
+  customerName: string;
+  deadline: string;
+  riskLevel: 'ON_TRACK' | 'AT_RISK' | 'OVERDUE';
+}
+
 export const workflowApi = {
   getGarmentWorkflow: async (garmentId: string) => {
     const { data } = await apiClient.get<GarmentWorkflowResponse>(`/garments/${garmentId}/workflow`);
@@ -35,5 +47,10 @@ export const workflowApi = {
   getTemplates: async () => {
     const { data } = await apiClient.get<any[]>('/workflow-templates');
     return data;
-  }
+  },
+
+  getActiveTasks: async (): Promise<ActiveFloorTask[]> => {
+    const { data } = await apiClient.get<ActiveFloorTask[]>('/workflows/tasks/active');
+    return data;
+  },
 };

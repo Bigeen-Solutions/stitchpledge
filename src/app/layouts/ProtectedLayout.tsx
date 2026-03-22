@@ -15,6 +15,7 @@ export function ProtectedLayout() {
     { label: 'Dashboard', path: '/dashboard', icon: '📊' },
     { label: 'Orders', path: '/orders', icon: '📦' },
     { label: 'New Order', path: '/orders/new', icon: '➕' },
+    { label: 'Production Floor', path: '/production', icon: '🏭' },
   ];
 
   // FE-3 FIX: Use can() — never raw role string comparison
