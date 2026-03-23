@@ -2,10 +2,11 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './auth.store';
 import { usePermissions } from './use-permissions';
-import type { Permission } from './auth.types';
+import type { Permission, StitchFlowRole } from './auth.types';
 
 interface ProtectedRouteProps {
   requiredPermission?: Permission;
+  allowedRoles?: StitchFlowRole[];
   children: React.ReactNode;
 }
 
@@ -15,9 +16,10 @@ interface ProtectedRouteProps {
  */
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredPermission,
+  allowedRoles,
   children,
 }) => {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading, user } = useAuthStore();
   const { can } = usePermissions();
   const location = useLocation();
 
@@ -40,6 +42,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/404" replace />;
   }
 
-  // 4. Authorized — render children
+  // 4. Authenticated but wrong role — cleanly intercept at router level
+  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/production" replace />; // Direct tailors to their floor
+  }
+
+  // 5. Authorized — render children
   return <>{children}</>;
 };

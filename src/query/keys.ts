@@ -27,6 +27,9 @@ export const keys = {
   staff: {
     all: ['staff'] as const,
   },
+  analytics: {
+    overview: ['analytics', 'overview'] as const,
+  },
   customers: {
     search: (query: string) => ['customers', 'search', query] as const,
   },
