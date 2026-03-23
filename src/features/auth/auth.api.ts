@@ -17,6 +17,7 @@ export async function loginApi(dto: LoginDTO): Promise<AuthResponse> {
       email: raw.user.email,
       fullName: raw.user.fullName,
       role: raw.user.role,
+      storeId: raw.user.storeId,
       permissions: raw.user.permissions ?? [],
     },
   }
@@ -38,6 +39,7 @@ export async function refreshApi(): Promise<AuthResponse> {
       email: raw.user.email,
       fullName: raw.user.fullName,
       role: raw.user.role,
+      storeId: raw.user.storeId,
       permissions: raw.user.permissions ?? [],
     },
   }

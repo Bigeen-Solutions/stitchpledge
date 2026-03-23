@@ -91,7 +91,8 @@ export function NewOrderPage() {
       const finalStoreId = user?.role === 'COMPANY_ADMIN' ? selectedStoreId : user?.storeId;
       const storeId = finalStoreId;
       if (!storeId) {
-        throw new Error("Store assignment is required.");
+        showToast("Store assignment is required. Please contact admin.", "error");
+        return;
       }
 
       showToast("Finalizing order & calculating risk...", "success");
@@ -122,7 +123,7 @@ export function NewOrderPage() {
       setGarments([...garments, { 
         workflowTemplateId: templates[0].id, 
         estimatedTotalDurationHours: 24,
-        assignedTailorId: null
+        assignedTailorId: role === 'TAILOR' ? user?.userId : null
       }]);
     }
   };
@@ -388,7 +389,7 @@ export function NewOrderPage() {
               </div>
               <div>
                 <div className="text-xs text-black uppercase font-bold">Production Deadline</div>
-                <div className="font-bold text-lg text-black">{new Date(eventDate).toLocaleDateString()}</div>
+                <div className="font-bold text-lg text-black">{eventDate ? new Date(eventDate).toLocaleDateString() : "Not Set"}</div>
                 <div className="text-sm text-black">@ {stores?.find(s => s.id === selectedStoreId)?.name || user?.storeId}</div>
               </div>
             </div>
