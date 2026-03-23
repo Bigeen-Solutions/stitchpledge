@@ -3,22 +3,39 @@ import { useNavigate } from "react-router-dom";
 import { useCustomerSearch, useCreateCustomer, useCreateMeasurement } from "../features/customers/hooks/useCustomerIntake";
 import { useWorkflowTemplates } from "../features/workflow/hooks/useWorkflowTemplates";
 import { useAuthStore } from "../features/auth/auth.store";
-import { useStores } from "../features/auth/hooks/useStaff";
+import { useStores, useStaffList } from "../features/auth/hooks/useStaff";
+import { usePermissions } from "../features/auth/use-permissions";
 import { ordersApi } from "../features/orders/orders.api";
 import { useToastStore } from "../components/feedback/Toast";
 import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { useMemo } from "react";
 
 type Step = "CUSTOMER" | "MEASUREMENTS" | "GARMENTS" | "SUMMARY";
 
 export function NewOrderPage() {
   const navigate = useNavigate();
   const showToast = useToastStore((state) => state.showToast);
+  const { isCompanyAdminOrManager, role } = usePermissions();
   // AuthUser has no storeId — store is always selected via the dropdown
   const user = useAuthStore((state) => state.user);
   const { data: stores } = useStores();
   const { data: templates } = useWorkflowTemplates();
   const createCustomer = useCreateCustomer();
   const createMeasurement = useCreateMeasurement();
+  const { data: staff } = useStaffList({ enabled: isCompanyAdminOrManager });
+  
+  const tailors = useMemo(() => {
+    const list = [...(staff?.filter(s => s.role === 'TAILOR') || [])];
+    // If user is a tailor, ensure they are in the list even if they can't view staff
+    if (role === 'TAILOR' && user && !list.find(s => s.id === user.userId)) {
+      list.push({ 
+        id: user.userId, 
+        email: user.email, 
+        role: 'TAILOR' 
+      } as any);
+    }
+    return list;
+  }, [staff, role, user]);
 
   const [step, setStep] = useState<Step>("CUSTOMER");
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,7 +54,11 @@ export function NewOrderPage() {
   });
   const [eventDate, setEventDate] = useState("");
   const [selectedStoreId, setSelectedStoreId] = useState("");
-  const [garments, setGarments] = useState<{ workflowTemplateId: string; estimatedTotalDurationHours: number }[]>([]);
+  const [garments, setGarments] = useState<{ 
+    workflowTemplateId: string; 
+    estimatedTotalDurationHours: number;
+    assignedTailorId?: string | null;
+  }[]>([]);
 
   const handleCreateOrder = async () => {
     try {
@@ -82,6 +103,7 @@ export function NewOrderPage() {
         lockedMeasurementVersionId: mv.id,
         garments: garments.map(g => ({
           workflowTemplateId: g.workflowTemplateId,
+          assignedTailorId: g.assignedTailorId || null,
           estimatedTotalDurationHours: g.estimatedTotalDurationHours || 24
         }))
       });
@@ -97,7 +119,11 @@ export function NewOrderPage() {
 
   const addGarment = () => {
     if (templates && templates.length > 0) {
-      setGarments([...garments, { workflowTemplateId: templates[0].id, estimatedTotalDurationHours: 24 }]);
+      setGarments([...garments, { 
+        workflowTemplateId: templates[0].id, 
+        estimatedTotalDurationHours: 24,
+        assignedTailorId: null
+      }]);
     }
   };
 
@@ -105,7 +131,7 @@ export function NewOrderPage() {
     <div className="new-order-page container max-w-4xl py-xl">
       <header className="mb-xl text-center">
         <h1 className="text-h1 mb-xs">Intake Engine</h1>
-        <p className="text-muted">High-fidelity order capture & measurement synchronization.</p>
+        <p className="text-black">High-fidelity order capture & measurement synchronization.</p>
       </header>
 
       {/* STEP INDICATOR */}
@@ -301,6 +327,29 @@ export function NewOrderPage() {
                       </Select>
                     </FormControl>
                   </div>
+                  <div className="flex-1">
+                    <FormControl fullWidth variant="outlined" size="small">
+                      <InputLabel id={`garment-tailor-label-${idx}`}>Assign Tailor</InputLabel>
+                      <Select
+                        labelId={`garment-tailor-label-${idx}`}
+                        value={g.assignedTailorId || ''}
+                        label="Assign Tailor"
+                        onChange={(e) => {
+                          const newGarments = [...garments];
+                          newGarments[idx].assignedTailorId = e.target.value as string;
+                          setGarments(newGarments);
+                        }}
+                        sx={{ color: 'black' }}
+                      >
+                        <MenuItem value=""><em>Unassigned</em></MenuItem>
+                        {tailors.map(t => (
+                          <MenuItem key={t.id} value={t.id}>
+                            {t.email}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </div>
                   <button className="btn btn-icon btn-outline-danger" onClick={() => setGarments(garments.filter((_, i) => i !== idx))}>🗑️</button>
                 </div>
               ))}
@@ -332,8 +381,8 @@ export function NewOrderPage() {
               </div>
               <div>
                 <div className="text-xs text-black uppercase font-bold">Production Deadline</div>
-                <div className="font-bold text-lg text-primary">{new Date(eventDate).toLocaleDateString()}</div>
-                <div className="text-sm text-black">@ {stores?.find(s => s.id === selectedStoreId)?.name}</div>
+                <div className="font-bold text-lg text-black">{new Date(eventDate).toLocaleDateString()}</div>
+                <div className="text-sm text-black">@ {stores?.find(s => s.id === selectedStoreId)?.name || user?.storeId}</div>
               </div>
             </div>
 

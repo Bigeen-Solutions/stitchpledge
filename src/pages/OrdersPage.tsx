@@ -8,7 +8,7 @@ export function OrdersPage() {
       <header className="mb-lg flex justify-between items-end">
         <div>
           <h1 className="text-h1">Deadline Operating System</h1>
-          <p className="text-secondary">High-fidelity projection of workshop workload risk</p>
+          <p className="text-black">High-fidelity projection of workshop workload risk</p>
         </div>
         <div className="text-right">
           <span className="badge badge-primary">LIVE LEDGER</span>

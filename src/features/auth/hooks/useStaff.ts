@@ -5,10 +5,11 @@ import { keys } from "../../../query/keys";
 import { useDomainError } from "../../../lib/errors";
 import { useAuthStore } from "../auth.store";
 
-export function useStaffList() {
+export function useStaffList(options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: keys.staff.all,
     queryFn: () => staffApi.getStaff(),
+    ...options
   });
 }
 

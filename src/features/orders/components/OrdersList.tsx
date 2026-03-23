@@ -12,7 +12,7 @@ export function OrdersList() {
       <div className="orders-ledger">
         <div className="flex justify-between items-center mb-md px-md">
           <h2 className="text-h2">Production Ledger</h2>
-          <div className="text-sm text-muted">Synchronizing Order Ledger...</div>
+          <div className="text-sm text-black">Synchronizing Order Ledger...</div>
         </div>
         <WorkshopTableSkeleton headers={['Order #', 'Customer', 'Garment', 'Deadline', 'Risk State']} />
       </div>
@@ -33,7 +33,7 @@ export function OrdersList() {
     <div className="orders-ledger">
       <div className="flex justify-between items-center mb-md px-md">
         <h2 className="text-h2">Production Ledger</h2>
-        <div className="text-sm text-muted">Showing all active workshop projections</div>
+        <div className="text-sm text-black">Showing all active workshop projections</div>
       </div>
       
       <WorkshopTable headers={['Order #', 'Customer', 'Garment', 'Deadline', 'Risk State']}>
@@ -41,7 +41,7 @@ export function OrdersList() {
           <tr key={order.id} className={`ledger-row risk-${order.riskLevel.toLowerCase()}`}>
             <td>
               <div className="font-bold">{order.orderNumber}</div>
-              <div className="text-xs text-muted">{order.status}</div>
+              <div className="text-xs text-black">{order.status}</div>
             </td>
             <td>{order.customerName}</td>
             <td>{order.garmentName}</td>
