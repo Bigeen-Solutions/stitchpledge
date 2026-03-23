@@ -37,6 +37,8 @@ export function useMarkStageComplete() {
       });
       // 3. Invalidate orders to reflect updated progress
       queryClient.invalidateQueries({ queryKey: keys.orders.all });
+      // 4. Invalidate analytics to instantly sync the Command Center Bottleneck Board
+      queryClient.invalidateQueries({ queryKey: keys.analytics.overview });
 
       showToast('Stage Complete', 'Task marked as done. Moving to next station.');
     },
