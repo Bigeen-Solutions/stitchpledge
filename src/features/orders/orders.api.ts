@@ -36,6 +36,7 @@ export interface Garment {
   storeId: string
   name: string
   status: string
+  assignedTailorId?: string | null
 }
 
 export interface CapacityStatus {
@@ -79,5 +80,12 @@ export const ordersApi = {
   createOrder: async (data: any) => {
     const { data: result } = await apiClient.post("/orders", data)
     return result
+  },
+
+  assignTailor: async (garmentId: string, tailorId: string | null) => {
+    const { data } = await apiClient.patch(`/garments/${garmentId}/assign`, {
+      tailorId,
+    })
+    return data
   },
 }

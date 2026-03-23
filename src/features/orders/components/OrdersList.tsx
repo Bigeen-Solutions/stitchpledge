@@ -40,16 +40,16 @@ export function OrdersList() {
         {orders?.items?.map(order => (
           <tr key={order.id} className={`ledger-row risk-${order.riskLevel.toLowerCase()}`}>
             <td>
-              <div className="font-bold">{order.orderNumber}</div>
-              <div className="text-xs text-black">{order.status}</div>
+              <div className="font-bold text-black" style={{ fontSize: '1rem' }}>{order.orderNumber}</div>
+              <div className="text-xs text-black uppercase font-bold opacity-70">{order.status}</div>
             </td>
-            <td>{order.customerName}</td>
-            <td>{order.garmentName}</td>
+            <td className="text-black font-medium">{order.customerName}</td>
+            <td className="text-black">{order.garmentName}</td>
             <td>
               <div className="deadline-dominant" style={{ 
                 fontSize: '1.25rem', 
                 fontWeight: 800,
-                color: order.riskLevel === 'OVERDUE' ? 'var(--risk-overdue)' : 'inherit'
+                color: order.riskLevel === 'OVERDUE' ? 'var(--risk-overdue)' : 'var(--color-text-primary)'
               }}>
                 {order.deadline}
               </div>

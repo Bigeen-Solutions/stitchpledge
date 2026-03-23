@@ -304,8 +304,8 @@ export function NewOrderPage() {
               </div>
 
               {garments.map((g, idx) => (
-                <div key={idx} className="flex gap-md items-end bg-white/5 p-md rounded-lg border border-sf-border shadow-inner">
-                  <div className="flex-1">
+                <div key={idx} className="grid grid-cols-12 gap-md items-start bg-white/5 p-md rounded-lg border border-sf-border shadow-inner">
+                  <div className="col-span-11 grid grid-cols-2 gap-md">
                     <FormControl fullWidth variant="outlined" size="small">
                       <InputLabel id={`garment-template-label-${idx}`}>Template</InputLabel>
                       <Select
@@ -317,7 +317,10 @@ export function NewOrderPage() {
                           newGarments[idx].workflowTemplateId = e.target.value as string;
                           setGarments(newGarments);
                         }}
-                        sx={{ color: 'black' }}
+                        sx={{ 
+                          color: 'black',
+                          '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.2)' }
+                        }}
                       >
                         {templates?.map(t => (
                           <MenuItem key={t.id} value={t.id}>
@@ -326,8 +329,7 @@ export function NewOrderPage() {
                         ))}
                       </Select>
                     </FormControl>
-                  </div>
-                  <div className="flex-1">
+
                     <FormControl fullWidth variant="outlined" size="small">
                       <InputLabel id={`garment-tailor-label-${idx}`}>Assign Tailor</InputLabel>
                       <Select
@@ -339,7 +341,10 @@ export function NewOrderPage() {
                           newGarments[idx].assignedTailorId = e.target.value as string;
                           setGarments(newGarments);
                         }}
-                        sx={{ color: 'black' }}
+                        sx={{ 
+                          color: 'black',
+                          '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.2)' }
+                        }}
                       >
                         <MenuItem value=""><em>Unassigned</em></MenuItem>
                         {tailors.map(t => (
@@ -350,7 +355,9 @@ export function NewOrderPage() {
                       </Select>
                     </FormControl>
                   </div>
-                  <button className="btn btn-icon btn-outline-danger" onClick={() => setGarments(garments.filter((_, i) => i !== idx))}>🗑️</button>
+                  <div className="col-span-1 flex justify-end">
+                    <button className="btn btn-icon btn-outline-danger" style={{ padding: '8px' }} onClick={() => setGarments(garments.filter((_, i) => i !== idx))}>🗑️</button>
+                  </div>
                 </div>
               ))}
               {garments.length === 0 && <div className="text-center p-xl border border-dashed border-sf-border rounded-lg text-black">No garments added yet.</div>}

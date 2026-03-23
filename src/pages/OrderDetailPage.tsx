@@ -1,17 +1,27 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useOrderDetail, useOrderGarments } from '../features/orders/hooks/useOrderDetail.ts';
+import { useStaffList } from '../features/auth/hooks/useStaff.ts';
+import { usePermissions } from '../features/auth/use-permissions.ts';
+import { ordersApi } from '../features/orders/orders.api.ts';
+import { useToastStore } from '../components/feedback/Toast.tsx';
 import { WorkflowGraph } from '../features/workflow/components/WorkflowGraph.tsx';
 import { MaterialHistory } from '../features/materials/components/MaterialHistory.tsx';
 import { MaterialAdjustmentForm } from '../features/materials/components/MaterialAdjustmentForm.tsx';
 import { MeasurementHistory } from '../features/measurements/components/MeasurementHistory.tsx';
 import { RecordMeasurementForm } from '../features/measurements/components/RecordMeasurementForm.tsx';
+import { FormControl, InputLabel, Select, MenuItem, Box, Typography } from '@mui/material';
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const showToast = useToastStore((state) => state.showToast);
+  const { isCompanyAdminOrManager } = usePermissions();
   const { data: detail, isLoading, isError } = useOrderDetail(id!);
-  const { data: garments, isLoading: isLoadingGarments } = useOrderGarments(id!);
+  const { data: garments, isLoading: isLoadingGarments, refetch: refetchGarments } = useOrderGarments(id!);
+  const { data: staff } = useStaffList({ enabled: isCompanyAdminOrManager });
   const [selectedGarmentId, setSelectedGarmentId] = useState<string | null>(null);
+
+  const tailors = staff?.filter(s => s.role === 'TAILOR') || [];
 
   useEffect(() => {
     if (garments && garments.length > 0 && !selectedGarmentId) {
@@ -23,6 +33,18 @@ export function OrderDetailPage() {
   if (isError || !detail) return <div className="container p-lg text-center"><h1>Order Not Found</h1><p>This production record does not exist or access is restricted.</p></div>;
 
   const { order, projection } = detail;
+  const selectedGarment = garments?.find(g => g.id === selectedGarmentId);
+
+  const handleAssignTailor = async (tailorId: string) => {
+    if (!selectedGarmentId) return;
+    try {
+      await ordersApi.assignTailor(selectedGarmentId, tailorId || null);
+      showToast("Assignment updated successfully", "success");
+      refetchGarments();
+    } catch (err) {
+      showToast("Failed to update assignment", "error");
+    }
+  };
 
   const riskBadgeClass = 
     projection.riskLevel === 'ON_TRACK' ? 'badge-ontrack' : 
@@ -38,11 +60,11 @@ export function OrderDetailPage() {
           <div className="flex gap-md mt-sm">
             <div>
               <span className="text-muted text-xs block">Customer</span>
-              <span className="font-bold">{order.customerName}</span>
+              <span className="font-bold text-black">{order.customerName}</span>
             </div>
             <div className="border-l border-sf-border pl-md">
               <span className="text-muted text-xs block">Event Date</span>
-              <span className="font-bold">{new Date(order.eventDate).toLocaleDateString()}</span>
+              <span className="font-bold text-black">{new Date(order.eventDate).toLocaleDateString()}</span>
             </div>
           </div>
         </div>
@@ -72,14 +94,44 @@ export function OrderDetailPage() {
                       : 'border-sf-border hover:border-muted'
                   }`}
                 >
-                  <span className={selectedGarmentId === garment.id ? 'font-bold' : ''}>
-                    {garment.name}
-                  </span>
-                  <span className="text-xs text-muted uppercase">{garment.status}</span>
+                  <div className="text-left">
+                    <div className={selectedGarmentId === garment.id ? 'font-bold text-black' : 'text-black'}>
+                      {garment.name}
+                    </div>
+                    {garment.assignedTailorId && (
+                      <div className="text-[10px] text-primary font-bold uppercase mt-xs">
+                        Tailor: {staff?.find(s => s.id === garment.assignedTailorId)?.email || 'Assigned'}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-xs text-muted uppercase font-bold">{garment.status}</span>
                 </button>
               ))}
             </div>
           </div>
+
+          {selectedGarment && isCompanyAdminOrManager && (
+            <div className="sf-card p-md bg-sf-glass border-primary/20">
+              <h4 className="text-xs font-bold uppercase mb-md">Production Assignment</h4>
+              <FormControl fullWidth variant="outlined" size="small">
+                <InputLabel id="assign-tailor-label">Assign Tailor</InputLabel>
+                <Select
+                  labelId="assign-tailor-label"
+                  value={selectedGarment.assignedTailorId || ''}
+                  label="Assign Tailor"
+                  onChange={(e) => handleAssignTailor(e.target.value)}
+                  sx={{ color: 'black' }}
+                >
+                  <MenuItem value=""><em>Unassigned</em></MenuItem>
+                  {tailors.map(t => (
+                    <MenuItem key={t.id} value={t.id}>
+                      {t.email}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+          )}
           
           <div className="sf-card p-md">
             <h3 className="text-h3 mb-md">Quick Actions</h3>

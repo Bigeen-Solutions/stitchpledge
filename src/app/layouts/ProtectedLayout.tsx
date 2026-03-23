@@ -23,6 +23,10 @@ export function ProtectedLayout() {
     navItems.push({ label: 'Staff', path: '/staff', icon: '👥' });
   }
 
+  if (can('orders:write')) {
+    navItems.push({ label: 'Garment Assignment', path: '/production/assignment', icon: '📋' });
+  }
+
   return (
     <div className={`protected-layout ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <aside className="sf-sidebar sf-glass flex flex-col p-md">

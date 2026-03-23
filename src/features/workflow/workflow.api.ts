@@ -27,6 +27,7 @@ export interface ActiveFloorTask {
   stageName: string;
   garmentId: string;
   garmentName: string;
+  assignedTailorId?: string | null;
   orderId: string;
   customerName: string;
   deadline: string;

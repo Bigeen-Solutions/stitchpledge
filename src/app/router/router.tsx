@@ -8,6 +8,7 @@ import { OrderDetailPage } from '../../pages/OrderDetailPage.tsx';
 import { StaffManagementPage } from '../../pages/StaffManagementPage.tsx';
 import { NewOrderPage } from '../../pages/NewOrderPage.tsx';
 import { ProductionBoardPage } from '../../pages/ProductionBoardPage.tsx';
+import { GarmentAssignmentPage } from '../../pages/GarmentAssignmentPage.tsx';
 import { Timeline, TimelineItem } from '../../components/timeline/Timeline.tsx';
 import { WelcomePanel } from '../../features/dashboard/components/WelcomePanel.tsx';
 import { WorkshopTable } from '../../components/ui/WorkshopTable.tsx';
@@ -138,6 +139,14 @@ export const router = createBrowserRouter([
       {
         path: '/production',
         element: <ProductionBoardPage />,
+      },
+      {
+        path: '/production/assignment',
+        element: (
+          <ProtectedRoute requiredPermission="orders:write">
+            <GarmentAssignmentPage />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
