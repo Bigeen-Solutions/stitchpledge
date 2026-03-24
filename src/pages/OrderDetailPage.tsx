@@ -10,7 +10,7 @@ import { MaterialHistory } from '../features/materials/components/MaterialHistor
 import { MaterialAdjustmentForm } from '../features/materials/components/MaterialAdjustmentForm.tsx';
 import { MeasurementHistory } from '../features/measurements/components/MeasurementHistory.tsx';
 import { RecordMeasurementForm } from '../features/measurements/components/RecordMeasurementForm.tsx';
-import { FormControl, InputLabel, Select, MenuItem, Box, Typography } from '@mui/material';
+import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();

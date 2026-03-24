@@ -10,7 +10,6 @@ import {
   Step,
   StepLabel,
   Button,
-  Grid,
   alpha,
   Divider,
 } from '@mui/material';
@@ -21,25 +20,31 @@ import {
 } from '@mui/icons-material';
 import { useAuthStore } from '../../features/auth/auth.store';
 
+import { useQuery } from '@tanstack/react-query';
+import { ordersApi } from '../../features/orders/orders.api';
+import { keys } from '../../query/keys';
+import { analyticsApi } from '../../features/dashboard/analytics.api';
+
 export const ClientDashboard: React.FC = () => {
   const { user } = useAuthStore();
 
-  const activeOrders = [
-    {
-      id: 'ORD-8821',
-      garment: 'Bespoke Three-Piece Suit',
-      stage: 2,
-      stages: ['Intake', 'Measurements', 'Cutting', 'Sewing', 'Final Fit', 'Delivery'],
-      estimatedDate: 'April 12, 2026',
-    },
-    {
-      id: 'ORD-9014',
-      garment: 'Linen Summer Shirt',
-      stage: 4,
-      stages: ['Intake', 'Measurements', 'Cutting', 'Sewing', 'Final Fit', 'Delivery'],
-      estimatedDate: 'March 29, 2026',
-    },
-  ];
+  const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
+    queryKey: [keys.orders.list, 'my-orders'],
+    queryFn: () => ordersApi.getOrders(1, 10),
+  });
+
+  const { data: analytics } = useQuery({
+    queryKey: keys.analytics.overview,
+    queryFn: analyticsApi.getOverview,
+  });
+
+  const activeOrders = ordersData?.items.map(order => ({
+    id: order.orderNumber || order.id.split('-')[0].toUpperCase(),
+    garment: order.garmentName || 'Bespoke Garment',
+    stage: 2, // Defaulting for visual
+    stages: ['Intake', 'Production', 'Finishing', 'Delivery'],
+    estimatedDate: order.deadline || 'TBD',
+  })) || [];
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', pb: 8 }}>
@@ -65,7 +70,7 @@ export const ClientDashboard: React.FC = () => {
             Hello, {user?.fullName?.split(' ')[0]}
           </Typography>
           <Typography variant="body1" sx={{ color: alpha('#ffffff', 0.7) }}>
-            Welcome to your StitchFlow client portal.
+            You have {analytics?.totalActiveOrders || 0} active orders in production.
           </Typography>
         </Box>
       </Card>
@@ -75,7 +80,11 @@ export const ClientDashboard: React.FC = () => {
       </Typography>
 
       <Stack spacing={3}>
-        {activeOrders.map((order) => (
+        {isLoadingOrders ? (
+          <Typography variant="body2" sx={{ textAlign: 'center', py: 4 }}>Loading your orders...</Typography>
+        ) : activeOrders.length === 0 ? (
+          <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: '#6b7280' }}>No active orders found.</Typography>
+        ) : activeOrders.map((order) => (
           <Card
             key={order.id}
             sx={{
@@ -90,7 +99,7 @@ export const ClientDashboard: React.FC = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
               <Box>
                 <Typography variant="caption" sx={{ color: '#6b7280', fontWeight: 700, letterSpacing: 1.5 }}>
-                  {order.id}
+                  #{order.id}
                 </Typography>
                 <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a2340' }}>
                   {order.garment}
@@ -98,7 +107,7 @@ export const ClientDashboard: React.FC = () => {
               </Box>
               <Chip
                 icon={<Calendar sx={{ fontSize: 14 }} />}
-                label={`Delivery: ${order.estimatedDate}`}
+                label={`Estimated: ${order.estimatedDate}`}
                 sx={{
                   bgcolor: alpha('#1e5c3a', 0.05),
                   color: '#1e5c3a',

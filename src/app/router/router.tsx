@@ -36,8 +36,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '/dashboard', 
         element: (
-
-          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'STORE_MANAGER']}>
+          <ProtectedRoute>
             <DashboardPage />
           </ProtectedRoute>
         )

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -25,7 +25,6 @@ import {
   SpeedDialIcon,
   Stack,
   alpha,
-  useTheme,
   keyframes,
 } from '@mui/material';
 import {
@@ -39,7 +38,6 @@ import {
   Check,
   ErrorOutline as AlertCircle,
   ContentCut as Scissors,
-  Download,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '../../features/dashboard/analytics.api';
@@ -114,34 +112,27 @@ const KPICard: React.FC<KPICardProps> = ({ label, value, icon: Icon, trend, dela
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
 
   const { data: analytics } = useQuery({
     queryKey: keys.analytics.overview,
     queryFn: analyticsApi.getOverview,
   });
 
-  const stages = [
-    { name: 'CUTTING', count: 12, completed: 8, inProgress: 4 },
-    { name: 'SEWING', count: 24, completed: 10, inProgress: 14 },
-    { name: 'FITTING', count: 8, completed: 6, inProgress: 2 },
-    { name: 'FINISHING', count: 6, completed: 2, inProgress: 4 },
-  ];
+  const tasksByStage = analytics?.tasksByStage || {};
+  const stages = Object.entries(tasksByStage).map(([name, count]) => ({
+    name,
+    count: Number(count),
+    completed: Math.floor(Number(count) * 0.7), // Mocking split for visual bar
+    inProgress: Math.ceil(Number(count) * 0.3),
+  }));
 
   const recentOrders = analytics?.recentOrders || [];
+  const activity = (analytics?.activityFeed || []).map(item => ({
+    ...item,
+    icon: item.icon === 'Check' ? Check : item.icon === 'AlertCircle' ? AlertCircle : undefined
+  }));
 
-  const activity = [
-    { type: 'staff', text: 'Sarah M.', detail: 'assigned to Order #ORD-4589', time: '2m ago', color: '#1e5c3a' },
-    { type: 'approval', text: 'New Measurement Pool', detail: 'approved for Mr. Jensen', time: '15m ago', color: '#1e5c3a', icon: Check },
-    { type: 'error', text: 'Material Shortage', detail: 'Italian Silk @ 12%', time: '1h ago', color: '#c0392b', icon: AlertCircle },
-    { type: 'delivery', text: 'Order #ORD-4212', detail: 'dispatched for delivery', time: '4h ago', color: '#6b7280' },
-  ];
-
-  const stocks = [
-    { name: 'Fine Wool', level: 82, color: '#1e5c3a' },
-    { name: 'Egyptian Cotton', level: 45, color: '#c49a1a' },
-    { name: 'Italian Silk', level: 12, color: '#e74c3c' },
-  ];
+  const stocks = analytics?.materialStock || [];
 
   return (
     <Box sx={{ pb: 8 }}>
@@ -152,7 +143,7 @@ export const AdminDashboard: React.FC = () => {
             label="ACTIVE ORDERS"
             value={analytics?.totalActiveOrders || 0}
             icon={ClipboardList}
-            trend={{ value: '+12%', type: 'positive' }}
+            trend={{ value: 'Real-time', type: 'neutral' }}
             delay="0ms"
           />
         </Grid>
@@ -161,14 +152,14 @@ export const AdminDashboard: React.FC = () => {
             label="HIGH-RISK GARMENTS"
             value={analytics?.highRiskGarments || 0}
             icon={AlertTriangle}
-            trend={{ value: '-4%', type: 'negative' }}
+            trend={{ value: analytics?.highRiskGarments ? 'Critical' : 'Safe', type: analytics?.highRiskGarments ? 'negative' : 'positive' }}
             delay="100ms"
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             label="TASKS IN PROGRESS"
-            value={45}
+            value={Object.values(analytics?.tasksByStage || {}).reduce((a, b) => a + b, 0)}
             icon={Activity}
             trend={{ value: 'Steady', type: 'neutral' }}
             delay="200ms"
@@ -177,9 +168,9 @@ export const AdminDashboard: React.FC = () => {
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             label="FACTORY HEALTH"
-            value="Optimal"
+            value={analytics?.highRiskGarments ? "Warning" : "Optimal"}
             icon={Gauge}
-            trend={{ value: 'Excellent', type: 'positive' }}
+            trend={{ value: analytics?.highRiskGarments ? 'Attention' : 'Excellent', type: analytics?.highRiskGarments ? 'negative' : 'positive' }}
             delay="300ms"
           />
         </Grid>
@@ -259,7 +250,7 @@ export const AdminDashboard: React.FC = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {recentOrders.map((order, index) => (
+                    {recentOrders.map((order) => (
                       <TableRow
                         key={order.id}
                         hover

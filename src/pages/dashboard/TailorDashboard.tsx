@@ -9,14 +9,12 @@ import {
   Button,
   Chip,
   alpha,
-  useTheme,
   keyframes,
 } from '@mui/material';
 import {
   ContentCut as Scissors,
   LocalShipping as Truck,
   Add as Plus,
-  ArrowForward as ArrowRight,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '../../features/dashboard/analytics.api';
@@ -84,7 +82,6 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, delay }) 
 
 export const TailorDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
 
   const { data: analytics } = useQuery({
     queryKey: keys.analytics.overview,
@@ -96,8 +93,7 @@ export const TailorDashboard: React.FC = () => {
   const recentOrders = analytics?.recentOrders || [];
   
   const hasUrgent = overdueCount > 0;
-  // Mock pending measurements since it's not in the analytics API yet
-  const pendingMeasurements = 3;
+  const pendingMeasurements = analytics?.tasksByStage?.['MEASUREMENTS'] || 0;
 
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', pb: 8 }}>

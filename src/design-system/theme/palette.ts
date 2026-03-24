@@ -2,15 +2,31 @@ import type { PaletteOptions } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
   interface Palette {
-    // Add any custom palette colors here if needed
+    risk: {
+      onTrack: string;
+      atRisk: string;
+      overdue: string;
+      unknown: string;
+    };
   }
   interface PaletteOptions {
-    // Add any custom palette options here if needed
+    risk?: {
+      onTrack?: string;
+      atRisk?: string;
+      overdue?: string;
+      unknown?: string;
+    };
   }
 }
 
 export const palette: PaletteOptions = {
   mode: 'light',
+  risk: {
+    onTrack: '#1e5c3a',
+    atRisk: '#c49a1a',
+    overdue: '#EF4444',
+    unknown: '#6b7280',
+  },
   primary: {
     main: '#1e5c3a', // Dark forest green — buttons, highlights
     contrastText: '#ffffff',

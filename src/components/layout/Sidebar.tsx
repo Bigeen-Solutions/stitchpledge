@@ -27,6 +27,7 @@ import {
   ManageAccounts as UserCog,
   BarChart as BarChart2,
   Settings,
+  Add as Plus,
 } from '@mui/icons-material';
 import { useAuthStore } from '../../features/auth/auth.store';
 
@@ -39,13 +40,15 @@ interface SidebarProps {
 const SIDEBAR_WIDTH = 240;
 
 const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-  { label: 'Orders', icon: ClipboardList, path: '/orders' },
-  { label: 'Clients', icon: Users, path: '/clients' },
-  { label: 'Measurements', icon: Ruler, path: '/measurements' },
-  { label: 'Payments', icon: CreditCard, path: '/payments' },
-  { label: 'Staff / Tailors', icon: UserCog, path: '/staff' },
-  { label: 'Reports', icon: BarChart2, path: '/reports' },
+  { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR', 'CUSTOMER'] },
+  { label: 'Orders', icon: ClipboardList, path: '/orders', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
+  { label: 'New Order', icon: Plus, path: '/orders/new', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
+  { label: 'Production', icon: ScissorsIcon, path: '/production', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
+  { label: 'Clients', icon: Users, path: '/clients', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
+  { label: 'Measurements', icon: Ruler, path: '/measurements', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
+  { label: 'Payments', icon: CreditCard, path: '/payments', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
+  { label: 'Staff / Tailors', icon: UserCog, path: '/staff', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
+  { label: 'Reports', icon: BarChart2, path: '/reports', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }) => {
@@ -59,6 +62,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
     navigate(path);
     if (isMobile) onClose();
   };
+
+  const filteredNavItems = navItems.filter(item => 
+    !item.roles || (user?.role && item.roles.includes(user.role))
+  );
 
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#163d28', color: 'white' }}>
@@ -77,14 +84,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
 
       {/* Navigation */}
       <List sx={{ flexGrow: 1, px: 0 }}>
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <ListItem key={item.path} disablePadding>
               <ListItemButton
                 onClick={() => handleNavigation(item.path)}
                 sx={{
-                  py: 1.5,
+                  py: 1.2,
                   px: 2,
                   bgcolor: isActive ? alpha('#1e5c3a', 0.15) : 'transparent',
                   borderLeft: isActive ? '3px solid #1e5c3a' : '3px solid transparent',
@@ -99,7 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
                 <ListItemText
                   primary={item.label}
                   primaryTypographyProps={{
-                    fontSize: '14px',
+                    fontSize: '13px',
                     fontWeight: isActive ? 600 : 400,
                     color: isActive ? 'white' : alpha('#ffffff', 0.6),
                   }}
