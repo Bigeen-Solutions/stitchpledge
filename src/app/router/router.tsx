@@ -16,10 +16,13 @@ import { ProtectedRoute } from '../../features/auth/ProtectedRoute.tsx';
 
 import { DesignSystemPage } from '../../pages/DesignSystemPage.tsx';
 
+import { SplashScreen } from '../../pages/SplashScreen.tsx';
+
 export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
     children: [
+      { path: '/', element: <SplashScreen /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/design-system', element: <DesignSystemPage /> },
     ],
@@ -31,10 +34,9 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { path: '/', element: <Navigate to="/dashboard" replace /> },
-      { 
-        path: '/dashboard', 
+      { path: '/dashboard', 
         element: (
+
           <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'STORE_MANAGER']}>
             <DashboardPage />
           </ProtectedRoute>

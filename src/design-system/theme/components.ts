@@ -1,4 +1,4 @@
-import type { Components, Theme } from '@mui/material/styles';
+import { alpha, type Components, type Theme } from '@mui/material/styles';
 
 export const components: Components<Omit<Theme, 'components'>> = {
   MuiCssBaseline: {
@@ -14,52 +14,51 @@ export const components: Components<Omit<Theme, 'components'>> = {
       html, body {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        background-color: #f5f4f0;
       }
     `,
   },
   MuiCard: {
     styleOverrides: {
       root: ({ theme }) => ({
-        backgroundColor: theme.palette.surface.glass,
-        backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(255, 255, 255, 0.06)',
-        borderRadius: '12px',
-        boxShadow: theme.shadows[1],
+        backgroundColor: theme.palette.background.paper,
+        border: '1px solid #e5e4e0',
+        borderRadius: '16px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',
       }),
     },
   },
   MuiPaper: {
     styleOverrides: {
       root: ({ theme }) => ({
-        backgroundColor: theme.palette.surface.glass,
-        backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(255, 255, 255, 0.06)',
-        borderRadius: '12px',
+        backgroundColor: theme.palette.background.paper,
+        border: '1px solid #e5e4e0',
+        borderRadius: '16px',
       }),
     },
   },
   MuiButton: {
     styleOverrides: {
       root: {
-        borderRadius: '8px',
+        borderRadius: '12px',
         textTransform: 'none',
         fontWeight: 600,
-        minHeight: '44px', // shop-floor touch target
+        minHeight: '44px',
         padding: '10px 20px',
       },
       containedPrimary: ({ theme }) => ({
         backgroundColor: theme.palette.primary.main,
         color: '#FFFFFF',
         '&:hover': {
-          backgroundColor: '#2D278A', // Slightly darker indigo
+          backgroundColor: '#256b45',
         },
       }),
       outlined: ({ theme }) => ({
-        borderColor: theme.palette.secondary.main,
+        borderColor: '#e5e4e0',
         color: theme.palette.text.primary,
         '&:hover': {
           borderColor: theme.palette.primary.main,
-          backgroundColor: theme.palette.surface.highlight,
+          backgroundColor: alpha(theme.palette.primary.main, 0.04),
         },
       }),
     },
@@ -67,7 +66,7 @@ export const components: Components<Omit<Theme, 'components'>> = {
   MuiChip: {
     styleOverrides: {
       root: {
-        borderRadius: '6px',
+        borderRadius: '999px',
         fontWeight: 600,
         fontSize: '0.75rem',
       },
@@ -77,13 +76,13 @@ export const components: Components<Omit<Theme, 'components'>> = {
     styleOverrides: {
       root: ({ theme }) => ({
         '&.Mui-hover:hover': {
-          backgroundColor: theme.palette.surface.highlight,
+          backgroundColor: alpha(theme.palette.primary.main, 0.04),
         },
         '&.Mui-selected': {
-          backgroundColor: theme.palette.surface.highlight,
+          backgroundColor: alpha(theme.palette.primary.main, 0.08),
           borderLeft: `3px solid ${theme.palette.primary.main}`,
           '&:hover': {
-            backgroundColor: theme.palette.surface.highlight,
+            backgroundColor: alpha(theme.palette.primary.main, 0.12),
           },
         },
       }),
@@ -103,7 +102,7 @@ export const components: Components<Omit<Theme, 'components'>> = {
   MuiTooltip: {
     styleOverrides: {
       tooltip: {
-        backgroundColor: '#1E293B',
+        backgroundColor: '#1a2340',
         border: '1px solid rgba(255, 255, 255, 0.08)',
         borderRadius: '8px',
         fontSize: '0.75rem',
@@ -114,17 +113,16 @@ export const components: Components<Omit<Theme, 'components'>> = {
   MuiDialog: {
     styleOverrides: {
       paper: ({ theme }) => ({
-        backgroundColor: theme.palette.surface.overlay,
-        backdropFilter: 'blur(16px)',
+        backgroundColor: theme.palette.background.paper,
         backgroundImage: 'none',
+        borderRadius: '16px',
       }),
     },
   },
   MuiDrawer: {
     styleOverrides: {
       paper: ({ theme }) => ({
-        backgroundColor: theme.palette.surface.overlay,
-        backdropFilter: 'blur(16px)',
+        backgroundColor: theme.palette.background.paper,
         backgroundImage: 'none',
       }),
     },
@@ -137,16 +135,17 @@ export const components: Components<Omit<Theme, 'components'>> = {
   MuiInputBase: {
     styleOverrides: {
       root: ({ theme }) => ({
-        borderRadius: '8px',
-        backgroundColor: 'rgba(255, 255, 255, 0.04)',
-        minHeight: '44px', // shop-floor touch target
+        borderRadius: '10px',
+        backgroundColor: '#ffffff',
+        minHeight: '44px',
         '&.Mui-focused': {
           '& .MuiOutlinedInput-notchedOutline': {
             borderColor: theme.palette.primary.main,
-            borderWidth: '2px',
+            borderWidth: '1px',
           },
         },
       }),
     },
   },
 };
+

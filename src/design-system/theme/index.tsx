@@ -14,9 +14,10 @@ export const workshopTheme = createTheme({
   shadows,
   components,
   shape: {
-    borderRadius: 8,
+    borderRadius: 12,
   },
 });
+
 
 interface ThemeRegistryProps {
   children: React.ReactNode;

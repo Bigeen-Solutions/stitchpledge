@@ -2,70 +2,41 @@ import type { PaletteOptions } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
   interface Palette {
-    surface: {
-      glass: string;
-      overlay: string;
-      highlight: string;
-    };
-    risk: {
-      onTrack: string;
-      atRisk: string;
-      overdue: string;
-      unknown: string;
-    };
+    // Add any custom palette colors here if needed
   }
   interface PaletteOptions {
-    surface?: {
-      glass?: string;
-      overlay?: string;
-      highlight?: string;
-    };
-    risk?: {
-      onTrack?: string;
-      atRisk?: string;
-      overdue?: string;
-      unknown?: string;
-    };
+    // Add any custom palette options here if needed
   }
 }
 
 export const palette: PaletteOptions = {
-  mode: 'dark',
+  mode: 'light',
   primary: {
-    main: '#3730A3', // Deep Indigo — authority, trust
+    main: '#1e5c3a', // Dark forest green — buttons, highlights
+    contrastText: '#ffffff',
   },
   secondary: {
-    main: '#64748B', // Slate Gray — neutral, grounding
+    main: '#c49a1a', // Golden amber — accents, warnings
+    contrastText: '#ffffff',
   },
   success: {
-    main: '#4ADE80', // Sage Green — calm completion, ON_TRACK
+    main: '#1e5c3a',
   },
   warning: {
-    main: '#F59E0B', // Warm Amber — AT_RISK (not alarming)
+    main: '#c49a1a',
   },
   error: {
-    main: '#EF4444', // Reserved ONLY for OVERDUE and hard failures
+    main: '#EF4444',
   },
   info: {
     main: '#38BDF8', // Sky Blue — informational, non-urgent
   },
   background: {
-    default: '#0F172A', // Deep Navy — workshop darkness
-    paper: '#1E293B',   // Card surface
+    default: '#f5f4f0', // Milky off-white — app background
+    paper: '#fafaf8',   // Warm white — cards/surfaces
   },
   text: {
-    primary: '#F1F5F9', // Near-white for high contrast on dark
-    secondary: '#94A3B8', // Muted slate for supporting text
-  },
-  surface: {
-    glass: 'rgba(30, 41, 59, 0.7)',   // Glassmorphism card background
-    overlay: 'rgba(15, 23, 42, 0.85)',  // Modal/drawer overlay
-    highlight: 'rgba(55, 48, 163, 0.15)', // Subtle primary tint for active rows
-  },
-  risk: {
-    onTrack: '#4ADE80',
-    atRisk: '#F59E0B',
-    overdue: '#EF4444',
-    unknown: '#64748B',
+    primary: '#1a2340',   // Deep navy — headings + body
+    secondary: '#6b7280', // Medium gray — labels, placeholders
   },
 };

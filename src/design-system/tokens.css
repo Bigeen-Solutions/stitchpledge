@@ -2,21 +2,21 @@
 
 :root {
   /* Brand Colors */
-  --color-primary: #111827;
-  --color-accent: #2563EB;
+  --color-primary: #1e5c3a;
+  --color-secondary: #c49a1a;
   
   /* Semantic Colors */
-  --color-success: #16A34A;
-  --color-warning: #F59E0B;
+  --color-success: #1e5c3a;
+  --color-warning: #c49a1a;
   --color-danger: #DC2626;
   
   /* Neutral Palette */
-  --color-bg: #F9FAFB;
-  --color-surface: #FFFFFF;
-  --color-border: #E5E7EB;
+  --color-bg: #f5f4f0;
+  --color-surface: #fafaf8;
+  --color-border: #e5e4e0;
   
-  --color-text-primary: #111827;
-  --color-text-secondary: #4B5563;
+  --color-text-primary: #1a2340;
+  --color-text-secondary: #6b7280;
   --color-text-muted: #9CA3AF;
 
   /* Risk States (The Operating Logic) */
@@ -33,9 +33,9 @@
   --space-xxl: 48px;
 
   /* Radius */
-  --radius-card: 12px;
-  --radius-btn: 8px;
-  --radius-pill: 9999px;
+  --radius-card: 16px;
+  --radius-btn: 12px;
+  --radius-pill: 999px;
 
   /* Elevation */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -46,3 +46,4 @@
   --z-header: 40;
   --z-overlay: 1000;
 }
+
