@@ -9,7 +9,6 @@ import { StaffManagementPage } from '../../pages/StaffManagementPage.tsx';
 import { NewOrderPage } from '../../pages/NewOrderPage.tsx';
 import { ProductionBoardPage } from '../../pages/ProductionBoardPage.tsx';
 import { DashboardPage } from '../../pages/DashboardPage.tsx';
-import { GarmentAssignmentPage } from '../../pages/GarmentAssignmentPage.tsx';
 // Removed obsolete components that were only used in the hardcoded dashboard
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
 import { CustomerOrderPage } from '../../features/customer/pages/CustomerOrderPage.tsx';
@@ -76,14 +75,6 @@ export const router = createBrowserRouter([
       {
         path: '/production',
         element: <ProductionBoardPage />,
-      },
-      {
-        path: '/production/assignment',
-        element: (
-          <ProtectedRoute requiredPermission="orders:write">
-            <GarmentAssignmentPage />
-          </ProtectedRoute>
-        ),
       },
     ],
   },

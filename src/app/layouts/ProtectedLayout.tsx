@@ -2,10 +2,12 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useUIStore } from '../store';
 import { useAuthStore } from '../../features/auth/auth.store';
 import { usePermissions } from '../../features/auth/use-permissions';
+import { useLogout } from '../../features/auth/hooks/useAuth';
 
 export function ProtectedLayout() {
   const user = useAuthStore((state) => state.user);
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
+  const logout = useLogout();
   const location = useLocation();
   const { can } = usePermissions();
 
@@ -21,10 +23,6 @@ export function ProtectedLayout() {
   // FE-3 FIX: Use can() — never raw role string comparison
   if (can('staff:read')) {
     navItems.push({ label: 'Staff', path: '/staff', icon: '👥' });
-  }
-
-  if (can('orders:write')) {
-    navItems.push({ label: 'Garment Assignment', path: '/production/assignment', icon: '📋' });
   }
 
   return (
@@ -52,7 +50,17 @@ export function ProtectedLayout() {
         </nav>
 
         <div className="sidebar-footer mt-auto p-md sf-glass rounded-lg border border-sf-border shadow-inner">
-          <div className="text-xs text-muted uppercase font-bold mb-xs">Authenticated</div>
+          <div className="flex items-center justify-between mb-xs">
+            <div className="text-xs text-muted uppercase font-bold">Authenticated</div>
+            <button 
+              onClick={() => logout.mutate()}
+              disabled={logout.isPending}
+              className="text-[10px] font-bold uppercase transition-opacity hover:opacity-70"
+              style={{ color: 'var(--color-accent)' }}
+            >
+              {logout.isPending ? '...' : 'Sign Out'}
+            </button>
+          </div>
           <div className="font-bold text-sm truncate">{user?.email}</div>
           <div className="text-[10px] text-muted uppercase">{user?.role?.replace('_', ' ')}</div>
         </div>
