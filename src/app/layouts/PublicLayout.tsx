@@ -5,8 +5,8 @@ export function PublicLayout() {
   const { isAuthenticated, isLoading } = useAuthStore()
   const location = useLocation()
 
-  // If still loading, don't redirect yet
-  if (isLoading) {
+  // If still loading, don't redirect yet (unless on splash screen)
+  if (isLoading && location.pathname !== '/') {
     return <div>Loading...</div>
   }
 

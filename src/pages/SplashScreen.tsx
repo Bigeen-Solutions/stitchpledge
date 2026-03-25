@@ -1,53 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Chip, 
-  Stack, 
-  LinearProgress,
+import {
+  Box,
+  Typography,
+  Button,
+  Chip,
+  Stack,
   Fade,
   Grow
 } from '@mui/material';
-import { 
-  ContentCut as ScissorsIcon, 
-  Straighten as RulerIcon, 
-  CalendarMonth as CalendarIcon, 
-  Groups as UsersIcon 
+import {
+  ContentCut as ScissorsIcon,
+  Straighten as RulerIcon,
+  CalendarMonth as CalendarIcon,
+  Groups as UsersIcon
 } from '@mui/icons-material';
 import splashImage from '../assets/images/splash-image.jpg';
 
 export function SplashScreen() {
   const navigate = useNavigate();
-  const [progress, setProgress] = useState(0);
   const [startAnimations, setStartAnimations] = useState(false);
 
   useEffect(() => {
     setStartAnimations(true);
-    const interval = 30; // 30ms for smoother progress
-    const totalDuration = 3000;
-    const increment = (interval / totalDuration) * 100;
-
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(timer);
-          return 100;
-        }
-        return Math.min(prev + increment, 100);
-      });
-    }, interval);
-
-    const navTimer = setTimeout(() => {
-      navigate('/login');
-    }, totalDuration);
-
-    return () => {
-      clearInterval(timer);
-      clearTimeout(navTimer);
-    };
-  }, [navigate]);
+  }, []);
 
   const handleGetStarted = () => {
     navigate('/login');
@@ -83,9 +59,9 @@ export function SplashScreen() {
       <Box sx={{ zIndex: 2, textAlign: 'center', px: 3, maxWidth: 650 }}>
         {/* Logo Lockup */}
         <Fade in={startAnimations} timeout={300} style={{ transitionDelay: '100ms' }}>
-          <Box sx={{ 
-            mb: 4, 
-            transform: startAnimations ? 'translateY(0)' : 'translateY(-20px)', 
+          <Box sx={{
+            mb: 4,
+            transform: startAnimations ? 'translateY(0)' : 'translateY(-20px)',
             transition: 'transform 300ms ease-out 100ms',
             display: 'flex',
             alignItems: 'center',
@@ -102,11 +78,11 @@ export function SplashScreen() {
         {/* Headline */}
         <Fade in={startAnimations} timeout={400} style={{ transitionDelay: '200ms' }}>
           <Box sx={{ mb: 2, transform: startAnimations ? 'translateY(0)' : 'translateY(20px)', transition: 'transform 400ms ease-out 200ms' }}>
-            <Typography 
-              variant="h1" 
-              sx={{ 
-                color: 'white', 
-                fontWeight: 800, 
+            <Typography
+              variant="h1"
+              sx={{
+                color: 'white',
+                fontWeight: 800,
                 fontSize: { xs: '40px', md: '56px' },
                 lineHeight: 1.1,
                 letterSpacing: '-0.02em'
@@ -119,11 +95,11 @@ export function SplashScreen() {
 
         {/* Subheadline */}
         <Fade in={startAnimations} timeout={400} style={{ transitionDelay: '350ms' }}>
-          <Typography 
-            variant="body1" 
-            sx={{ 
-              color: 'rgba(255, 255, 255, 0.8)', 
-              mb: 4, 
+          <Typography
+            variant="body1"
+            sx={{
+              color: 'rgba(255, 255, 255, 0.8)',
+              mb: 4,
               mx: 'auto',
               maxWidth: 480,
               fontSize: '18px',
@@ -135,23 +111,23 @@ export function SplashScreen() {
         </Fade>
 
         {/* Divider bar */}
-        <Box 
-          sx={{ 
-            width: startAnimations ? '60px' : '0px', 
-            height: '3px', 
-            bgcolor: '#c49a1a', 
+        <Box
+          sx={{
+            width: startAnimations ? '60px' : '0px',
+            height: '3px',
+            bgcolor: '#c49a1a',
             borderRadius: '999px',
             mx: 'auto',
             mb: 5,
             transition: 'width 300ms ease-out 400ms'
-          }} 
+          }}
         />
 
         {/* Feature chips row */}
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
-          spacing={2} 
-          justifyContent="center" 
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          justifyContent="center"
           sx={{ mb: 6 }}
         >
           {[
@@ -208,23 +184,6 @@ export function SplashScreen() {
           </Box>
         </Grow>
       </Box>
-
-      {/* Progress Bar */}
-      <LinearProgress
-        variant="determinate"
-        value={progress}
-        sx={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '4px',
-          bgcolor: 'transparent',
-          '& .MuiLinearProgress-bar': {
-            bgcolor: '#c49a1a',
-          }
-        }}
-      />
     </Box>
   );
 }

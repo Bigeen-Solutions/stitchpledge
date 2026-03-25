@@ -19,7 +19,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f4f0' }}>
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} toggleSidebar={toggleSidebar} />
-      
+
       <Box
         component="main"
         sx={{

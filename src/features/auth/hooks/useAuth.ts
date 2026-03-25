@@ -1,5 +1,6 @@
 // src/features/auth/hooks/useAuth.ts
 import { useMutation } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { logoutApi } from '../auth.api';
 import { useAuthStore } from '../auth.store';
 import { queryClient } from '../../../query/queryClient';
@@ -15,6 +16,7 @@ import { useDomainError } from '../../../lib/errors';
  */
 
 export function useLogout() {
+  const navigate = useNavigate();
   const { handleError } = useDomainError();
   const { clearAuth } = useAuthStore();
 
@@ -24,7 +26,7 @@ export function useLogout() {
       // FE-5 FIX: clear Zustand store — NOT localStorage
       clearAuth();
       queryClient.clear();
-      window.location.href = '/login';
+      navigate('/login');
     },
     onError: (err: any) => handleError(err),
   });
