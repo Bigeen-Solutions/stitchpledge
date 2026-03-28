@@ -17,7 +17,8 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
-  alpha
+  alpha,
+  Dialog
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -43,7 +44,7 @@ import { usePermissions } from "../features/auth/use-permissions";
 import { ordersApi } from "../features/orders/orders.api";
 import { useToastStore } from "../components/feedback/Toast";
 
-type Step = "CLIENT_SELECTION" | "CLIENT_DETAILS" | "GARMENTS_TIMELINE" | "MEASUREMENTS" | "SUMMARY";
+type Step = "CLIENT_SELECTION" | "CLIENT_DETAILS" | "GARMENTS_TIMELINE" | "FABRIC_DETAILS" | "MEASUREMENTS" | "SUMMARY";
 
 const GARMENT_TYPES = [
   { id: 'suit', label: 'Suit', icon: <SuitIcon sx={{ fontSize: 40 }} />, description: 'Full executive tailoring' },
@@ -77,8 +78,15 @@ export function NewOrderPage() {
   // Form State
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [newCustomer, setNewCustomer] = useState({ name: "", email: "", phone: "" });
-  const [measurements, setMeasurements] = useState<Record<string, number>>({
-    Chest: 100, Waist: 85, Inseam: 78, Sleeve: 62, Shoulder: 46, Neck: 40,
+  const [measurements, setMeasurements] = useState<Record<string, string>>({
+    Neck: "40", Shoulder: "46", Chest: "100", Waist: "85", Sleeve: "62", Inseam: "78",
+  });
+  const [activeMeasurementField, setActiveMeasurementField] = useState<string | null>(null);
+  const [fabricDetails, setFabricDetails] = useState({
+    fabricImageBase64: "",
+    fabricType: "Cotton",
+    colorSwatch: "#000000",
+    designNotes: ""
   });
   const [eventDate, setEventDate] = useState<Date | null>(null);
   const [selectedStoreId, setSelectedStoreId] = useState("");
@@ -87,6 +95,7 @@ export function NewOrderPage() {
     estimatedTotalDurationHours: number;
     assignedTailorId?: string | null;
   }[]>([]);
+  const [successOrder, setSuccessOrder] = useState<{ id: string } | null>(null);
 
   const handleCreateOrder = async () => {
     try {
@@ -116,7 +125,7 @@ export function NewOrderPage() {
       }
 
       showToast("Finalizing order & calculating risk...", "success");
-      await ordersApi.createOrder({
+      const result = await ordersApi.createOrder({
         customerId: finalCustomerId,
         customerName: finalCustomerName.trim(),
         storeId: finalStoreId,
@@ -125,12 +134,17 @@ export function NewOrderPage() {
         garments: garments.map(g => ({
           workflowTemplateId: g.workflowTemplateId,
           assignedTailorId: g.assignedTailorId || null,
-          estimatedTotalDurationHours: g.estimatedTotalDurationHours || 24
+          estimatedTotalDurationHours: g.estimatedTotalDurationHours || 24,
+          fabricImageBase64: fabricDetails.fabricImageBase64,
+          fabricType: fabricDetails.fabricType,
+          colorSwatch: fabricDetails.colorSwatch,
+          designNotes: fabricDetails.designNotes
         }))
       });
 
-      showToast("Order intake complete. Redirecting to dashboard.", "success");
-      navigate("/dashboard");
+      showToast("Order intake complete.", "success");
+      // The API returns { order, initialProjection }
+      setSuccessOrder(result.order || result);
     } catch (err: any) {
       console.error("[Intake Engine Error]", err);
       const errorMessage = err.response?.data?.message || err.message || "Failed to finalize order";
@@ -152,7 +166,7 @@ export function NewOrderPage() {
     }
   };
 
-  const steps: Step[] = ["CLIENT_SELECTION", "CLIENT_DETAILS", "GARMENTS_TIMELINE", "MEASUREMENTS", "SUMMARY"];
+  const steps: Step[] = ["CLIENT_SELECTION", "CLIENT_DETAILS", "GARMENTS_TIMELINE", "FABRIC_DETAILS", "MEASUREMENTS", "SUMMARY"];
   const currentStepIndex = steps.indexOf(step);
 
   return (
@@ -500,7 +514,7 @@ export function NewOrderPage() {
                 <Button
                   variant="contained"
                   disabled={garments.length === 0 || !eventDate}
-                  onClick={() => setStep("MEASUREMENTS")}
+                  onClick={() => setStep("FABRIC_DETAILS")}
                   sx={{
                     bgcolor: 'secondary.main',
                     height: 52,
@@ -510,40 +524,253 @@ export function NewOrderPage() {
                   }}
                   endIcon={<ArrowForwardIcon />}
                 >
-                  Capture Measurements
+                  Define Fabric & Design
                 </Button>
               </Stack>
             </Box>
           )}
 
-          {/* STEP: MEASUREMENTS */}
+          {/* STEP 3: FABRIC & DESIGN */}
+          {step === "FABRIC_DETAILS" && (
+            <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
+              <Typography variant="h5" sx={{ mb: 4, fontWeight: 700, color: 'text.primary' }}>3. The Evidence: Fabric & Design</Typography>
+              
+              <Grid container spacing={4}>
+                {/* Image Upload */}
+                <Grid size={{ xs: 12, md: 5 }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 2, display: 'block' }}>
+                    Fabric Evidence
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: 200,
+                      border: '2px dashed',
+                      borderColor: 'divider',
+                      borderRadius: '16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      bgcolor: 'background.default',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&:hover': { borderColor: 'secondary.main', bgcolor: alpha('#c49a1a', 0.05) }
+                    }}
+                    onClick={() => document.getElementById('fabric-upload')?.click()}
+                  >
+                    {!fabricDetails.fabricImageBase64 ? (
+                      <>
+                        <AddIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>Upload Fabric Image</Typography>
+                      </>
+                    ) : (
+                      <img 
+                        src={fabricDetails.fabricImageBase64} 
+                        alt="Fabric preview" 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      />
+                    )}
+                    <input
+                      id="fabric-upload"
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setFabricDetails({ ...fabricDetails, fabricImageBase64: reader.result as string });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </Box>
+                  {fabricDetails.fabricImageBase64 && (
+                    <Button 
+                      size="small" 
+                      onClick={() => setFabricDetails({ ...fabricDetails, fabricImageBase64: "" })}
+                      sx={{ mt: 1, textTransform: 'none', color: 'error.main' }}
+                    >
+                      Remove Photo
+                    </Button>
+                  )}
+                </Grid>
+
+                {/* Fabric Type & Swatch */}
+                <Grid size={{ xs: 12, md: 7 }}>
+                  <Stack spacing={3}>
+                    <FormControl fullWidth>
+                      <InputLabel>Material Type</InputLabel>
+                      <Select
+                        value={fabricDetails.fabricType}
+                        label="Material Type"
+                        onChange={(e) => setFabricDetails({ ...fabricDetails, fabricType: e.target.value })}
+                        sx={{ borderRadius: '12px' }}
+                      >
+                        {['Wool', 'Cotton', 'Linen', 'Silk', 'Cashmere', 'Velvet'].map(type => (
+                          <MenuItem key={type} value={type}>{type}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <Box>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
+                        Color Swatch
+                      </Typography>
+                      <Stack direction="row" spacing={1.5} flexWrap="wrap">
+                        {['#0F172A', '#475569', '#1E293B', '#FFFFFF', '#0EA5E9', '#7F1D1D', '#064E3B', '#C49A1A'].map(color => (
+                          <Box
+                            key={color}
+                            onClick={() => setFabricDetails({ ...fabricDetails, colorSwatch: color })}
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: '50%',
+                              bgcolor: color,
+                              cursor: 'pointer',
+                              border: '2px solid',
+                              borderColor: fabricDetails.colorSwatch === color ? 'secondary.main' : (color === '#FFFFFF' ? 'divider' : 'transparent'),
+                              boxShadow: fabricDetails.colorSwatch === color ? `0 0 10px ${alpha('#c49a1a', 0.5)}` : 'none',
+                              transition: 'transform 0.2s',
+                              outline: fabricDetails.colorSwatch === color ? `2px solid ${alpha('#c49a1a', 0.3)}` : 'none',
+                              outlineOffset: 3,
+                              '&:hover': { transform: 'scale(1.1)' }
+                            }}
+                          />
+                        ))}
+                      </Stack>
+                    </Box>
+
+                    <TextField
+                      fullWidth
+                      label="Design Notes"
+                      multiline
+                      rows={3}
+                      value={fabricDetails.designNotes}
+                      onChange={(e) => setFabricDetails({ ...fabricDetails, designNotes: e.target.value })}
+                      placeholder="Special lining, unique buttons, or specific stitching requests..."
+                      sx={{
+                        '& .MuiOutlinedInput-root': { borderRadius: '12px' }
+                      }}
+                    />
+                  </Stack>
+                </Grid>
+              </Grid>
+
+              <Divider sx={{ my: 4 }} />
+
+              <Stack direction="row" spacing={2} justifyContent="space-between">
+                <Button onClick={() => setStep("GARMENTS_TIMELINE")} sx={{ color: 'text.primary' }}>Back</Button>
+                <Button
+                  variant="contained"
+                  onClick={() => setStep("MEASUREMENTS")}
+                  sx={{ bgcolor: 'secondary.main', height: 52, px: 6, borderRadius: '12px', '&:hover': { bgcolor: '#d4aa2a' } }}
+                >
+                  Capture Measurements
+                </Button>
+              </Stack>
+            </Box>
+          )}
           {step === "MEASUREMENTS" && (
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
               <Typography variant="h5" sx={{ mb: 4, fontWeight: 700, color: 'text.primary' }}>4. Recording Measurements (cm)</Typography>
-              <Grid container spacing={2}>
-                {Object.keys(measurements).map(key => (
-                  <Grid size={{ xs: 6, sm: 4 }} key={key}>
-                    <TextField
-                      fullWidth
-                      label={key}
-                      type="number"
-                      size="small"
-                      value={measurements[key]}
-                      onChange={(e) => setMeasurements({ ...measurements, [key]: Number(e.target.value) })}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          bgcolor: 'background.default',
-                          '& fieldset': { borderColor: 'divider' },
-                        },
-                        '& .MuiInputLabel-root': { color: 'text.secondary' }
-                      }}
-                    />
+              
+              <Grid container spacing={4}>
+                {/* Left Side: Measurement Inputs */}
+                <Grid size={{ xs: 12, md: 7 }}>
+                  <Grid container spacing={2}>
+                    {Object.keys(measurements).map(key => (
+                      <Grid size={{ xs: 6 }} key={key}>
+                        <TextField
+                          fullWidth
+                          label={key}
+                          value={measurements[key]}
+                          onFocus={() => setActiveMeasurementField(key)}
+                          InputProps={{ readOnly: true }}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              height: 60,
+                              bgcolor: activeMeasurementField === key ? alpha('#c49a1a', 0.05) : 'background.default',
+                              borderColor: activeMeasurementField === key ? 'secondary.main' : 'divider',
+                              borderWidth: activeMeasurementField === key ? 2 : 1,
+                              borderRadius: '12px',
+                              cursor: 'pointer',
+                              '& fieldset': { borderColor: activeMeasurementField === key ? 'secondary.main' : 'divider' },
+                            },
+                            '& .MuiInputLabel-root': { color: activeMeasurementField === key ? 'secondary.main' : 'text.secondary' }
+                          }}
+                        />
+                      </Grid>
+                    ))}
                   </Grid>
-                ))}
+                </Grid>
+
+                {/* Right Side: Virtual Numpad */}
+                <Grid size={{ xs: 12, md: 5 }}>
+                  <Card sx={{ 
+                    p: 2, 
+                    bgcolor: 'background.default', 
+                    borderRadius: '20px', 
+                    border: '1px solid', 
+                    borderColor: 'divider',
+                    boxShadow: 'none'
+                  }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 2, display: 'block', textAlign: 'center' }}>
+                      {activeMeasurementField ? `Input: ${activeMeasurementField}` : 'Select a field to enter value'}
+                    </Typography>
+                    
+                    <Grid container spacing={1}>
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, '.', 0, 'BACK'].map((val) => (
+                        <Grid size={{ xs: 4 }} key={val}>
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            onMouseDown={(e) => {
+                              e.preventDefault(); // Prevent blurring the input
+                              if (!activeMeasurementField) return;
+                              
+                              const currentVal = measurements[activeMeasurementField];
+                              if (val === 'BACK') {
+                                setMeasurements({ ...measurements, [activeMeasurementField]: currentVal.slice(0, -1) });
+                              } else if (val === '.') {
+                                if (!currentVal.includes('.')) {
+                                  setMeasurements({ ...measurements, [activeMeasurementField]: currentVal + '.' });
+                                }
+                              } else {
+                                // Max 5 digits for sanity
+                                if (currentVal.length < 5) {
+                                  setMeasurements({ ...measurements, [activeMeasurementField]: currentVal + val });
+                                }
+                              }
+                            }}
+                            sx={{
+                              height: 70,
+                              borderRadius: '12px',
+                              fontSize: val === 'BACK' ? 14 : 24,
+                              fontWeight: 700,
+                              color: 'text.primary',
+                              borderColor: 'divider',
+                              bgcolor: 'background.paper',
+                              '&:hover': { bgcolor: alpha('#c49a1a', 0.1), borderColor: 'secondary.main' },
+                              '&:active': { transform: 'scale(0.95)' }
+                            }}
+                          >
+                            {val === 'BACK' ? <DeleteIcon /> : val}
+                          </Button>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </Card>
+                </Grid>
               </Grid>
+
               <Divider sx={{ my: 4 }} />
               <Stack direction="row" spacing={2} justifyContent="space-between">
-                <Button onClick={() => setStep("GARMENTS_TIMELINE")} sx={{ color: 'text.primary' }}>Back</Button>
+                <Button onClick={() => setStep("FABRIC_DETAILS")} sx={{ color: 'text.primary' }}>Back</Button>
                 <Button
                   variant="contained"
                   onClick={() => setStep("SUMMARY")}
@@ -574,6 +801,30 @@ export function NewOrderPage() {
                       <Typography variant="body2" sx={{ color: 'text.secondary' }}>Assignment: {stores?.find(s => s.id === selectedStoreId)?.name || user?.storeId || 'Unassigned'}</Typography>
                     </Grid>
                   </Grid>
+                </Box>
+
+                <Box sx={{ p: 3, bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', borderRadius: '16px' }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 700, mb: 1, display: 'block' }}>Fabric & Design Evidence</Typography>
+                  <Stack direction="row" spacing={3} alignItems="center">
+                    {fabricDetails.fabricImageBase64 ? (
+                      <Box sx={{ width: 60, height: 60, borderRadius: '12px', overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+                        <img src={fabricDetails.fabricImageBase64} alt="Fabric" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </Box>
+                    ) : (
+                      <Box sx={{ width: 60, height: 60, borderRadius: '12px', bgcolor: 'background.paper', border: '1px dashed', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                         <ShirtIcon sx={{ color: 'text.disabled', fontSize: 24 }} />
+                      </Box>
+                    )}
+                    <Box>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Box sx={{ width: 16, height: 16, borderRadius: '50%', bgcolor: fabricDetails.colorSwatch, border: '1px solid', borderColor: 'divider' }} />
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>{fabricDetails.fabricType}</Typography>
+                      </Stack>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5, maxWidth: 300 }}>
+                        {fabricDetails.designNotes || "No specific design notes."}
+                      </Typography>
+                    </Box>
+                  </Stack>
                 </Box>
 
                 <Box>
@@ -612,6 +863,70 @@ export function NewOrderPage() {
           )}
         </Card>
       </Box>
+
+      {/* SUCCESS MODAL */}
+      <Dialog 
+        open={Boolean(successOrder)} 
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: '24px', p: 4, textAlign: 'center' }
+        }}
+      >
+        <Box sx={{ py: 2 }}>
+          <Box sx={{ 
+            width: 80, 
+            height: 80, 
+            bgcolor: alpha('#1e5c3a', 0.1), 
+            borderRadius: '50%', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            mx: 'auto',
+            mb: 3
+          }}>
+            <Box component="span" sx={{ fontSize: 48, color: 'primary.main' }}>✓</Box>
+          </Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, mb: 1, color: 'text.primary' }}>
+            Order Created Successfully
+          </Typography>
+          <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4 }}>
+            Order ID: <strong>{successOrder?.id?.split('-')[0].toUpperCase()}</strong>
+          </Typography>
+          <Stack spacing={2}>
+            <Button 
+              variant="contained" 
+              fullWidth 
+              size="large"
+              onClick={() => navigate(`/orders/${successOrder?.id}`)}
+              sx={{ 
+                bgcolor: 'primary.main', 
+                height: 60, 
+                borderRadius: '16px',
+                fontWeight: 700,
+                '&:hover': { bgcolor: '#256b45' }
+              }}
+            >
+              View Order
+            </Button>
+            <Button 
+              variant="outlined" 
+              fullWidth 
+              size="large"
+              onClick={() => window.location.reload()}
+              sx={{ 
+                height: 60, 
+                borderRadius: '16px',
+                borderColor: 'divider',
+                color: 'text.primary',
+                fontWeight: 600
+              }}
+            >
+              Start New Order
+            </Button>
+          </Stack>
+        </Box>
+      </Dialog>
     </Box>
   );
 }
