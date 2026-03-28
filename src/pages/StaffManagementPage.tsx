@@ -8,7 +8,6 @@ import {
 import { useAuthStore } from "../features/auth/auth.store"
 
 export function StaffManagementPage() {
-  // FE-4 FIX: read from Zustand store. Route is already guarded by ProtectedRoute requiredPermission="staff:read".
   const currentUser = useAuthStore((state) => state.user)
 
   if (!currentUser) return <div>Loading...</div>
