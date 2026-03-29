@@ -1,5 +1,13 @@
 import { apiClient } from '../../infrastructure/http/axios.client';
 
+export interface WorkflowTemplate {
+  id: string;
+  companyId: string;
+  name: string;
+  requiredMeasurements: string[];
+  createdAt: string;
+}
+
 export interface StageInstance {
   id: string;
   workflowInstanceId: string;
@@ -46,7 +54,7 @@ export const workflowApi = {
   },
 
   getTemplates: async () => {
-    const { data } = await apiClient.get<any[]>('/workflow-templates');
+    const { data } = await apiClient.get<WorkflowTemplate[]>('/workflow-templates');
     return data;
   },
 
@@ -54,4 +62,11 @@ export const workflowApi = {
     const { data } = await apiClient.get<ActiveFloorTask[]>('/workflows/tasks/active');
     return data;
   },
+
+  updateTemplateMeasurements: async (templateId: string, measurements: string[]) => {
+    const { data } = await apiClient.put(`/workflows/templates/${templateId}/measurements`, {
+      measurements
+    });
+    return data;
+  }
 };

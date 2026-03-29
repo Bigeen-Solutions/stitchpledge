@@ -16,18 +16,15 @@ import {
   MenuItem,
   CircularProgress,
   IconButton,
-  Tooltip,
   alpha,
   Dialog
 } from "@mui/material";
 import {
   Add as AddIcon,
   Search as SearchIcon,
-  Person as PersonIcon,
   BusinessCenter as SuitIcon,
   Checkroom as ShirtIcon,
   Straighten as TrousersIcon,
-  CalendarMonth as CalendarIcon,
   ArrowForward as ArrowForwardIcon,
   ArrowBack as ArrowBackIcon,
   Delete as DeleteIcon,
@@ -39,37 +36,39 @@ import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { useCustomerSearch, useCreateCustomer, useCreateMeasurement } from "../features/customers/hooks/useCustomerIntake";
 import { useWorkflowTemplates } from "../features/workflow/hooks/useWorkflowTemplates";
 import { useAuthStore } from "../features/auth/auth.store";
-import { useStores, useStaffList } from "../features/auth/hooks/useStaff";
+import { useStores } from "../features/auth/hooks/useStaff";
 import { usePermissions } from "../features/auth/use-permissions";
 import { ordersApi } from "../features/orders/orders.api";
 import { useToastStore } from "../components/feedback/Toast";
 
 type Step = "CLIENT_SELECTION" | "CLIENT_DETAILS" | "GARMENTS_TIMELINE" | "FABRIC_DETAILS" | "MEASUREMENTS" | "SUMMARY";
 
-const GARMENT_TYPES = [
-  { id: 'suit', label: 'Suit', icon: <SuitIcon sx={{ fontSize: 40 }} />, description: 'Full executive tailoring' },
-  { id: 'shirt', label: 'Shirt', icon: <ShirtIcon sx={{ fontSize: 40 }} />, description: 'Bespoke fit & fabric' },
-  { id: 'trousers', label: 'Trousers', icon: <TrousersIcon sx={{ fontSize: 40 }} />, description: 'Precision leg wear' },
-];
+const getGarmentIcon = (templateName: string) => {
+  const name = templateName.toLowerCase();
+  if (name.includes('suit')) return <SuitIcon />;
+  if (name.includes('shirt')) return <ShirtIcon />;
+  if (name.includes('trouser') || name.includes('pant')) return <TrousersIcon />;
+  return <ShirtIcon />; // Fallback
+};
+
+const getGarmentIconLarge = (templateName: string) => {
+  const name = templateName.toLowerCase();
+  if (name.includes('suit')) return <SuitIcon sx={{ fontSize: 40 }} />;
+  if (name.includes('shirt')) return <ShirtIcon sx={{ fontSize: 40 }} />;
+  if (name.includes('trouser') || name.includes('pant')) return <TrousersIcon sx={{ fontSize: 40 }} />;
+  return <ShirtIcon sx={{ fontSize: 40 }} />;
+};
 
 export function NewOrderPage() {
   const navigate = useNavigate();
   const showToast = useToastStore((state) => state.showToast);
-  const { isCompanyAdminOrManager, role } = usePermissions();
+  const { role } = usePermissions();
   const user = useAuthStore((state) => state.user);
   const { data: stores } = useStores();
   const { data: templates } = useWorkflowTemplates();
   const createCustomer = useCreateCustomer();
   const createMeasurement = useCreateMeasurement();
-  const { data: staff } = useStaffList({ enabled: isCompanyAdminOrManager });
 
-  const tailors = useMemo(() => {
-    const list = [...(staff?.filter(s => s.role === 'TAILOR') || [])];
-    if (role === 'TAILOR' && user && !list.find(s => s.id === user.userId)) {
-      list.push({ id: user.userId, email: user.email, role: 'TAILOR' } as any);
-    }
-    return list;
-  }, [staff, role, user]);
 
   const [step, setStep] = useState<Step>("CLIENT_SELECTION");
   const [searchQuery, setSearchQuery] = useState("");
@@ -78,9 +77,7 @@ export function NewOrderPage() {
   // Form State
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [newCustomer, setNewCustomer] = useState({ name: "", email: "", phone: "" });
-  const [measurements, setMeasurements] = useState<Record<string, string>>({
-    Neck: "40", Shoulder: "46", Chest: "100", Waist: "85", Sleeve: "62", Inseam: "78",
-  });
+  const [measurements, setMeasurements] = useState<Record<string, string>>({});
   const [activeMeasurementField, setActiveMeasurementField] = useState<string | null>(null);
   const [fabricDetails, setFabricDetails] = useState({
     fabricImageBase64: "",
@@ -89,13 +86,44 @@ export function NewOrderPage() {
     designNotes: ""
   });
   const [eventDate, setEventDate] = useState<Date | null>(null);
-  const [selectedStoreId, setSelectedStoreId] = useState("");
-  const [garments, setGarments] = useState<{
-    workflowTemplateId: string;
+  const [selectedStoreId] = useState("");
+  const [orderItems, setOrderItems] = useState<{
+    templateId: string;
     estimatedTotalDurationHours: number;
     assignedTailorId?: string | null;
   }[]>([]);
   const [successOrder, setSuccessOrder] = useState<{ id: string } | null>(null);
+
+  // THE AGGREGATION FORGE
+  const dynamicMeasurementFields = useMemo(() => {
+    if (!templates || !orderItems || orderItems.length === 0) return [];
+    const uniqueFields = new Set<string>();
+    
+    orderItems.forEach(item => {
+      const templateDef: any = templates.find((t: any) => t.id === item.templateId);
+      if (templateDef) {
+        // Handle both camelCase and snake_case from backend definitions
+        const measurements = templateDef.requiredMeasurements || templateDef["required_measurements"] || [];
+        measurements.forEach((m: string) => uniqueFields.add(m));
+      }
+    });
+    return Array.from(uniqueFields);
+  }, [orderItems, templates]);
+
+  // Sync state keys when required keys change
+  useMemo(() => {
+    setMeasurements(prev => {
+      const next = { ...prev };
+      let changed = false;
+      dynamicMeasurementFields.forEach(k => {
+        if (next[k] === undefined) {
+          next[k] = "";
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [dynamicMeasurementFields]);
 
   const handleCreateOrder = async () => {
     try {
@@ -111,14 +139,19 @@ export function NewOrderPage() {
       }
 
       showToast("Recording immutable measurements...", "success");
+      const numericMeasurements: Record<string, number> = {};
+      Object.keys(measurements).forEach(k => {
+        numericMeasurements[k] = parseFloat(measurements[k]) || 0;
+      });
+
       const mv = await createMeasurement.mutateAsync({
         customerId: finalCustomerId,
-        measurements
+        measurements: numericMeasurements
       });
 
       if (!mv?.id) throw new Error("Critical: Measurement version ID not returned by system.");
 
-      const finalStoreId = user?.role === 'COMPANY_ADMIN' ? selectedStoreId : user?.storeId;
+      const finalStoreId = role === 'COMPANY_ADMIN' ? selectedStoreId : user?.storeId;
       if (!finalStoreId) {
         showToast("Store assignment is required. Please contact admin.", "error");
         return;
@@ -131,8 +164,8 @@ export function NewOrderPage() {
         storeId: finalStoreId,
         eventDate: eventDate ? eventDate.toISOString() : new Date().toISOString(),
         lockedMeasurementVersionId: mv.id,
-        garments: garments.map(g => ({
-          workflowTemplateId: g.workflowTemplateId,
+        garments: orderItems.map(g => ({
+          workflowTemplateId: g.templateId,
           assignedTailorId: g.assignedTailorId || null,
           estimatedTotalDurationHours: g.estimatedTotalDurationHours || 24,
           fabricImageBase64: fabricDetails.fabricImageBase64,
@@ -152,22 +185,21 @@ export function NewOrderPage() {
     }
   };
 
-  const addGarmentByTemplate = (templateName: string) => {
-    const template = templates?.find(t => t.name.toLowerCase().includes(templateName.toLowerCase()));
+  const addGarmentById = (templateId: string) => {
+    const template = templates?.find(t => t.id === templateId);
     if (template) {
-      setGarments([...garments, {
-        workflowTemplateId: template.id,
+      setOrderItems([...orderItems, {
+        templateId: template.id,
         estimatedTotalDurationHours: 24,
         assignedTailorId: role === 'TAILOR' ? user?.userId : null
       }]);
       showToast(`${template.name} added to order items`, "success");
     } else {
-      showToast(`Workflow template for "${templateName}" not found.`, "warning");
+      showToast(`Workflow template not found.`, "warning");
     }
   };
 
   const steps: Step[] = ["CLIENT_SELECTION", "CLIENT_DETAILS", "GARMENTS_TIMELINE", "FABRIC_DETAILS", "MEASUREMENTS", "SUMMARY"];
-  const currentStepIndex = steps.indexOf(step);
 
   return (
     <Box sx={{
@@ -403,10 +435,10 @@ export function NewOrderPage() {
                     Select Garment Types
                   </Typography>
                   <Grid container spacing={2}>
-                    {GARMENT_TYPES.map((type) => (
-                      <Grid size={{ xs: 4 }} key={type.id}>
+                    {templates?.map((template) => (
+                      <Grid size={{ xs: 6, sm: 4 }} key={template.id}>
                         <Card
-                          onClick={() => addGarmentByTemplate(type.label)}
+                          onClick={() => addGarmentById(template.id)}
                           sx={{
                             bgcolor: 'background.default',
                             border: '1px solid',
@@ -426,12 +458,19 @@ export function NewOrderPage() {
                           }}
                         >
                           <Box sx={{ color: 'secondary.main', mb: 1.5 }}>
-                            {type.icon}
+                            {getGarmentIconLarge(template.name)}
                           </Box>
-                          <Typography variant="subtitle2" sx={{ color: 'text.primary', fontWeight: 600 }}>{type.label}</Typography>
+                          <Typography variant="subtitle2" sx={{ color: 'text.primary', fontWeight: 600 }}>{template.name}</Typography>
                         </Card>
                       </Grid>
                     ))}
+                    {(!templates || templates.length === 0) && (
+                      <Grid size={{ xs: 12 }}>
+                        <Typography variant="body2" sx={{ color: 'text.disabled', p: 4, textAlign: 'center', border: '1px dashed', borderColor: 'divider', borderRadius: '12px' }}>
+                          No production templates found. Configure them in Dashboard Settings.
+                        </Typography>
+                      </Grid>
+                    )}
                   </Grid>
 
                   <Box sx={{ mt: 6 }}>
@@ -439,7 +478,7 @@ export function NewOrderPage() {
                       Order Items List
                     </Typography>
                     <Stack spacing={2}>
-                      {garments.map((g, idx) => (
+                      {orderItems.map((g, idx) => (
                         <Box key={idx} sx={{
                           p: 2,
                           bgcolor: 'background.default',
@@ -452,22 +491,21 @@ export function NewOrderPage() {
                         }}>
                           <Stack direction="row" spacing={2} alignItems="center">
                             <Box sx={{ p: 1, bgcolor: alpha('#c49a1a', 0.1), borderRadius: '8px', color: 'secondary.main' }}>
-                              {templates?.find(t => t.id === g.workflowTemplateId)?.name.includes('Suit') ? <SuitIcon /> :
-                               templates?.find(t => t.id === g.workflowTemplateId)?.name.includes('Shirt') ? <ShirtIcon /> : <TrousersIcon />}
+                              {getGarmentIcon(templates?.find(t => t.id === g.templateId)?.name || '')}
                             </Box>
                             <Box>
-                              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>{templates?.find(t => t.id === g.workflowTemplateId)?.name}</Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>{templates?.find(t => t.id === g.templateId)?.name}</Typography>
                               <Typography variant="caption" sx={{ color: 'text.secondary' }}>24h duration estimate</Typography>
                             </Box>
                           </Stack>
-                          <IconButton size="small" onClick={() => setGarments(garments.filter((_, i) => i !== idx))} sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}>
+                          <IconButton size="small" onClick={() => setOrderItems(orderItems.filter((_, i) => i !== idx))} sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}>
                             <DeleteIcon fontSize="small" />
                           </IconButton>
                         </Box>
                       ))}
-                      {garments.length === 0 && (
+                      {orderItems.length === 0 && (
                         <Box sx={{ p: 4, border: '1px dashed', borderColor: 'divider', borderRadius: '12px', textAlign: 'center' }}>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>No garments selected yet.</Typography>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>No items selected yet.</Typography>
                         </Box>
                       )}
                     </Stack>
@@ -513,7 +551,7 @@ export function NewOrderPage() {
                 </Button>
                 <Button
                   variant="contained"
-                  disabled={garments.length === 0 || !eventDate}
+                  disabled={orderItems.length === 0 || !eventDate}
                   onClick={() => setStep("FABRIC_DETAILS")}
                   sx={{
                     bgcolor: 'secondary.main',
@@ -683,12 +721,12 @@ export function NewOrderPage() {
                 {/* Left Side: Measurement Inputs */}
                 <Grid size={{ xs: 12, md: 7 }}>
                   <Grid container spacing={2}>
-                    {Object.keys(measurements).map(key => (
-                      <Grid size={{ xs: 6 }} key={key}>
+                    {dynamicMeasurementFields.map(key => (
+                      <Grid size={{ xs: 12, sm: 4 }} key={key}>
                         <TextField
                           fullWidth
                           label={key}
-                          value={measurements[key]}
+                          value={measurements[key] || ""}
                           onFocus={() => setActiveMeasurementField(key)}
                           InputProps={{ readOnly: true }}
                           sx={{
@@ -828,11 +866,11 @@ export function NewOrderPage() {
                 </Box>
 
                 <Box>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 700, mb: 1, display: 'block' }}>Line Items ({garments.length})</Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 700, mb: 1, display: 'block' }}>Line Items ({orderItems.length})</Typography>
                   <Stack spacing={1}>
-                    {garments.map((g, i) => (
+                    {orderItems.map((g, i) => (
                       <Box key={i} sx={{ px: 3, py: 2, bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>{templates?.find(t => t.id === g.workflowTemplateId)?.name}</Typography>
+                        <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>{templates?.find(t => t.id === g.templateId)?.name}</Typography>
                         <Typography variant="caption" sx={{ bgcolor: alpha('#c49a1a', 0.2), color: 'secondary.main', px: 1.5, py: 0.5, borderRadius: '99px', fontWeight: 700 }}>PENDING START</Typography>
                       </Box>
                     ))}

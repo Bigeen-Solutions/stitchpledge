@@ -9,6 +9,7 @@ import { StaffManagementPage } from '../../pages/StaffManagementPage.tsx';
 import { NewOrderPage } from '../../pages/NewOrderPage.tsx';
 import { ProductionBoardPage } from '../../pages/ProductionBoardPage.tsx';
 import { DashboardPage } from '../../pages/DashboardPage.tsx';
+import TemplateSettings from '../../pages/dashboard/TemplateSettings.tsx';
 // Removed obsolete components that were only used in the hardcoded dashboard
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
 import { CustomerOrderPage } from '../../features/customer/pages/CustomerOrderPage.tsx';
@@ -83,8 +84,15 @@ export const router = createBrowserRouter([
             ) 
           },
           {
-            path: '/production',
             element: <ProductionBoardPage />,
+          },
+          {
+            path: '/settings/templates',
+            element: (
+              <ProtectedRoute allowedRoles={['COMPANY_ADMIN']}>
+                <TemplateSettings />
+              </ProtectedRoute>
+            )
           },
         ],
       },
