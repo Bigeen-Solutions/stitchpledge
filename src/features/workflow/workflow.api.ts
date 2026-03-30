@@ -58,6 +58,11 @@ export const workflowApi = {
     return data;
   },
 
+  createTemplate: async (name: string) => {
+    const { data } = await apiClient.post<WorkflowTemplate>('/workflows/templates', { name });
+    return data;
+  },
+
   getActiveTasks: async (): Promise<ActiveFloorTask[]> => {
     const { data } = await apiClient.get<ActiveFloorTask[]>('/workflows/tasks/active');
     return data;

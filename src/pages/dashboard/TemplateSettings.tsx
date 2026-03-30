@@ -26,9 +26,12 @@ import {
 import { useWorkflowTemplates } from "../../features/workflow/hooks/useWorkflowTemplates";
 import { workflowApi } from "../../features/workflow/workflow.api";
 import { useToastStore } from "../../components/feedback/Toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { keys } from "../../query/keys";
 
 export default function TemplateSettings() {
-  const { data: templates, refetch } = useWorkflowTemplates();
+  const queryClient = useQueryClient();
+  const { data: templates } = useWorkflowTemplates();
   const showToast = useToastStore((state) => state.showToast);
 
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
@@ -36,6 +39,11 @@ export default function TemplateSettings() {
   const [newMeasurement, setNewMeasurement] = useState("");
   const [currentMeasurements, setCurrentMeasurements] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+
+  // New Template State
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
   const handleOpenEditor = (template: any) => {
     setSelectedTemplate(template);
@@ -62,25 +70,69 @@ export default function TemplateSettings() {
     setIsSaving(true);
     try {
       await workflowApi.updateTemplateMeasurements(selectedTemplate.id, currentMeasurements);
-      showToast("Template measurements updated successfully", "success");
-      refetch();
+      showToast("Sync Successful", "Template measurements updated across the forge.", "success");
+      
+      // Fix: Explicitly invalidate cache so all components see the update
+      await queryClient.invalidateQueries({ queryKey: keys.workflow.templates });
+      
       setIsModalOpen(false);
     } catch (err: any) {
-      showToast(err.message || "Failed to update measurements", "error");
+      showToast("Update Failed", err.message || "Failed to update measurements", "error");
     } finally {
       setIsSaving(false);
     }
   };
 
+  const handleCreateTemplate = async () => {
+    if (!newTemplateName.trim()) return;
+    setIsCreating(true);
+    try {
+      await workflowApi.createTemplate(newTemplateName.trim());
+      showToast("Template Minted", `${newTemplateName} is now available in the forge.`, "success");
+      
+      // Invalidate cache to show new template
+      await queryClient.invalidateQueries({ queryKey: keys.workflow.templates });
+      
+      setIsCreateModalOpen(false);
+      setNewTemplateName("");
+    } catch (err: any) {
+      showToast("Creation Failed", err.message || "Failed to create template", "error");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   return (
     <Box sx={{ p: 4 }}>
-      <header style={{ marginBottom: 40 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>
-          Garment Forge
-        </Typography>
-        <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-          Define the blueprint and required measurements for your bespoke production.
-        </Typography>
+      <header style={{ marginBottom: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>
+            Garment Forge
+          </Typography>
+          <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+            Define the blueprint and required measurements for your bespoke production.
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setIsCreateModalOpen(true)}
+          sx={{
+            borderRadius: '12px',
+            px: 3,
+            py: 1.5,
+            bgcolor: 'primary.main',
+            fontWeight: 700,
+            boxShadow: '0 4px 14px 0 rgba(30, 92, 58, 0.39)',
+            '&:hover': {
+              bgcolor: 'primary.dark',
+              transform: 'translateY(-1px)',
+              boxShadow: '0 6px 20px rgba(30, 92, 58, 0.23)'
+            }
+          }}
+        >
+          Create New Garment Template
+        </Button>
       </header>
 
       <Grid container spacing={3}>
@@ -229,6 +281,57 @@ export default function TemplateSettings() {
             }}
           >
             {isSaving ? "Syncing..." : "Save Manifest"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* CREATE TEMPLATE DIALOG */}
+      <Dialog
+        open={isCreateModalOpen}
+        onClose={() => !isCreating && setIsCreateModalOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: '24px', p: 1 }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800 }}>Mint New Template</DialogTitle>
+        <DialogContent>
+          <Box sx={{ py: 2 }}>
+            <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+              Enter a unique name for this garment template. It will be initialized with a standard production workflow.
+            </Typography>
+            <TextField
+              fullWidth
+              autoFocus
+              label="Template Name"
+              placeholder="e.g. Winter Coat, Tuxedo"
+              value={newTemplateName}
+              onChange={(e) => setNewTemplateName(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleCreateTemplate()}
+              disabled={isCreating}
+              sx={{
+                '& .MuiOutlinedInput-root': { borderRadius: '12px' }
+              }}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setIsCreateModalOpen(false)} disabled={isCreating} sx={{ color: 'text.secondary' }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCreateTemplate}
+            disabled={isCreating || !newTemplateName.trim()}
+            sx={{
+              borderRadius: '12px',
+              px: 4,
+              bgcolor: 'primary.main',
+              fontWeight: 700
+            }}
+          >
+            {isCreating ? "Minting..." : "Mint Template"}
           </Button>
         </DialogActions>
       </Dialog>
