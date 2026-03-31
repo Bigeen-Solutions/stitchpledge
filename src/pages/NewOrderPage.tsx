@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -77,8 +77,13 @@ export function NewOrderPage() {
   // Form State
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [newCustomer, setNewCustomer] = useState({ name: "", email: "", phone: "" });
-  const [measurements, setMeasurements] = useState<Record<string, string>>({});
-  const [activeMeasurementField, setActiveMeasurementField] = useState<string | null>(null);
+  const [measurementEntries, setMeasurementEntries] = useState<{
+    id: string;
+    label: string;
+    value: string;
+    isTemplateField: boolean;
+  }[]>([]);
+  const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
   const [fabricDetails, setFabricDetails] = useState({
     fabricImageBase64: "",
     fabricType: "Cotton",
@@ -93,6 +98,8 @@ export function NewOrderPage() {
     assignedTailorId?: string | null;
   }[]>([]);
   const [successOrder, setSuccessOrder] = useState<{ id: string } | null>(null);
+
+  const activeMeasurementField = measurementEntries.find(e => e.id === activeEntryId)?.label || "";
 
   // THE AGGREGATION FORGE
   const dynamicMeasurementFields = useMemo(() => {
@@ -110,20 +117,40 @@ export function NewOrderPage() {
     return Array.from(uniqueFields);
   }, [orderItems, templates]);
 
-  // Sync state keys when required keys change
-  useMemo(() => {
-    setMeasurements(prev => {
-      const next = { ...prev };
+  // Sync Template Fields into Entries
+  useEffect(() => {
+    setMeasurementEntries(prev => {
+      const existingLabels = new Set(prev.map(e => e.label));
+      const next = [...prev];
       let changed = false;
-      dynamicMeasurementFields.forEach(k => {
-        if (next[k] === undefined) {
-          next[k] = "";
+
+      dynamicMeasurementFields.forEach(field => {
+        if (!existingLabels.has(field)) {
+          next.push({
+            id: Math.random().toString(36).substr(2, 9),
+            label: field,
+            value: "",
+            isTemplateField: true
+          });
           changed = true;
         }
       });
+
+      // Infinite Entry Logic: If the last entry has a value, add a new empty one
+      const lastEntry = next[next.length - 1];
+      if (!lastEntry || lastEntry.value.trim() !== "") {
+        next.push({
+          id: Math.random().toString(36).substr(2, 9),
+          label: "",
+          value: "",
+          isTemplateField: false
+        });
+        changed = true;
+      }
+
       return changed ? next : prev;
     });
-  }, [dynamicMeasurementFields]);
+  }, [dynamicMeasurementFields, measurementEntries]);
 
   const handleCreateOrder = async () => {
     try {
@@ -132,16 +159,18 @@ export function NewOrderPage() {
 
       if (!finalCustomerId) {
         if (!newCustomer.name.trim()) throw new Error("Customer identification is required.");
-        showToast("Creating new customer profile...", "success");
+        showToast("Creating new customer profile...", "Processing intake data.", "success");
         const c = await createCustomer.mutateAsync(newCustomer);
         finalCustomerId = c.id;
         finalCustomerName = c.name;
       }
 
-      showToast("Recording immutable measurements...", "success");
+      showToast("Recording immutable measurements...", "Saving measurement snapshot.", "success");
       const numericMeasurements: Record<string, number> = {};
-      Object.keys(measurements).forEach(k => {
-        numericMeasurements[k] = parseFloat(measurements[k]) || 0;
+      measurementEntries.forEach(entry => {
+        if (entry.label.trim() && entry.value.trim()) {
+          numericMeasurements[entry.label.trim()] = parseFloat(entry.value) || 0;
+        }
       });
 
       const mv = await createMeasurement.mutateAsync({
@@ -153,11 +182,11 @@ export function NewOrderPage() {
 
       const finalStoreId = role === 'COMPANY_ADMIN' ? selectedStoreId : user?.storeId;
       if (!finalStoreId) {
-        showToast("Store assignment is required. Please contact admin.", "error");
+        showToast("Store Assignment Required", "Store assignment is required. Please contact admin.", "error");
         return;
       }
 
-      showToast("Finalizing order & calculating risk...", "success");
+      showToast("Finalizing order & calculating risk...", "Almost there.", "success");
       const result = await ordersApi.createOrder({
         customerId: finalCustomerId,
         customerName: finalCustomerName.trim(),
@@ -175,13 +204,13 @@ export function NewOrderPage() {
         }))
       });
 
-      showToast("Order intake complete.", "success");
+      showToast("Order Intake Complete", "Your order has been committed to production.", "success");
       // The API returns { order, initialProjection }
       setSuccessOrder(result.order || result);
     } catch (err: any) {
       console.error("[Intake Engine Error]", err);
       const errorMessage = err.response?.data?.message || err.message || "Failed to finalize order";
-      showToast(errorMessage, "error");
+      showToast("Intake Error", errorMessage, "error");
     }
   };
 
@@ -193,9 +222,9 @@ export function NewOrderPage() {
         estimatedTotalDurationHours: 24,
         assignedTailorId: role === 'TAILOR' ? user?.userId : null
       }]);
-      showToast(`${template.name} added to order items`, "success");
+      showToast("Item Added", `${template.name} added to order items.`, "success");
     } else {
-      showToast(`Workflow template not found.`, "warning");
+      showToast("Template Not Found", "The selected workflow template could not be found.", "error");
     }
   };
 
@@ -720,31 +749,58 @@ export function NewOrderPage() {
               <Grid container spacing={4}>
                 {/* Left Side: Measurement Inputs */}
                 <Grid size={{ xs: 12, md: 7 }}>
-                  <Grid container spacing={2}>
-                    {dynamicMeasurementFields.map(key => (
-                      <Grid size={{ xs: 12, sm: 4 }} key={key}>
-                        <TextField
-                          fullWidth
-                          label={key}
-                          value={measurements[key] || ""}
-                          onFocus={() => setActiveMeasurementField(key)}
-                          InputProps={{ readOnly: true }}
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              height: 60,
-                              bgcolor: activeMeasurementField === key ? alpha('#c49a1a', 0.05) : 'background.default',
-                              borderColor: activeMeasurementField === key ? 'secondary.main' : 'divider',
-                              borderWidth: activeMeasurementField === key ? 2 : 1,
-                              borderRadius: '12px',
-                              cursor: 'pointer',
-                              '& fieldset': { borderColor: activeMeasurementField === key ? 'secondary.main' : 'divider' },
-                            },
-                            '& .MuiInputLabel-root': { color: activeMeasurementField === key ? 'secondary.main' : 'text.secondary' }
-                          }}
-                        />
+                  <Stack spacing={2}>
+                    {measurementEntries.map(entry => (
+                      <Grid container spacing={1} key={entry.id} alignItems="center">
+                        <Grid size={{ xs: 6 }}>
+                          <TextField
+                            fullWidth
+                            label="Measurement Label"
+                            value={entry.label}
+                            disabled={entry.isTemplateField}
+                            placeholder={entry.isTemplateField ? "" : "e.g. Neck, Bicep"}
+                            onChange={(e) => {
+                              setMeasurementEntries(prev => prev.map(p => 
+                                p.id === entry.id ? { ...p, label: e.target.value } : p
+                              ));
+                            }}
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                borderRadius: '12px',
+                                bgcolor: entry.isTemplateField ? alpha('#000', 0.02) : 'background.default'
+                              }
+                            }}
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 6 }}>
+                          <TextField
+                            fullWidth
+                            label="Value (cm)"
+                            value={entry.value}
+                            onFocus={() => setActiveEntryId(entry.id)}
+                            InputProps={{ readOnly: true }}
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                height: 56,
+                                bgcolor: activeEntryId === entry.id ? alpha('#c49a1a', 0.05) : 'background.default',
+                                borderColor: activeEntryId === entry.id ? 'secondary.main' : 'divider',
+                                borderWidth: activeEntryId === entry.id ? 2 : 1,
+                                borderRadius: '12px',
+                                cursor: 'pointer',
+                                '& fieldset': { borderColor: activeEntryId === entry.id ? 'secondary.main' : 'divider' },
+                              },
+                              '& .MuiInputLabel-root': { color: activeEntryId === entry.id ? 'secondary.main' : 'text.secondary' }
+                            }}
+                          />
+                        </Grid>
                       </Grid>
                     ))}
-                  </Grid>
+                    {measurementEntries.length === 0 && (
+                      <Typography variant="body2" sx={{ color: 'text.disabled', p: 4, textAlign: 'center' }}>
+                        No measurements required. Click the last field to add custom notes.
+                      </Typography>
+                    )}
+                  </Stack>
                 </Grid>
 
                 {/* Right Side: Virtual Numpad */}
@@ -768,22 +824,30 @@ export function NewOrderPage() {
                             fullWidth
                             variant="outlined"
                             onMouseDown={(e) => {
-                              e.preventDefault(); // Prevent blurring the input
-                              if (!activeMeasurementField) return;
+                              e.preventDefault();
+                              if (!activeEntryId) return;
                               
-                              const currentVal = measurements[activeMeasurementField];
+                              const targetEntry = measurementEntries.find(e => e.id === activeEntryId);
+                              if (!targetEntry) return;
+
+                              const currentVal = targetEntry.value;
+                              let nextVal = currentVal;
+
                               if (val === 'BACK') {
-                                setMeasurements({ ...measurements, [activeMeasurementField]: currentVal.slice(0, -1) });
+                                nextVal = currentVal.slice(0, -1);
                               } else if (val === '.') {
                                 if (!currentVal.includes('.')) {
-                                  setMeasurements({ ...measurements, [activeMeasurementField]: currentVal + '.' });
+                                  nextVal = currentVal + '.';
                                 }
                               } else {
-                                // Max 5 digits for sanity
                                 if (currentVal.length < 5) {
-                                  setMeasurements({ ...measurements, [activeMeasurementField]: currentVal + val });
+                                  nextVal = currentVal + val;
                                 }
                               }
+
+                              setMeasurementEntries(prev => prev.map(p => 
+                                p.id === activeEntryId ? { ...p, value: nextVal } : p
+                              ));
                             }}
                             sx={{
                               height: 70,
