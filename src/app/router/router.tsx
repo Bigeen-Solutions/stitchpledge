@@ -10,7 +10,7 @@ import { NewOrderPage } from '../../pages/NewOrderPage.tsx';
 import { ProductionBoardPage } from '../../pages/ProductionBoardPage.tsx';
 import { DashboardPage } from '../../pages/DashboardPage.tsx';
 import TemplateSettings from '../../pages/dashboard/TemplateSettings.tsx';
-// Removed obsolete components that were only used in the hardcoded dashboard
+
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
 import { CustomerOrderPage } from '../../features/customer/pages/CustomerOrderPage.tsx';
 import { ProtectedRoute } from '../../features/auth/ProtectedRoute.tsx';
@@ -44,46 +44,47 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          { path: '/dashboard', 
+          { path: '/dashboard',
             element: (
               <ProtectedRoute>
                 <DashboardPage />
               </ProtectedRoute>
             )
           },
-          { 
-            path: '/orders', 
+          {
+            path: '/orders',
             element: (
               <ProtectedRoute requiredPermission="orders:read">
                 <OrdersPage />
               </ProtectedRoute>
-            ) 
+            )
           },
-          { 
-            path: '/orders/new', 
+          {
+            path: '/orders/new',
             element: (
               <ProtectedRoute requiredPermission="orders:write">
                 <NewOrderPage />
               </ProtectedRoute>
-            ) 
+            )
           },
-          { 
-            path: '/orders/:id', 
+          {
+            path: '/orders/:id',
             element: (
               <ProtectedRoute requiredPermission="orders:read">
                 <OrderDetailPage />
               </ProtectedRoute>
-            ) 
+            )
           },
-          { 
-            path: '/staff', 
+          {
+            path: '/staff',
             element: (
               <ProtectedRoute requiredPermission="staff:read">
                 <StaffManagementPage />
               </ProtectedRoute>
-            ) 
+            )
           },
           {
+            path: '/production',
             element: <ProductionBoardPage />,
           },
           {

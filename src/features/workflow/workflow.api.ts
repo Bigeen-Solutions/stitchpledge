@@ -40,6 +40,9 @@ export interface ActiveFloorTask {
   customerName: string;
   deadline: string;
   riskLevel: 'ON_TRACK' | 'AT_RISK' | 'OVERDUE';
+  fabricName?: string;
+  fabric_image_base64?: string;
+  startDate?: string;
 }
 
 export const workflowApi = {

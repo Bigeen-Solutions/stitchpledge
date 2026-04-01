@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react';
 import {
   Alert,
+  Avatar,
   Box,
   Button,
   Card,
-  CardActionArea,
-  CardContent,
   Chip,
   CircularProgress,
   Dialog,
@@ -13,158 +12,126 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  IconButton,
+  InputAdornment,
+  MenuItem,
+  Select,
   Skeleton,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TextField,
   Typography,
+  Paper,
+  Tooltip,
 } from '@mui/material';
 import FactoryIcon from '@mui/icons-material/Factory';
+import SearchIcon from '@mui/icons-material/Search';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import ShareIcon from '@mui/icons-material/Share';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import EventIcon from '@mui/icons-material/Event';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { isPast, differenceInHours, format } from 'date-fns';
+
 import { useActiveTasks, useMarkStageComplete } from '../features/workflow/hooks/useProductionBoard';
 import type { ActiveFloorTask } from '../features/workflow/workflow.api';
 import { WorkflowGraph } from '../features/workflow/components/WorkflowGraph';
+import '../design-system/layout.css'; // Ensure sf-glass is available
 
-// ─── Risk chip helpers ──────────────────────────────────────────
-const RISK_CHIP_CONFIG = {
-  ON_TRACK: { label: 'On Track', color: 'success' as const },
-  AT_RISK: { label: 'At Risk', color: 'warning' as const },
-  OVERDUE: { label: 'Overdue', color: 'error' as const },
+// ─── Constants & Helpers ────────────────────────────────────────
+
+const STATUS_CONFIG: Record<string, { color: string; bgColor: string }> = {
+  'Cutting': { color: '#0070f3', bgColor: '#e6f2ff' },
+  'Sewing': { color: '#7928ca', bgColor: '#f3e8ff' },
+  'Fitting': { color: '#f5a623', bgColor: '#fff5e6' },
+  'Finishing': { color: '#00bfa5', bgColor: '#e6fffa' },
+  'Default': { color: '#666', bgColor: '#f0f0f0' },
 };
 
-function getRiskConfig(riskLevel: string) {
-  return RISK_CHIP_CONFIG[riskLevel as keyof typeof RISK_CHIP_CONFIG] ?? RISK_CHIP_CONFIG.ON_TRACK;
-}
+const getStatusStyles = (status: string) => {
+  return STATUS_CONFIG[status] || STATUS_CONFIG['Default'];
+};
 
-function formatDeadline(deadline: string): string {
-  try {
-    return new Date(deadline).toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  } catch {
-    return deadline;
+const stringToColor = (string: string) => {
+  let hash = 0;
+  for (let i = 0; i < string.length; i += 1) {
+    hash = string.charCodeAt(i) + ((hash << 5) - hash);
   }
+  let color = '#';
+  for (let i = 0; i < 3; i += 1) {
+    const value = (hash >> (i * 8)) & 0xff;
+    color += `00${value.toString(16)}`.slice(-2);
+  }
+  return color;
+};
+
+const isAtRisk = (deadline: string) => {
+  if (!deadline) return false;
+  const d = new Date(deadline);
+  const now = new Date();
+  return isPast(d) || differenceInHours(d, now) < 24;
+};
+
+const formatTableDate = (dateStr?: string) => {
+  if (!dateStr) return '--';
+  try {
+    return format(new Date(dateStr), 'MMM d, yyyy');
+  } catch {
+    return dateStr;
+  }
+};
+
+// ─── KPI Card Component ─────────────────────────────────────────
+
+interface KPICardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  accentColor: string;
 }
 
-// ─── Skeleton loader for board columns ─────────────────────────
-function KanbanSkeleton() {
-  return (
-    <Grid container spacing={3}>
-      {[1, 2, 3].map((col) => (
-        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={col}>
-          <Box sx={{ bgcolor: 'background.paper', borderRadius: 2, p: 2, border: '1px solid', borderColor: 'divider' }}>
-            <Skeleton variant="text" width="60%" height={32} sx={{ mb: 2 }} />
-            {[1, 2].map((card) => (
-              <Skeleton key={card} variant="rectangular" height={120} sx={{ borderRadius: 2, mb: 1.5 }} />
-            ))}
-          </Box>
-        </Grid>
-      ))}
-    </Grid>
-  );
-}
-
-// ─── Task Card ─────────────────────────────────────────────────
-interface TaskCardProps {
-  task: ActiveFloorTask;
-  onOpen: (task: ActiveFloorTask) => void;
-}
-
-function TaskCard({ task, onOpen }: TaskCardProps) {
-  const risk = getRiskConfig(task.riskLevel);
-
+function KPICard({ title, value, icon, accentColor }: KPICardProps) {
   return (
     <Card
       elevation={0}
+      className="sf-glass"
       sx={{
-        mb: 1.5,
         border: '1px solid',
         borderColor: 'divider',
-        borderRadius: 2,
-        transition: 'box-shadow 0.2s ease, transform 0.2s ease',
-        '&:hover': {
-          boxShadow: 4,
-          transform: 'translateY(-2px)',
-        },
+        borderLeft: `4px solid ${accentColor}`,
+        borderRadius: 3,
+        height: '100%',
       }}
     >
-      <CardActionArea onClick={() => onOpen(task)} sx={{ p: 0 }}>
-        <CardContent>
-          <Typography
-            variant="subtitle2"
-            fontWeight={700}
-            sx={{ mb: 0.5, lineHeight: 1.3 }}
-          >
-            {task.garmentName}
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography variant="overline" color="text.secondary" fontWeight={700}>
+            {title}
           </Typography>
-
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-            {task.customerName}
+          <Typography variant="h4" fontWeight={800}>
+            {value}
           </Typography>
-
-          <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-            <Chip
-              label={risk.label}
-              color={risk.color}
-              size="small"
-              sx={{ fontWeight: 600, fontSize: '0.7rem' }}
-            />
-            <Typography variant="caption" color="text.secondary">
-              {formatDeadline(task.deadline)}
-            </Typography>
-          </Stack>
-        </CardContent>
-      </CardActionArea>
+        </Box>
+        <Box sx={{ color: accentColor, opacity: 0.8 }}>
+          {icon}
+        </Box>
+      </Box>
     </Card>
   );
 }
 
-// ─── Kanban Column ─────────────────────────────────────────────
-interface KanbanColumnProps {
-  stageName: string;
-  tasks: ActiveFloorTask[];
-  onOpen: (task: ActiveFloorTask) => void;
-}
-
-function KanbanColumn({ stageName, tasks, onOpen }: KanbanColumnProps) {
-  return (
-    <Box
-      sx={{
-        bgcolor: 'background.default',
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 2,
-        p: 2,
-        minHeight: 200,
-      }}
-    >
-      {/* Column Header */}
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-        <Typography variant="overline" fontWeight={700} color="text.secondary">
-          {stageName}
-        </Typography>
-        <Chip
-          label={tasks.length}
-          size="small"
-          sx={{
-            height: 20,
-            fontSize: '0.7rem',
-            fontWeight: 700,
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
-          }}
-        />
-      </Stack>
-
-      {/* Task Cards */}
-      {tasks.map((task) => (
-        <TaskCard key={task.stageInstanceId} task={task} onOpen={onOpen} />
-      ))}
-    </Box>
-  );
-}
-
-// ─── Execution Modal ────────────────────────────────────────────
+// ─── Execution Modal ──────────────────────────────────────────── (Preserved)
 interface ExecutionDialogProps {
   task: ActiveFloorTask | null;
   onClose: () => void;
@@ -187,10 +154,7 @@ function ExecutionDialog({ task, onClose }: ExecutionDialogProps) {
       maxWidth="md"
       fullWidth
       PaperProps={{
-        sx: {
-          borderRadius: 3,
-          backgroundImage: 'none',
-        },
+        sx: { borderRadius: 3, backgroundImage: 'none' },
       }}
     >
       <DialogTitle sx={{ pb: 1 }}>
@@ -204,44 +168,21 @@ function ExecutionDialog({ task, onClose }: ExecutionDialogProps) {
               {task.garmentName} — {task.customerName}
             </Typography>
           </Box>
-          <Box sx={{ ml: 'auto !important' }}>
-            {(() => {
-              const risk = getRiskConfig(task.riskLevel);
-              return (
-                <Chip
-                  label={risk.label}
-                  color={risk.color}
-                  size="small"
-                  sx={{ fontWeight: 600 }}
-                />
-              );
-            })()}
-          </Box>
         </Stack>
       </DialogTitle>
-
       <DialogContent dividers sx={{ p: 3 }}>
-        {/* Reuse the existing WorkflowGraph DAG visualization from Phase 3 */}
         <WorkflowGraph garmentId={task.garmentId} orderId={task.orderId} />
       </DialogContent>
-
       <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
         <Button onClick={onClose} disabled={markComplete.isPending}>
           Close
         </Button>
         <Button
           variant="contained"
-          color="primary"
           onClick={handleComplete}
           disabled={markComplete.isPending}
-          startIcon={
-            markComplete.isPending ? (
-              <CircularProgress size={16} color="inherit" />
-            ) : (
-              <CheckCircleOutlineIcon />
-            )
-          }
-          sx={{ minWidth: 160 }}
+          startIcon={markComplete.isPending ? <CircularProgress size={16} /> : <CheckCircleOutlineIcon />}
+          sx={{ minWidth: 160, borderRadius: 3 }}
         >
           {markComplete.isPending ? 'Syncing...' : 'Mark Complete'}
         </Button>
@@ -251,82 +192,308 @@ function ExecutionDialog({ task, onClose }: ExecutionDialogProps) {
 }
 
 // ─── Main Page ─────────────────────────────────────────────────
-export function ProductionBoardPage() {
-  const { data: tasks, isLoading, isError } = useActiveTasks();
-  const [selectedTask, setSelectedTask] = useState<ActiveFloorTask | null>(null);
 
-  // Group tasks by stage name to form Kanban columns
-  const columns = useMemo(() => {
-    if (!tasks) return [];
-    const map = new Map<string, { stageName: string; stageId: string; tasks: ActiveFloorTask[] }>();
-    for (const task of tasks) {
-      if (!map.has(task.stageId)) {
-        map.set(task.stageId, { stageName: task.stageName, stageId: task.stageId, tasks: [] });
-      }
-      map.get(task.stageId)!.tasks.push(task);
-    }
-    return Array.from(map.values());
+export function ProductionBoardPage() {
+  const { data: tasks = [], isLoading, isError } = useActiveTasks();
+  const [selectedTask, setSelectedTask] = useState<ActiveFloorTask | null>(null);
+  
+  // Local Filtering & Pagination State
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [tailorFilter, setTailorFilter] = useState('All');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Derive KPIs
+  const kpis = useMemo(() => {
+    const active = tasks.length;
+    const dueToday = tasks.filter(t => {
+      if (!t.deadline) return false;
+      const d = new Date(t.deadline);
+      const today = new Date();
+      return d.toDateString() === today.toDateString();
+    }).length;
+    const fittings = tasks.filter(t => t.stageName === 'Fitting').length;
+    const completed = 12; // Placeholder
+
+    return [
+      { title: 'Total Active Orders', value: active, color: '#1a237e', icon: <QueryStatsIcon fontSize="large" /> },
+      { title: 'Due Today', value: dueToday, color: '#d32f2f', icon: <ScheduleIcon fontSize="large" /> },
+      { title: 'Fittings Scheduled', value: fittings, color: '#fbc02d', icon: <EventIcon fontSize="large" /> },
+      { title: 'Completed this Week', value: completed, color: '#388e3c', icon: <CheckCircleIcon fontSize="large" /> },
+    ];
   }, [tasks]);
 
+  // Derive Tailors for Filter
+  const uniqueTailors = useMemo(() => {
+    const tailors = Array.from(new Set(tasks.map(t => t.assignedTailorId).filter(Boolean))) as string[];
+    return tailors;
+  }, [tasks]);
+
+  // Handle Filtering
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(task => {
+      const orderId = task.orderId || '';
+      const customerName = task.customerName || '';
+      const searchStr = search.toLowerCase();
+      
+      const matchesSearch = 
+        orderId.toLowerCase().includes(searchStr) || 
+        customerName.toLowerCase().includes(searchStr);
+      const matchesStatus = statusFilter === 'All' || task.stageName === statusFilter;
+      const matchesTailor = tailorFilter === 'All' || task.assignedTailorId === tailorFilter;
+      return matchesSearch && matchesStatus && matchesTailor;
+    });
+  }, [tasks, search, statusFilter, tailorFilter]);
+
+  // Handle Pagination
+  const paginatedTasks = useMemo(() => {
+    return filteredTasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  }, [filteredTasks, page, rowsPerPage]);
+
+  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  if (isLoading) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Skeleton variant="rectangular" height={100} sx={{ mb: 4, borderRadius: 3 }} />
+        <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 3 }} />
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return <Alert severity="error">Failed to load Production Ledger. Please retry.</Alert>;
+  }
+
   return (
-    <Box>
-      {/* Page Header */}
-      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 4 }}>
-        <FactoryIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+    <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1600, mx: 'auto' }}>
+      
+      {/* 1. Page Header */}
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
         <Box>
-          <Typography variant="h4" fontWeight={800} sx={{ lineHeight: 1.2 }}>
-            Production Floor
+          <Typography variant="h4" fontWeight={800} color="primary.main">
+            Production Ledger
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Live view of all active work across all stations
+            High-density operational control center
           </Typography>
         </Box>
-        {tasks && (
-          <Chip
-            label={`${tasks.length} active task${tasks.length !== 1 ? 's' : ''}`}
-            color="primary"
-            variant="outlined"
-            sx={{ ml: 'auto !important', fontWeight: 600 }}
+        <Stack direction="row" spacing={2} alignItems="center">
+          <TextField
+            placeholder="Search Order ID/Client..."
+            size="small"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ width: { xs: 200, md: 300 }, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
           />
-        )}
+          <IconButton sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+            <NotificationsNoneIcon />
+          </IconButton>
+          <Avatar sx={{ width: 40, height: 40, bgcolor: 'primary.main', fontWeight: 700 }}>
+            AD
+          </Avatar>
+        </Stack>
       </Stack>
 
-      {/* Loading State */}
-      {isLoading && <KanbanSkeleton />}
+      {/* 2. KPI Summary Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {kpis.map((kpi, idx) => (
+          <Grid size={{ xs: 12, sm: 6, md: 3 }} key={idx}>
+            <KPICard title={kpi.title} value={kpi.value} accentColor={kpi.color} icon={kpi.icon} />
+          </Grid>
+        ))}
+      </Grid>
 
-      {/* Error State */}
-      {isError && (
-        <Alert severity="error" sx={{ borderRadius: 2 }}>
-          Failed to load production tasks. Please refresh to try again.
-        </Alert>
-      )}
-
-      {/* Empty State */}
-      {!isLoading && !isError && tasks && tasks.length === 0 && (
-        <Alert severity="info" sx={{ borderRadius: 2, py: 3 }}>
-          <Typography fontWeight={600}>No active tasks on the floor right now.</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            When garments reach an active stage, they will appear here as Kanban cards.
-          </Typography>
-        </Alert>
-      )}
-
-      {/* Kanban Board */}
-      {!isLoading && !isError && columns.length > 0 && (
-        <Grid container spacing={3}>
-          {columns.map((col) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={col.stageId}>
-              <KanbanColumn
-                stageName={col.stageName}
-                tasks={col.tasks}
-                onOpen={(task) => setSelectedTask(task)}
-              />
-            </Grid>
+      {/* 3. Filter Bar */}
+      <Stack 
+        direction={{ xs: 'column', sm: 'row' }} 
+        spacing={2} 
+        alignItems="center" 
+        className="sf-glass"
+        sx={{ 
+          mb: 3, 
+          p: 2, 
+          borderRadius: 3, 
+          border: '1px solid', 
+          borderColor: 'divider',
+        }}
+      >
+        <Typography variant="body2" fontWeight={700} color="text.secondary" sx={{ mr: 1 }}>Filters:</Typography>
+        <Select 
+          value={statusFilter} 
+          onChange={(e) => setStatusFilter(e.target.value)}
+          size="small"
+          sx={{ minWidth: 150, borderRadius: 3 }}
+        >
+          <MenuItem value="All">All Statuses</MenuItem>
+          <MenuItem value="Cutting">Cutting</MenuItem>
+          <MenuItem value="Sewing">Sewing</MenuItem>
+          <MenuItem value="Fitting">Fitting</MenuItem>
+          <MenuItem value="Finishing">Finishing</MenuItem>
+        </Select>
+        
+        <Select 
+          value={tailorFilter} 
+          onChange={(e) => setTailorFilter(e.target.value)}
+          size="small"
+          sx={{ minWidth: 150, borderRadius: 3 }}
+        >
+          <MenuItem value="All">All Tailors</MenuItem>
+          {uniqueTailors.map((id: string) => (
+            <MenuItem key={id} value={id}>Tailor #{id.slice(0, 4)}</MenuItem>
           ))}
-        </Grid>
-      )}
+        </Select>
 
-      {/* Execution Modal */}
+        <Select value="Month" size="small" sx={{ minWidth: 150, borderRadius: 3 }}>
+          <MenuItem value="Month">Last 30 Days</MenuItem>
+          <MenuItem value="Week">Last 7 Days</MenuItem>
+        </Select>
+
+        <Box sx={{ ml: 'auto !important' }}>
+          <Button 
+            variant="contained" 
+            startIcon={<FileDownloadIcon />}
+            sx={{ 
+              bgcolor: '#fbc02d', 
+              color: '#000', 
+              '&:hover': { bgcolor: '#f9a825' }, 
+              fontWeight: 700,
+              borderRadius: 3,
+              px: 3
+            }}
+          >
+            Export Ledger
+          </Button>
+        </Box>
+      </Stack>
+
+      {/* 4. Production Data Table */}
+      <TableContainer 
+        component={Paper} 
+        elevation={0} 
+        sx={{ 
+          border: '1px solid', 
+          borderColor: 'divider', 
+          borderRadius: 3,
+          overflow: 'hidden'
+        }}
+      >
+        <Table size="medium">
+          <TableHead sx={{ bgcolor: 'background.default' }}>
+            <TableRow>
+              <TableCell sx={{ fontWeight: 700 }}>Order ID</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Client Name</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Garment Type</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Fabric</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Start Date</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Due Date</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Tailor</TableCell>
+              <TableCell sx={{ fontWeight: 700, textAlign: 'right' }}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginatedTasks.map((task) => {
+              const statusStyle = getStatusStyles(task.stageName);
+              const atRisk = isAtRisk(task.deadline);
+              
+              return (
+                <TableRow key={task.stageInstanceId} hover>
+                  <TableCell sx={{ fontWeight: 700 }}>{task.orderId}</TableCell>
+                  <TableCell>{task.customerName}</TableCell>
+                  <TableCell>{task.garmentName}</TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={task.stageName} 
+                      size="small" 
+                      sx={{ 
+                        fontWeight: 700, 
+                        color: statusStyle.color, 
+                        bgcolor: statusStyle.bgColor,
+                        borderRadius: 2
+                      }} 
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Stack direction="row" spacing={1.5} alignItems="center">
+                      <Avatar 
+                        src={task.fabric_image_base64} 
+                        alt={task.fabricName}
+                        sx={{ 
+                          width: 32, 
+                          height: 32, 
+                          fontSize: '0.8rem',
+                          bgcolor: task.fabricName ? stringToColor(task.fabricName) : 'grey.300',
+                          borderRadius: 2
+                        }}
+                      >
+                        {task.fabricName?.charAt(0) || '?'}
+                      </Avatar>
+                      <Typography variant="body2">{task.fabricName || 'Standard Cotton'}</Typography>
+                    </Stack>
+                  </TableCell>
+                  <TableCell>{formatTableDate(task.startDate)}</TableCell>
+                  <TableCell sx={{ color: atRisk ? 'error.main' : 'text.primary', fontWeight: atRisk ? 700 : 400 }}>
+                    {formatTableDate(task.deadline)}
+                  </TableCell>
+                  <TableCell>
+                    {task.assignedTailorId ? (
+                      <Chip label={`#${task.assignedTailorId.slice(0, 4)}`} size="small" variant="outlined" sx={{ borderRadius: 2 }} />
+                    ) : (
+                      <Typography variant="caption" color="text.secondary">Unassigned</Typography>
+                    )}
+                  </TableCell>
+                  <TableCell align="right">
+                    <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                      <Tooltip title="View Details">
+                        <IconButton size="small" onClick={() => setSelectedTask(task)}>
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Quick Update">
+                        <IconButton size="small">
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Share Link">
+                        <IconButton size="small">
+                          <ShareIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+        
+        {/* Pagination */}
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 50]}
+          component="div"
+          count={filteredTasks.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          sx={{ borderTop: '1px solid', borderColor: 'divider' }}
+        />
+      </TableContainer>
+
+      {/* Execution Dialog */}
       <ExecutionDialog
         task={selectedTask}
         onClose={() => setSelectedTask(null)}
