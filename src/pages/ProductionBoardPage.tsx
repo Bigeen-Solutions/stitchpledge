@@ -441,7 +441,7 @@ export function ProductionBoardPage() {
                       >
                         {task.fabricName?.charAt(0) || '?'}
                       </Avatar>
-                      <Typography variant="body2">{task.fabricName || 'Standard Cotton'}</Typography>
+                      <Typography variant="body2">{task.fabricName || '--'}</Typography>
                     </Stack>
                   </TableCell>
                   <TableCell>{formatTableDate(task.startDate)}</TableCell>

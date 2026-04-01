@@ -11,7 +11,7 @@ export function OrdersList() {
     return (
       <div className="orders-ledger">
         <div className="flex justify-between items-center mb-md px-md">
-          <h2 className="text-h2">Production Ledger</h2>
+          <h2 className="text-h2">Active Order Overview</h2>
           <div className="text-sm text-black">Synchronizing Order Ledger...</div>
         </div>
         <WorkshopTableSkeleton headers={['Order #', 'Customer', 'Garment', 'Deadline', 'Risk State']} />
@@ -32,7 +32,7 @@ export function OrdersList() {
   return (
     <div className="orders-ledger">
       <div className="flex justify-between items-center mb-md px-md">
-        <h2 className="text-h2">Production Ledger</h2>
+        <h2 className="text-h2">Active Order Overview</h2>
         <div className="text-sm text-black">Showing all active workshop projections</div>
       </div>
       
