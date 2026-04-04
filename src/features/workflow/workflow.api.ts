@@ -36,7 +36,9 @@ export interface ActiveFloorTask {
   garmentId: string;
   garmentName: string;
   assignedTailorId?: string | null;
+  tailorEmail?: string | null;
   orderId: string;
+  orderNumber: number;
   customerName: string;
   deadline: string;
   riskLevel: 'ON_TRACK' | 'AT_RISK' | 'OVERDUE';

@@ -7,7 +7,7 @@ export interface Order {
   customerName: string
   eventDate: string
   lockedMeasurementVersionId: string | null
-  orderNumber: string // From projection/dto
+  orderNumber: number // From decimal/int in database
   status: string
   garmentName: string
   deadline: string

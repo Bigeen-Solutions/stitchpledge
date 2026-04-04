@@ -393,7 +393,7 @@ export function ProductionBoardPage() {
         <Table size="medium">
           <TableHead sx={{ bgcolor: 'background.default' }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 700 }}>Order ID</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Order #</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Client Name</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Garment Type</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
@@ -411,7 +411,7 @@ export function ProductionBoardPage() {
               
               return (
                 <TableRow key={task.stageInstanceId} hover>
-                  <TableCell sx={{ fontWeight: 700 }}>{task.orderId}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{task.orderNumber}</TableCell>
                   <TableCell>{task.customerName}</TableCell>
                   <TableCell>{task.garmentName}</TableCell>
                   <TableCell>
@@ -430,16 +430,16 @@ export function ProductionBoardPage() {
                     <Stack direction="row" spacing={1.5} alignItems="center">
                       <Avatar 
                         src={task.fabric_image_base64} 
-                        alt={task.fabricName}
+                        alt={task.garmentName}
                         sx={{ 
                           width: 32, 
                           height: 32, 
                           fontSize: '0.8rem',
-                          bgcolor: task.fabricName ? stringToColor(task.fabricName) : 'grey.300',
+                          bgcolor: task.garmentName ? stringToColor(task.garmentName) : 'grey.300',
                           borderRadius: 2
                         }}
                       >
-                        {task.fabricName?.charAt(0) || '?'}
+                        {task.garmentName?.charAt(0) || '?'}
                       </Avatar>
                       <Typography variant="body2">{task.fabricName || '--'}</Typography>
                     </Stack>
@@ -449,8 +449,17 @@ export function ProductionBoardPage() {
                     {formatTableDate(task.deadline)}
                   </TableCell>
                   <TableCell>
-                    {task.assignedTailorId ? (
-                      <Chip label={`#${task.assignedTailorId.slice(0, 4)}`} size="small" variant="outlined" sx={{ borderRadius: 2 }} />
+                    {task.tailorEmail ? (
+                      <Chip 
+                        label={task.tailorEmail.split('@')[0]} 
+                        size="small" 
+                        variant="outlined" 
+                        sx={{ 
+                          borderRadius: 2,
+                          fontWeight: 600,
+                          textTransform: 'capitalize'
+                        }} 
+                      />
                     ) : (
                       <Typography variant="caption" color="text.secondary">Unassigned</Typography>
                     )}

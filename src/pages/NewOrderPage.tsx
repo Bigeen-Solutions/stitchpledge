@@ -36,7 +36,7 @@ import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { useCustomerSearch, useCreateCustomer, useCreateMeasurement } from "../features/customers/hooks/useCustomerIntake";
 import { useWorkflowTemplates } from "../features/workflow/hooks/useWorkflowTemplates";
 import { useAuthStore } from "../features/auth/auth.store";
-import { useStores } from "../features/auth/hooks/useStaff";
+import { useStores, useStaffList } from "../features/auth/hooks/useStaff";
 import { usePermissions } from "../features/auth/use-permissions";
 import { ordersApi } from "../features/orders/orders.api";
 import { useToastStore } from "../components/feedback/Toast";
@@ -91,7 +91,8 @@ export function NewOrderPage() {
     designNotes: ""
   });
   const [eventDate, setEventDate] = useState<Date | null>(null);
-  const [selectedStoreId] = useState("");
+  const [selectedStoreId, setSelectedStoreId] = useState("");
+  const { data: staff } = useStaffList({ enabled: role === 'COMPANY_ADMIN' || !!user?.storeId });
   const [orderItems, setOrderItems] = useState<{
     templateId: string;
     estimatedTotalDurationHours: number;
@@ -527,6 +528,26 @@ export function NewOrderPage() {
                               <Typography variant="caption" sx={{ color: 'text.secondary' }}>24h duration estimate</Typography>
                             </Box>
                           </Stack>
+                          <Stack direction="row" spacing={2} sx={{ flex: 1, ml: 2 }}>
+                            <FormControl size="small" sx={{ minWidth: 150 }}>
+                              <InputLabel>Assign Tailor</InputLabel>
+                              <Select
+                                value={g.assignedTailorId || ""}
+                                label="Assign Tailor"
+                                onChange={(e) => {
+                                  const next = [...orderItems];
+                                  next[idx].assignedTailorId = e.target.value;
+                                  setOrderItems(next);
+                                }}
+                                sx={{ borderRadius: '8px' }}
+                              >
+                                <MenuItem value=""><em>Unassigned</em></MenuItem>
+                                {staff?.filter(s => s.role === 'TAILOR').map(s => (
+                                  <MenuItem key={s.id} value={s.id}>{s.email.split('@')[0]}</MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Stack>
                           <IconButton size="small" onClick={() => setOrderItems(orderItems.filter((_, i) => i !== idx))} sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}>
                             <DeleteIcon fontSize="small" />
                           </IconButton>
@@ -565,6 +586,27 @@ export function NewOrderPage() {
                       {eventDate ? `Selected: ${eventDate.toLocaleDateString()}` : 'Pick a deadline for risk projection'}
                     </Typography>
                   </Box>
+
+                  {role === 'COMPANY_ADMIN' && (
+                    <Box sx={{ mt: 4 }}>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 2, display: 'block' }}>
+                        Global Hub: Store Assignment
+                      </Typography>
+                      <FormControl fullWidth>
+                        <InputLabel>Production Store</InputLabel>
+                        <Select
+                          value={selectedStoreId}
+                          label="Production Store"
+                          onChange={(e) => setSelectedStoreId(e.target.value)}
+                          sx={{ borderRadius: '12px', bgcolor: 'background.default' }}
+                        >
+                          {stores?.map(store => (
+                            <MenuItem key={store.id} value={store.id}>{store.name}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Box>
+                  )}
                 </Grid>
               </Grid>
 
