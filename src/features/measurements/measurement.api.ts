@@ -10,12 +10,13 @@ export interface MeasurementVersion {
 }
 
 export const measurementApi = {
-  getMeasurements: async (orderId: string) => {
-    const { data } = await apiClient.get<MeasurementVersion[]>(`/orders/${orderId}/measurements`);
+  getMeasurements: async (customerId: string) => {
+    const { data } = await apiClient.get<MeasurementVersion[]>(`/customers/${customerId}/measurements`);
     return data;
   },
   
-  recordMeasurement: async (orderId: string, data: any) => {
-    await apiClient.post(`/orders/${orderId}/measurements`, data);
+  recordMeasurement: async (customerId: string, data: any) => {
+    await apiClient.post(`/customers/${customerId}/measurements`, data);
   }
 };
+

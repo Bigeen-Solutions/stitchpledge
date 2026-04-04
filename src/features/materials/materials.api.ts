@@ -11,12 +11,13 @@ export interface MaterialEntry {
 }
 
 export const materialsApi = {
-  getMaterialsLedger: async (orderId: string) => {
-    const { data } = await apiClient.get<MaterialEntry[]>(`/orders/${orderId}/materials/ledger`);
+  getMaterialsLedger: async (garmentId: string) => {
+    const { data } = await apiClient.get<MaterialEntry[]>(`/garments/${garmentId}/materials`);
     return data;
   },
   
-  adjustMaterial: async (orderId: string, data: { delta: number, reason: string }) => {
-    await apiClient.post(`/orders/${orderId}/materials/adjust`, data);
+  adjustMaterial: async (garmentId: string, data: { delta: number, reason: string }) => {
+    await apiClient.post(`/garments/${garmentId}/materials`, data);
   }
 };
+
