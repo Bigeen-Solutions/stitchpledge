@@ -237,7 +237,7 @@ export function OrderDetailPage() {
                       <Stack direction="row" spacing={2} alignItems="center">
                         <Avatar
                           variant="rounded"
-                          src={(selectedGarment as any).fabric_image_base64}
+                          src={selectedGarment.fabricImageBase64 || undefined}
                           sx={{
                             width: 80,
                             height: 80,
@@ -245,14 +245,16 @@ export function OrderDetailPage() {
                             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                             bgcolor: 'primary.light',
                             border: '1px solid',
-                            borderColor: 'divider'
+                            borderColor: 'divider',
+                            '& img': { objectFit: 'cover' }
                           }}
+                          className="sf-glass"
                         >
-                          {(selectedGarment as any).fabricName?.charAt(0) || 'F'}
+                          {selectedGarment.fabricType?.charAt(0) || 'F'}
                         </Avatar>
                         <Box>
                           <Typography variant="subtitle1" fontWeight={700}>
-                            {(selectedGarment as any).fabricName || 'Standard Fabric'}
+                            {selectedGarment.fabricType || 'Standard Fabric'}
                           </Typography>
                           <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
                             <Box
@@ -260,12 +262,12 @@ export function OrderDetailPage() {
                                 width: 16,
                                 height: 16,
                                 borderRadius: '50%',
-                                bgcolor: (selectedGarment as any).color_swatch || '#eee',
+                                bgcolor: selectedGarment.colorSwatch || '#eee',
                                 border: '1px solid rgba(0,0,0,0.1)'
                               }}
                             />
                             <Typography variant="caption" color="text.secondary">
-                              {(selectedGarment as any).color_swatch || 'No Swatch'}
+                              {selectedGarment.colorSwatch || 'No Swatch'}
                             </Typography>
                           </Stack>
                         </Box>
@@ -276,9 +278,9 @@ export function OrderDetailPage() {
                       <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>
                         Design Notes
                       </Typography>
-                      <Box sx={{ p: 2, bgcolor: 'rgba(0,0,0,0.02)', borderRadius: 2, minHeight: 80 }}>
-                        <Typography variant="body2" sx={{ fontStyle: (selectedGarment as any).notes ? 'normal' : 'italic', color: (selectedGarment as any).notes ? 'text.primary' : 'text.secondary' }}>
-                          {(selectedGarment as any).notes || 'No custom design notes provided for this garment.'}
+                      <Box sx={{ p: 2, bgcolor: 'rgba(0,0,0,0.02)', borderRadius: 2, minHeight: 80 }} className="sf-glass">
+                        <Typography variant="body2" sx={{ fontStyle: selectedGarment.designNotes ? 'normal' : 'italic', color: selectedGarment.designNotes ? 'text.primary' : 'text.secondary' }}>
+                          {selectedGarment.designNotes || 'No custom design notes provided for this garment.'}
                         </Typography>
                       </Box>
                     </Grid>

@@ -38,6 +38,10 @@ export interface Garment {
   name: string
   status: string
   assignedTailorId?: string | null
+  fabricImageBase64?: string | null
+  fabricType?: string | null
+  colorSwatch?: string | null
+  designNotes?: string | null
 }
 
 export interface CapacityStatus {
