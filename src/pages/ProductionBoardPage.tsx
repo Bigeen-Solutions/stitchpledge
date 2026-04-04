@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Alert,
   Avatar,
@@ -194,6 +195,7 @@ function ExecutionDialog({ task, onClose }: ExecutionDialogProps) {
 // ─── Main Page ─────────────────────────────────────────────────
 
 export function ProductionBoardPage() {
+  const navigate = useNavigate();
   const { data: tasks = [], isLoading, isError } = useActiveTasks();
   const [selectedTask, setSelectedTask] = useState<ActiveFloorTask | null>(null);
   
@@ -410,8 +412,20 @@ export function ProductionBoardPage() {
               const atRisk = isAtRisk(task.deadline);
               
               return (
-                <TableRow key={task.stageInstanceId} hover>
-                  <TableCell sx={{ fontWeight: 700 }}>{task.orderNumber}</TableCell>
+                <TableRow key={task.stageInstanceId}>
+                  <TableCell sx={{ fontWeight: 700 }}>
+                    <Link 
+                      to={`/orders/${task.orderId}`} 
+                      style={{ 
+                        textDecoration: 'none', 
+                        color: 'inherit',
+                        borderBottom: '1px dashed',
+                        borderColor: 'rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      {task.orderNumber}
+                    </Link>
+                  </TableCell>
                   <TableCell>{task.customerName}</TableCell>
                   <TableCell>{task.garmentName}</TableCell>
                   <TableCell>
@@ -466,13 +480,13 @@ export function ProductionBoardPage() {
                   </TableCell>
                   <TableCell align="right">
                     <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-                      <Tooltip title="View Details">
-                        <IconButton size="small" onClick={() => setSelectedTask(task)}>
+                      <Tooltip title="View Order Command Center">
+                        <IconButton size="small" onClick={() => navigate(`/orders/${task.orderId}`)}>
                           <VisibilityIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Quick Update">
-                        <IconButton size="small">
+                      <Tooltip title="Quick Update (Stage Completion)">
+                        <IconButton size="small" onClick={() => setSelectedTask(task)}>
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>

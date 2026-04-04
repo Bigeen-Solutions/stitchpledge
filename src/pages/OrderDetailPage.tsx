@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useOrderDetail, useOrderGarments } from '../features/orders/hooks/useOrderDetail.ts';
 import { useStaffList } from '../features/auth/hooks/useStaff.ts';
 import { usePermissions } from '../features/auth/use-permissions.ts';
@@ -10,10 +10,25 @@ import { MaterialHistory } from '../features/materials/components/MaterialHistor
 import { MaterialAdjustmentForm } from '../features/materials/components/MaterialAdjustmentForm.tsx';
 import { MeasurementHistory } from '../features/measurements/components/MeasurementHistory.tsx';
 import { RecordMeasurementForm } from '../features/measurements/components/RecordMeasurementForm.tsx';
-import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Grid,
+  Card,
+  Typography,
+  Button,
+  Avatar,
+  Stack,
+  Box,
+  Chip
+} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const showToast = useToastStore((state) => state.showToast);
   const { isCompanyAdminOrManager } = usePermissions();
   const { data: detail, isLoading, isError } = useOrderDetail(id!);
@@ -46,123 +61,305 @@ export function OrderDetailPage() {
     }
   };
 
-  const riskBadgeClass = 
-    projection.riskLevel === 'ON_TRACK' ? 'badge-ontrack' : 
+  const riskBadgeClass =
+    projection.riskLevel === 'ON_TRACK' ? 'badge-ontrack' :
     projection.riskLevel === 'AT_RISK' ? 'badge-atrisk' : 'badge-overdue';
 
   return (
-    <div className="order-detail-page container">
-      {/* SECTION A: THE HEADER */}
-      <header className="mb-lg flex justify-between items-start p-lg sf-card sf-glass">
-        <div>
-          <div className="text-xs text-muted uppercase tracking-widest font-bold mb-xs">Production Record</div>
-          <h1 className="text-h1">{order.orderNumber}</h1>
-          <div className="flex gap-md mt-sm">
-            <div>
-              <span className="text-muted text-xs block">Customer</span>
-              <span className="font-bold text-black">{order.customerName}</span>
+    <Box className="order-detail-page" sx={{ p: { xs: 2, md: 4 }, maxWidth: 1400, mx: 'auto' }}>
+      {/* 1. Global Header */}
+      <Card elevation={0} className="sf-glass" sx={{ p: 3, mb: 4, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Stack direction="row" spacing={3} alignItems="center">
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+              onClick={() => navigate('/orders')}
+              sx={{ borderRadius: 3, px: 2, fontWeight: 700 }}
+            >
+              Back to Ledger
+            </Button>
+            <Box>
+              <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 700, display: 'block', lineHeight: 1.2 }}>
+                Production Record
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 800 }}>
+                #{order.orderNumber}
+              </Typography>
+            </Box>
+            <Box sx={{ borderLeft: '1px solid', borderColor: 'divider', pl: 3 }}>
+              <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 700, display: 'block', lineHeight: 1.2 }}>
+                Event Date
+              </Typography>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                {new Date(order.eventDate).toLocaleDateString()}
+              </Typography>
+            </Box>
+          </Stack>
+          <Stack alignItems="flex-end" spacing={1}>
+            <div className={`badge ${riskBadgeClass} py-2 px-4 text-sm font-bold shadow-sm`} style={{ borderRadius: '8px' }}>
+              {projection.riskLevel.replace('_', ' ')}
             </div>
-            <div className="border-l border-sf-border pl-md">
-              <span className="text-muted text-xs block">Event Date</span>
-              <span className="font-bold text-black">{new Date(order.eventDate).toLocaleDateString()}</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-col items-end gap-sm">
-          <div className={`badge ${riskBadgeClass} py-2 px-4 text-sm font-bold shadow-sm`}>
-            {projection.riskLevel.replace('_', ' ')}
-          </div>
-          <div className="text-xs text-muted">
-            Last projection: {new Date(projection.calculatedAt).toLocaleTimeString()}
-          </div>
-        </div>
-      </header>
+            <Typography variant="caption" color="text.secondary">
+              Last projection: {new Date(projection.calculatedAt).toLocaleTimeString()}
+            </Typography>
+          </Stack>
+        </Stack>
+      </Card>
 
-      <div className="grid grid-cols-12 gap-xl">
-        {/* SECTION B: GARMENT LIST */}
-        <div className="col-span-4 flex flex-col gap-lg">
-          <div className="sf-card p-md">
-            <h3 className="text-h3 mb-md">Garments</h3>
-            <div className="flex flex-col gap-sm">
-              {garments?.map((garment) => (
-                <button
-                  key={garment.id}
-                  onClick={() => setSelectedGarmentId(garment.id)}
-                  className={`flex justify-between items-center p-md rounded-lg transition-all border ${
-                    selectedGarmentId === garment.id 
-                      ? 'border-primary bg-primary/5 shadow-sm' 
-                      : 'border-sf-border hover:border-muted'
-                  }`}
-                >
-                  <div className="text-left">
-                    <div className={selectedGarmentId === garment.id ? 'font-bold text-black' : 'text-black'}>
-                      {garment.name}
-                    </div>
-                    {garment.assignedTailorId && (
-                      <div className="text-[10px] text-primary font-bold uppercase mt-xs">
-                        Tailor: {staff?.find(s => s.id === garment.assignedTailorId)?.email || 'Assigned'}
-                      </div>
+      <Grid container spacing={4}>
+        {/* 2. Left Sidebar (4 Columns) */}
+        <Grid size={{xs: 12, md: 4}}>
+          <Stack spacing={3}>
+            {/* Component A: Client Perimeter */}
+            <Card className="sf-card" sx={{ p: 3, borderRadius: 3 }}>
+              <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Client Perimeter</Typography>
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', display: 'block' }}>Customer Name</Typography>
+                  <Typography variant="body1" fontWeight={700}>{order.customerName}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', display: 'block' }}>Wedding/Event Date</Typography>
+                  <Typography variant="body1" fontWeight={700}>{new Date(order.eventDate).toLocaleDateString()}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', display: 'block' }}>Volume</Typography>
+                  <Typography variant="body1" fontWeight={700}>Total Garments: {garments?.length || 0}</Typography>
+                </Box>
+              </Stack>
+            </Card>
+
+            {/* Component B: Garment Selector */}
+            <Card className="sf-card" sx={{ p: 3, borderRadius: 3 }}>
+              <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Garment Inventory</Typography>
+              <Stack spacing={1} sx={{ mb: 3 }}>
+                {garments?.map((garment) => (
+                  <Button
+                    key={garment.id}
+                    fullWidth
+                    onClick={() => setSelectedGarmentId(garment.id)}
+                    sx={{
+                      justifyContent: 'space-between',
+                      p: 2,
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: selectedGarmentId === garment.id ? 'primary.main' : 'divider',
+                      bgcolor: selectedGarmentId === garment.id ? 'rgba(30, 92, 58, 0.05)' : 'transparent',
+                      color: 'text.primary',
+                      transition: 'all 0.2s',
+                      textAlign: 'left',
+                      '&:hover': {
+                        bgcolor: 'rgba(30, 92, 58, 0.08)',
+                        borderColor: 'primary.main'
+                      },
+                      borderLeft: selectedGarmentId === garment.id ? '6px solid' : '1px solid',
+                      borderLeftColor: selectedGarmentId === garment.id ? 'primary.main' : 'divider'
+                    }}
+                  >
+                    <Box sx={{ textAlign: 'left' }}>
+                      <Typography variant="body2" sx={{ fontWeight: selectedGarmentId === garment.id ? 800 : 500 }}>
+                        {garment.name}
+                      </Typography>
+                      {garment.assignedTailorId && (
+                        <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 700, display: 'block', mt: 0.5 }}>
+                          Tailor: {staff?.find(s => s.id === garment.assignedTailorId)?.email.split('@')[0] || 'Assigned'}
+                        </Typography>
+                      )}
+                    </Box>
+                    <Typography variant="caption" fontWeight={800} sx={{ textTransform: 'uppercase', color: 'text.secondary' }}>
+                      {garment.status}
+                    </Typography>
+                  </Button>
+                ))}
+              </Stack>
+
+              {selectedGarment && isCompanyAdminOrManager && (
+                <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
+                    Production Assignment
+                  </Typography>
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="assign-tailor-label">Assign Tailor</InputLabel>
+                    <Select
+                      labelId="assign-tailor-label"
+                      value={selectedGarment.assignedTailorId || ''}
+                      label="Assign Tailor"
+                      onChange={(e) => handleAssignTailor(e.target.value as string)}
+                      sx={{ borderRadius: 2 }}
+                    >
+                      <MenuItem value=""><em>Unassigned</em></MenuItem>
+                      {tailors.map(t => (
+                        <MenuItem key={t.id} value={t.id}>
+                          {t.email}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+              )}
+            </Card>
+
+            {/* Component C: Quick Actions */}
+            <Card className="sf-card" sx={{ p: 3, borderRadius: 3 }}>
+              <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Quick Actions</Typography>
+              <Stack spacing={2}>
+                <RecordMeasurementForm orderId={order.id} />
+                <MaterialAdjustmentForm orderId={order.id} />
+              </Stack>
+            </Card>
+          </Stack>
+        </Grid>
+
+        {/* 3. Main Content Area (8 Columns) */}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Stack spacing={3}>
+            {/* Component A: Garment Evidence */}
+            <Card className="sf-card" sx={{ p: 4, borderRadius: 3 }}>
+              {selectedGarment ? (
+                <Stack spacing={4}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                    <Box>
+                      <Typography variant="h5" fontWeight={800}>{selectedGarment.name}</Typography>
+                      <Chip
+                        label={selectedGarment.status}
+                        size="small"
+                        sx={{ mt: 1, fontWeight: 700, borderRadius: 1.5, textTransform: 'uppercase' }}
+                      />
+                    </Box>
+                  </Stack>
+
+                  <Grid container spacing={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>
+                        Fabric Reference
+                      </Typography>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Avatar
+                          variant="rounded"
+                          src={(selectedGarment as any).fabric_image_base64}
+                          sx={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: 2,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            bgcolor: 'primary.light',
+                            border: '1px solid',
+                            borderColor: 'divider'
+                          }}
+                        >
+                          {(selectedGarment as any).fabricName?.charAt(0) || 'F'}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={700}>
+                            {(selectedGarment as any).fabricName || 'Standard Fabric'}
+                          </Typography>
+                          <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+                            <Box
+                              sx={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: '50%',
+                                bgcolor: (selectedGarment as any).color_swatch || '#eee',
+                                border: '1px solid rgba(0,0,0,0.1)'
+                              }}
+                            />
+                            <Typography variant="caption" color="text.secondary">
+                              {(selectedGarment as any).color_swatch || 'No Swatch'}
+                            </Typography>
+                          </Stack>
+                        </Box>
+                      </Stack>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 8 }}>
+                      <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>
+                        Design Notes
+                      </Typography>
+                      <Box sx={{ p: 2, bgcolor: 'rgba(0,0,0,0.02)', borderRadius: 2, minHeight: 80 }}>
+                        <Typography variant="body2" sx={{ fontStyle: (selectedGarment as any).notes ? 'normal' : 'italic', color: (selectedGarment as any).notes ? 'text.primary' : 'text.secondary' }}>
+                          {(selectedGarment as any).notes || 'No custom design notes provided for this garment.'}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  </Grid>
+
+                  {/* Measurements Grid - Dense Key/Value format as requested */}
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 2, display: 'block' }}>
+                      Precision Measurements
+                    </Typography>
+                    {(selectedGarment as any).measurements ? (
+                      <Grid container spacing={2}>
+                        {Object.entries((selectedGarment as any).measurements).map(([key, value]) => (
+                          <Grid size={{ xs: 4, sm: 3 }} key={key}>
+                            <Box sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper' }}>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{
+                                  fontSize: '0.65rem',
+                                  fontWeight: 700,
+                                  textTransform: 'uppercase',
+                                  display: 'block',
+                                  mb: 0.5
+                                }}
+                              >
+                                {key.replace(/_/g, ' ')}
+                              </Typography>
+                              <Typography variant="body1" color="primary" sx={{ fontWeight: 800 }}>
+                                {value as string}
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', py: 2 }}>
+                        No measurements recorded for this garment.
+                      </Typography>
                     )}
-                  </div>
-                  <span className="text-xs text-muted uppercase font-bold">{garment.status}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+                  </Box>
+                </Stack>
+              ) : (
+                <Box sx={{ textAlign: 'center', py: 8 }}>
+                  <Typography variant="h6" color="text.secondary">Select a garment to view evidence</Typography>
+                </Box>
+              )}
+            </Card>
 
-          {selectedGarment && isCompanyAdminOrManager && (
-            <div className="sf-card p-md bg-sf-glass border-primary/20">
-              <h4 className="text-xs font-bold uppercase mb-md">Production Assignment</h4>
-              <FormControl fullWidth variant="outlined" size="small">
-                <InputLabel id="assign-tailor-label">Assign Tailor</InputLabel>
-                <Select
-                  labelId="assign-tailor-label"
-                  value={selectedGarment.assignedTailorId || ''}
-                  label="Assign Tailor"
-                  onChange={(e) => handleAssignTailor(e.target.value)}
-                  sx={{ color: 'black' }}
-                >
-                  <MenuItem value=""><em>Unassigned</em></MenuItem>
-                  {tailors.map(t => (
-                    <MenuItem key={t.id} value={t.id}>
-                      {t.email}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-          )}
-          
-          <div className="sf-card p-md">
-            <h3 className="text-h3 mb-md">Quick Actions</h3>
-            <div className="grid gap-md">
-              <RecordMeasurementForm orderId={order.id} />
-              <MaterialAdjustmentForm orderId={order.id} />
-            </div>
-          </div>
-        </div>
+            {/* Component B: Production Workflow */}
+            <Card className="sf-card" sx={{ p: 0, borderRadius: 3, overflow: 'hidden' }}>
+              <Box sx={{ p: 3, bgcolor: 'rgba(0,0,0,0.01)', borderBottom: '1px solid', borderColor: 'divider' }}>
+                <Typography variant="h6" fontWeight={800}>Production Workflow</Typography>
+              </Box>
+              <Box sx={{ p: 2 }}>
+                {selectedGarmentId ? (
+                  <WorkflowGraph garmentId={selectedGarmentId} orderId={order.id} />
+                ) : (
+                  <Box sx={{ p: 4, textAlign: 'center' }}>
+                    <Typography color="text.secondary">Select a garment to view production graph</Typography>
+                  </Box>
+                )}
+              </Box>
+            </Card>
 
-        {/* SECTION C: WORKFLOW DAG */}
-        <div className="col-span-8">
-          {selectedGarmentId ? (
-            <WorkflowGraph garmentId={selectedGarmentId} orderId={order.id} />
-          ) : (
-            <div className="sf-card p-xl text-center text-muted">
-              Select a garment to view production workflow
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* History Sections */}
-      <div className="grid grid-cols-2 gap-xl mt-xl">
-        <div className="sf-card p-md">
-          <MaterialHistory orderId={order.id} />
-        </div>
-        <div className="sf-card p-md">
-          <MeasurementHistory orderId={order.id} />
-        </div>
-      </div>
-    </div>
+            {/* Component C: History Logs */}
+            <Grid container spacing={3}>
+              <Grid size = {{xs: 12, sm: 6}}>
+                <Card className="sf-card" sx={{ height: '100%', borderRadius: 3, p: 3 }}>
+                   <MaterialHistory orderId={order.id} />
+                </Card>
+              </Grid>
+              <Grid size = {{xs: 12, sm: 6}}>
+                <Card className="sf-card" sx={{ height: '100%', borderRadius: 3, p: 3 }}>
+                  <MeasurementHistory orderId={order.id} />
+                </Card>
+              </Grid>
+            </Grid>
+          </Stack>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }
