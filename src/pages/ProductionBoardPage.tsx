@@ -12,6 +12,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   Grid,
   IconButton,
   InputAdornment,
@@ -50,8 +51,6 @@ import type { ActiveFloorTask } from '../features/workflow/workflow.api';
 import { WorkflowGraph } from '../features/workflow/components/WorkflowGraph';
 import { useStaffList } from '../features/auth/hooks/useStaff';
 import { useGarmentWorkflow, useUpdateGarmentStage } from '../features/workflow/hooks/useWorkflowMutation';
-import { useAuthStore } from '../features/auth/auth.store';
-import { usePermissions } from '../features/auth/use-permissions';
 import '../design-system/layout.css'; // Ensure sf-glass is available
 
 // ─── Constants & Helpers ────────────────────────────────────────
@@ -143,8 +142,6 @@ interface QuickUpdateModalProps {
 }
 
 function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
-  const { role } = usePermissions();
-  const user = useAuthStore((state) => state.user);
   const { data: workflow, isLoading: isWorkflowLoading } = useGarmentWorkflow(task?.garmentId || '');
   const { data: staff, isLoading: isStaffLoading } = useStaffList({ enabled: !!task });
   const updateMutation = useUpdateGarmentStage(task?.garmentId || '');
