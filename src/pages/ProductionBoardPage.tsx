@@ -48,6 +48,10 @@ import { isPast, differenceInHours, format } from 'date-fns';
 import { useActiveTasks, useMarkStageComplete } from '../features/workflow/hooks/useProductionBoard';
 import type { ActiveFloorTask } from '../features/workflow/workflow.api';
 import { WorkflowGraph } from '../features/workflow/components/WorkflowGraph';
+import { useStaffList } from '../features/auth/hooks/useStaff';
+import { useGarmentWorkflow, useUpdateGarmentStage } from '../features/workflow/hooks/useWorkflowMutation';
+import { useAuthStore } from '../features/auth/auth.store';
+import { usePermissions } from '../features/auth/use-permissions';
 import '../design-system/layout.css'; // Ensure sf-glass is available
 
 // ─── Constants & Helpers ────────────────────────────────────────
@@ -132,7 +136,159 @@ function KPICard({ title, value, icon, accentColor }: KPICardProps) {
   );
 }
 
-// ─── Execution Modal ──────────────────────────────────────────── (Preserved)
+// ─── Quick Update Modal ──────────────────────────────────────────
+interface QuickUpdateModalProps {
+  task: ActiveFloorTask | null;
+  onClose: () => void;
+}
+
+function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
+  const { role } = usePermissions();
+  const user = useAuthStore((state) => state.user);
+  const { data: workflow, isLoading: isWorkflowLoading } = useGarmentWorkflow(task?.garmentId || '');
+  const { data: staff, isLoading: isStaffLoading } = useStaffList({ enabled: !!task });
+  const updateMutation = useUpdateGarmentStage(task?.garmentId || '');
+
+  const [selectedStageId, setSelectedStageId] = useState<string>('');
+  const [selectedTailorId, setSelectedTailorId] = useState<string | null>(null);
+
+  // Sync initial state when task changes or workflow data arrives
+  useState(() => {
+    if (task) {
+      setSelectedStageId(task.stageId);
+      setSelectedTailorId(task.assignedTailorId || null);
+    }
+  });
+
+  // Re-sync when task or workflow data changes
+  useMemo(() => {
+    if (task) {
+      setSelectedStageId(task.stageId);
+      setSelectedTailorId(task.assignedTailorId || null);
+    }
+  }, [task]);
+
+  if (!task) return null;
+
+  const handleSave = async () => {
+    await updateMutation.mutateAsync({
+      stageId: selectedStageId,
+      assignedTailorId: selectedTailorId,
+    });
+    onClose();
+  };
+
+  const stages = workflow?.stages || [];
+  const tailors = staff?.filter(s => s.role === 'TAILOR') || [];
+
+  return (
+    <Dialog
+      open={!!task}
+      onClose={onClose}
+      maxWidth="xs"
+      fullWidth
+      PaperProps={{
+        className: 'sf-glass',
+        sx: { borderRadius: 4, backgroundImage: 'none', bgcolor: 'rgba(255, 255, 255, 0.9)' },
+      }}
+    >
+      <DialogTitle sx={{ pb: 1, pt: 3 }}>
+        <Typography variant="h6" fontWeight={800} color="text.primary">
+          Update Garment Status
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {task.garmentName} — {task.customerName}
+        </Typography>
+      </DialogTitle>
+      <DialogContent sx={{ pt: 2, pb: 1 }}>
+        <Stack spacing={3} sx={{ mt: 1 }}>
+          <Box>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 1, display: 'block' }}>
+              Workflow Status
+            </Typography>
+            <FormControl fullWidth size="small">
+              <Select
+                value={selectedStageId}
+                onChange={(e) => setSelectedStageId(e.target.value)}
+                disabled={isWorkflowLoading}
+                sx={{ borderRadius: 2, bgcolor: 'background.paper' }}
+                displayEmpty
+              >
+                {isWorkflowLoading ? (
+                  <MenuItem disabled value="">
+                    <CircularProgress size={20} sx={{ mr: 1 }} /> Loading Stages...
+                  </MenuItem>
+                ) : (
+                  stages.map((s) => (
+                    <MenuItem key={s.stageId} value={s.stageId}>
+                      {s.stageId.charAt(0).toUpperCase() + s.stageId.slice(1)}
+                    </MenuItem>
+                  ))
+                )}
+                {stages.length === 0 && !isWorkflowLoading && (
+                  <MenuItem disabled value="">No stages found</MenuItem>
+                )}
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 1, display: 'block' }}>
+              Assigned Tailor
+            </Typography>
+            <FormControl fullWidth size="small">
+              <Select
+                value={selectedTailorId || ''}
+                onChange={(e) => setSelectedTailorId(e.target.value || null)}
+                disabled={isStaffLoading}
+                sx={{ borderRadius: 2, bgcolor: 'background.paper' }}
+                displayEmpty
+              >
+                <MenuItem value=""><em>Unassigned</em></MenuItem>
+                {isStaffLoading ? (
+                  <MenuItem disabled value="">
+                    <CircularProgress size={20} sx={{ mr: 1 }} /> Loading Staff...
+                  </MenuItem>
+                ) : (
+                  tailors.map((s) => (
+                    <MenuItem key={s.id} value={s.id}>
+                      {s.email.split('@')[0]}
+                    </MenuItem>
+                  ))
+                )}
+              </Select>
+            </FormControl>
+          </Box>
+        </Stack>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 3, gap: 1 }}>
+        <Button 
+          onClick={onClose} 
+          sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 600 }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleSave}
+          disabled={updateMutation.isPending || isWorkflowLoading}
+          sx={{ 
+            bgcolor: 'primary.main', 
+            borderRadius: 2, 
+            px: 3,
+            textTransform: 'none',
+            fontWeight: 700,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+          }}
+        >
+          {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+// ─── Execution Modal (Legacy - Kept for Reference or Stage Completion) ────────
 interface ExecutionDialogProps {
   task: ActiveFloorTask | null;
   onClose: () => void;
@@ -198,6 +354,7 @@ export function ProductionBoardPage() {
   const navigate = useNavigate();
   const { data: tasks = [], isLoading, isError } = useActiveTasks();
   const [selectedTask, setSelectedTask] = useState<ActiveFloorTask | null>(null);
+  const [quickUpdateTask, setQuickUpdateTask] = useState<ActiveFloorTask | null>(null);
   
   // Local Filtering & Pagination State
   const [search, setSearch] = useState('');
@@ -485,8 +642,8 @@ export function ProductionBoardPage() {
                           <VisibilityIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Quick Update (Stage Completion)">
-                        <IconButton size="small" onClick={() => setSelectedTask(task)}>
+                      <Tooltip title="Quick Update (Status & Tailor)">
+                        <IconButton size="small" onClick={() => setQuickUpdateTask(task)}>
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
@@ -520,6 +677,12 @@ export function ProductionBoardPage() {
       <ExecutionDialog
         task={selectedTask}
         onClose={() => setSelectedTask(null)}
+      />
+
+      {/* Quick Update Modal */}
+      <QuickUpdateModal
+        task={quickUpdateTask}
+        onClose={() => setQuickUpdateTask(null)}
       />
     </Box>
   );

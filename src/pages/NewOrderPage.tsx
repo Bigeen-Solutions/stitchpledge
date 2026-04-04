@@ -577,6 +577,7 @@ export function NewOrderPage() {
                       <DateCalendar
                         value={eventDate}
                         onChange={(newValue) => setEventDate(newValue)}
+                        disablePast
                       />
                     </LocalizationProvider>
                   </Box>
