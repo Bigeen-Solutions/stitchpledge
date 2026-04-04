@@ -26,7 +26,7 @@ export function UrgentGarments() {
         gap: 'var(--space-md)' 
       }}>
         {urgentOrders.map(order => (
-          <div key={order.id} className="sf-card urgent-card" style={{
+          <div key={order.garmentId} className="sf-card urgent-card" style={{
             borderLeft: `4px solid var(--risk-${order.riskLevel.toLowerCase()})`,
             padding: 'var(--space-md)',
             position: 'relative',

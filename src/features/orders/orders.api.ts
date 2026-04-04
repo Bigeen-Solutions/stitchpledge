@@ -2,6 +2,7 @@ import { apiClient } from "../../api/client.ts"
 
 export interface Order {
   id: string
+  garmentId: string
   companyId: string
   customerId: string
   customerName: string

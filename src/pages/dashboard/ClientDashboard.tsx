@@ -40,6 +40,7 @@ export const ClientDashboard: React.FC = () => {
 
   const activeOrders = ordersData?.items.map(order => ({
     id: order.orderNumber || order.id.split('-')[0].toUpperCase(),
+    garmentId: order.garmentId,
     garment: order.garmentName || 'Bespoke Garment',
     stage: 2, // Defaulting for visual
     stages: ['Intake', 'Production', 'Finishing', 'Delivery'],
@@ -86,7 +87,7 @@ export const ClientDashboard: React.FC = () => {
           <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: '#6b7280' }}>No active orders found.</Typography>
         ) : activeOrders.map((order) => (
           <Card
-            key={order.id}
+            key={order.garmentId}
             sx={{
               p: 3,
               borderRadius: '20px',
