@@ -291,36 +291,48 @@ export function OrderDetailPage() {
                     <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 2, display: 'block' }}>
                       Precision Measurements
                     </Typography>
-                    {(selectedGarment as any).measurements ? (
-                      <Grid container spacing={2}>
-                        {Object.entries((selectedGarment as any).measurements).map(([key, value]) => (
-                          <Grid size={{ xs: 4, sm: 3 }} key={key}>
-                            <Box sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper' }}>
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{
-                                  fontSize: '0.65rem',
-                                  fontWeight: 700,
-                                  textTransform: 'uppercase',
-                                  display: 'block',
-                                  mb: 0.5
-                                }}
-                              >
-                                {key.replace(/_/g, ' ')}
-                              </Typography>
-                              <Typography variant="body1" color="primary" sx={{ fontWeight: 800 }}>
-                                {value as string}
-                              </Typography>
-                            </Box>
+                    {(() => {
+                      const orderMeasurements = order.measurements || {};
+                      const requiredKeys = selectedGarment.requiredMeasurements || [];
+                      const filteredMeasurements = Object.entries(orderMeasurements).filter(([key]) => 
+                        requiredKeys.length === 0 || requiredKeys.includes(key)
+                      );
+
+                      if (filteredMeasurements.length > 0) {
+                        return (
+                          <Grid container spacing={2}>
+                            {filteredMeasurements.map(([key, value]) => (
+                              <Grid size={{ xs: 4, sm: 3 }} key={key}>
+                                <Box sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper' }}>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{
+                                      fontSize: '0.65rem',
+                                      fontWeight: 700,
+                                      textTransform: 'uppercase',
+                                      display: 'block',
+                                      mb: 0.5
+                                    }}
+                                  >
+                                    {key.replace(/_/g, ' ')}
+                                  </Typography>
+                                  <Typography variant="body1" color="primary" sx={{ fontWeight: 800 }}>
+                                    {String(value)}
+                                  </Typography>
+                                </Box>
+                              </Grid>
+                            ))}
                           </Grid>
-                        ))}
-                      </Grid>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', py: 2 }}>
-                        No measurements recorded for this garment.
-                      </Typography>
-                    )}
+                        );
+                      }
+
+                      return (
+                        <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', py: 2 }}>
+                          No measurements recorded for this garment type.
+                        </Typography>
+                      );
+                    })()}
                   </Box>
                 </Stack>
               ) : (

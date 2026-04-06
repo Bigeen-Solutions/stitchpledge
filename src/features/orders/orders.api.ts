@@ -14,6 +14,7 @@ export interface Order {
   deadline: string
   riskLevel: "ON_TRACK" | "AT_RISK" | "OVERDUE" | "UNKNOWN"
   isUrgent: boolean
+  measurements?: Record<string, number>
 }
 
 export interface OrderDeadlineProjection {
@@ -42,6 +43,7 @@ export interface Garment {
   fabricType?: string | null
   colorSwatch?: string | null
   designNotes?: string | null
+  requiredMeasurements?: string[]
 }
 
 export interface CapacityStatus {
