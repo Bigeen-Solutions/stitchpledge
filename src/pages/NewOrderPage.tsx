@@ -62,7 +62,7 @@ const getGarmentIconLarge = (templateName: string) => {
 export function NewOrderPage() {
   const navigate = useNavigate();
   const showToast = useToastStore((state) => state.showToast);
-  const { role } = usePermissions();
+  const { role, isStoreManager, isTailor, storeId: userStoreId } = usePermissions();
   const user = useAuthStore((state) => state.user);
   const { data: stores } = useStores();
   const { data: templates } = useWorkflowTemplates();
@@ -92,7 +92,13 @@ export function NewOrderPage() {
   });
   const [eventDate, setEventDate] = useState<Date | null>(null);
   const [selectedStoreId, setSelectedStoreId] = useState("");
-  const { data: staff } = useStaffList({ enabled: role === 'COMPANY_ADMIN' || !!user?.storeId });
+  
+  // Use the effectively selected store to filter staff
+  const effectiveStoreId = role === 'COMPANY_ADMIN' ? selectedStoreId : userStoreId || undefined;
+  const { data: staff } = useStaffList({ 
+    storeId: effectiveStoreId,
+    enabled: !!effectiveStoreId || role === 'COMPANY_ADMIN' 
+  });
   const [orderItems, setOrderItems] = useState<{
     templateId: string;
     estimatedTotalDurationHours: number;
@@ -181,7 +187,7 @@ export function NewOrderPage() {
 
       if (!mv?.id) throw new Error("Critical: Measurement version ID not returned by system.");
 
-      const finalStoreId = role === 'COMPANY_ADMIN' ? selectedStoreId : user?.storeId;
+      const finalStoreId = role === 'COMPANY_ADMIN' ? selectedStoreId : userStoreId;
       if (!finalStoreId) {
         showToast("Store Assignment Required", "Store assignment is required. Please contact admin.", "error");
         return;
@@ -588,7 +594,7 @@ export function NewOrderPage() {
                     </Typography>
                   </Box>
 
-                  {role === 'COMPANY_ADMIN' && (
+                  {role === 'COMPANY_ADMIN' && !isStoreManager && !isTailor && (
                     <Box sx={{ mt: 4 }}>
                       <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 2, display: 'block' }}>
                         Global Hub: Store Assignment

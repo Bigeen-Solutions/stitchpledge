@@ -143,7 +143,10 @@ interface QuickUpdateModalProps {
 
 function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
   const { data: workflow, isLoading: isWorkflowLoading } = useGarmentWorkflow(task?.garmentId || '');
-  const { data: staff, isLoading: isStaffLoading } = useStaffList({ enabled: !!task });
+  const { data: staff, isLoading: isStaffLoading, isError: isStaffError } = useStaffList({ 
+    storeId: task?.storeId,
+    enabled: !!task && !!task.storeId 
+  });
   const updateMutation = useUpdateGarmentStage(task?.garmentId || '');
 
   const [selectedStageId, setSelectedStageId] = useState<string>('');
@@ -166,6 +169,8 @@ function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
   }, [task]);
 
   if (!task) return null;
+
+  const isStoreIdMissing = !task.storeId;
 
   const handleSave = async () => {
     await updateMutation.mutateAsync({
@@ -233,27 +238,40 @@ function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 1, display: 'block' }}>
               Assigned Tailor
             </Typography>
-            <FormControl fullWidth size="small">
+            <FormControl fullWidth size="small" error={isStoreIdMissing || isStaffError}>
               <Select
                 value={selectedTailorId || ''}
                 onChange={(e) => setSelectedTailorId(e.target.value || null)}
-                disabled={isStaffLoading}
+                disabled={isStaffLoading || isStoreIdMissing}
                 sx={{ borderRadius: 2, bgcolor: 'background.paper' }}
                 displayEmpty
               >
-                <MenuItem value=""><em>Unassigned</em></MenuItem>
-                {isStaffLoading ? (
-                  <MenuItem disabled value="">
-                    <CircularProgress size={20} sx={{ mr: 1 }} /> Loading Staff...
+                {isStoreIdMissing ? (
+                   <MenuItem disabled value="">
+                    Store ID Missing - Contact Admin
                   </MenuItem>
                 ) : (
-                  tailors.map((s) => (
-                    <MenuItem key={s.id} value={s.id}>
-                      {s.email.split('@')[0]}
-                    </MenuItem>
-                  ))
+                  <>
+                    <MenuItem value=""><em>Unassigned</em></MenuItem>
+                    {isStaffLoading ? (
+                      <MenuItem disabled value="">
+                        <CircularProgress size={20} sx={{ mr: 1 }} /> Loading Staff...
+                      </MenuItem>
+                    ) : (
+                      tailors.map((s) => (
+                        <MenuItem key={s.id} value={s.id}>
+                          {s.email.split('@')[0]}
+                        </MenuItem>
+                      ))
+                    )}
+                  </>
                 )}
               </Select>
+              {isStoreIdMissing && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, fontWeight: 600 }}>
+                  Critical: This task is missing a store assignment.
+                </Typography>
+              )}
             </FormControl>
           </Box>
         </Stack>

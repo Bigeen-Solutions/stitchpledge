@@ -33,7 +33,10 @@ export function OrderDetailPage() {
   const { isCompanyAdminOrManager } = usePermissions();
   const { data: detail, isLoading, isError } = useOrderDetail(id!);
   const { data: garments, isLoading: isLoadingGarments, refetch: refetchGarments } = useOrderGarments(id!);
-  const { data: staff } = useStaffList({ enabled: isCompanyAdminOrManager });
+  const { data: staff } = useStaffList({ 
+    storeId: detail?.order.storeId,
+    enabled: isCompanyAdminOrManager && !!detail?.order.storeId
+  });
   const [selectedGarmentId, setSelectedGarmentId] = useState<string | null>(null);
 
   const tailors = staff?.filter(s => s.role === 'TAILOR') || [];

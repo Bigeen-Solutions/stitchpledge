@@ -23,6 +23,9 @@ export function usePermissions() {
     can,
     role,
     isCustomer: role === 'CUSTOMER',
+    isStoreManager: role === 'STORE_MANAGER',
+    isTailor: role === 'TAILOR',
     isCompanyAdminOrManager: role === 'COMPANY_ADMIN' || role === 'STORE_MANAGER',
+    storeId: user?.storeId || null,
   };
 }

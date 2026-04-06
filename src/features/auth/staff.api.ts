@@ -22,8 +22,10 @@ export interface Store {
 }
 
 export const staffApi = {
-  getStaff: async (): Promise<Staff[]> => {
-    const response = await apiClient.get<Staff[]>("/staff");
+  getStaff: async (storeId?: string): Promise<Staff[]> => {
+    const response = await apiClient.get<Staff[]>("/staff", {
+      params: { storeId }
+    });
     return response.data;
   },
 

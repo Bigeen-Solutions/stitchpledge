@@ -26,6 +26,7 @@ export const keys = {
   },
   staff: {
     all: ['staff'] as const,
+    list: (storeId?: string) => ['staff', 'list', { storeId }] as const,
   },
   analytics: {
     overview: ['analytics', 'overview'] as const,

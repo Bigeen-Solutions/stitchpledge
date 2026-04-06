@@ -15,6 +15,7 @@ export interface Order {
   riskLevel: "ON_TRACK" | "AT_RISK" | "OVERDUE" | "UNKNOWN"
   isUrgent: boolean
   measurements?: Record<string, number>
+  storeId?: string
 }
 
 export interface OrderDeadlineProjection {
