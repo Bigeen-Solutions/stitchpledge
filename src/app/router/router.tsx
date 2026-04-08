@@ -10,6 +10,7 @@ import { NewOrderPage } from '../../pages/NewOrderPage.tsx';
 import { ProductionBoardPage } from '../../pages/ProductionBoardPage.tsx';
 import { DashboardPage } from '../../pages/DashboardPage.tsx';
 import { CustomersPage } from '../../pages/CustomersPage.tsx';
+import { ClientProfilePage } from '../../pages/ClientProfilePage.tsx';
 import TemplateSettings from '../../pages/dashboard/TemplateSettings.tsx';
 
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
@@ -89,6 +90,14 @@ export const router = createBrowserRouter([
             element: (
               <ProtectedRoute requiredPermission="orders:read">
                 <CustomersPage />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: '/customers/:id',
+            element: (
+              <ProtectedRoute requiredPermission="orders:read">
+                <ClientProfilePage />
               </ProtectedRoute>
             )
           },

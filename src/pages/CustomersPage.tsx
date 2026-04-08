@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCustomers } from '../features/customers/hooks/useCustomers';
 import { WorkshopTable } from '../components/ui/WorkshopTable';
 import { WorkshopTableSkeleton } from '../components/ui/WorkshopTableSkeleton';
 import { ErrorState } from '../components/feedback/ErrorState';
 
 export function CustomersPage() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -96,7 +98,7 @@ export function CustomersPage() {
                   <td>
                     <button 
                       className="btn btn-secondary btn-sm"
-                      onClick={() => alert(`Viewing profile for ${customer.name}`)}
+                      onClick={() => navigate(`/customers/${customer.id}`)}
                     >
                       View Profile
                     </button>

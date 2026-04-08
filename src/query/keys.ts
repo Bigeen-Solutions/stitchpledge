@@ -35,5 +35,6 @@ export const keys = {
   customers: {
     list: (page: number, limit: number, search?: string) => ['customers', 'list', { page, limit, search }] as const,
     search: (query: string) => ['customers', 'search', query] as const,
+    detail: (id: string) => ['customers', 'profile', id] as const,
   },
 };
