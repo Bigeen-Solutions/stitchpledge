@@ -1,11 +1,16 @@
+import { useState } from 'react';
 import { useOrders } from '../hooks/useOrders.ts';
 import { WorkshopTable } from '../../../components/ui/WorkshopTable.tsx';
 import { RiskBadge } from '../../../components/ui/RiskBadge.tsx';
 import { WorkshopTableSkeleton } from '../../../components/ui/WorkshopTableSkeleton.tsx';
 import { ErrorState } from '../../../components/feedback/ErrorState.tsx';
+import { EditOrderModal } from './EditOrderModal.tsx';
 
 export function OrdersList() {
-  const { data: orders, isLoading, isError, error, refetch } = useOrders();
+  const [page, setPage] = useState(1);
+  const [editingOrder, setEditingOrder] = useState<any>(null);
+
+  const { data: orders, isLoading, isError, error, refetch } = useOrders(page, 10);
 
   if (isLoading) {
     return (
@@ -36,28 +41,71 @@ export function OrdersList() {
         <div className="text-sm text-black">Showing all active workshop projections</div>
       </div>
       
-      <WorkshopTable headers={['Order #', 'Customer', 'Garment', 'Deadline', 'Risk State']}>
-        {orders?.items?.map(order => (
-          <tr key={order.garmentId} className={`ledger-row risk-${order.riskLevel.toLowerCase()}`}>
-            <td>
-              <div className="font-bold text-black" style={{ fontSize: '1rem' }}>{order.orderNumber}</div>
-              <div className="text-xs text-black uppercase font-bold opacity-70">{order.status}</div>
-            </td>
-            <td className="text-black font-medium">{order.customerName}</td>
-            <td className="text-black">{order.garmentName}</td>
-            <td>
-              <div className="deadline-dominant" style={{ 
-                fontSize: '1.25rem', 
-                fontWeight: 800,
-                color: order.riskLevel === 'OVERDUE' ? 'var(--risk-overdue)' : 'var(--color-text-primary)'
-              }}>
-                {order.deadline}
-              </div>
-            </td>
-            <td><RiskBadge level={order.riskLevel} /></td>
-          </tr>
-        ))}
+      <WorkshopTable headers={['Order #', 'Customer', 'Garment', 'Deadline', 'Risk State', 'Actions']}>
+        {orders?.items?.map(order => {
+          const renderRisk = order.status === 'COMPLETED' ? 'ON_TRACK' : order.riskLevel;
+          const isOverdue = new Date(order.eventDate) < new Date() && order.status !== 'COMPLETED';
+          return (
+            <tr key={order.garmentId} className={`ledger-row risk-${renderRisk.toLowerCase()}`}>
+              <td>
+                <div className="font-bold text-black" style={{ fontSize: '1rem' }}>{order.orderNumber}</div>
+                <div className="text-xs text-black uppercase font-bold opacity-70">{order.status}</div>
+              </td>
+              <td className="text-black font-medium">{order.customerName}</td>
+              <td className="text-black">{order.garmentName}</td>
+              <td>
+                <div className="deadline-dominant" style={{ 
+                  fontSize: '1.25rem', 
+                  fontWeight: 800,
+                  color: isOverdue ? 'var(--risk-overdue)' : 'var(--color-text-primary)'
+                }}>
+                  {order.deadline}
+                </div>
+              </td>
+              <td><RiskBadge level={renderRisk} /></td>
+              <td>
+                {order.status !== 'COMPLETED' && (
+                  <button 
+                    className="text-button" 
+                    style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary)' }}
+                    onClick={() => setEditingOrder(order)}
+                  >
+                    Edit
+                  </button>
+                )}
+              </td>
+            </tr>
+          );
+        })}
       </WorkshopTable>
+
+      <div className="flex justify-between items-center" style={{ marginTop: 'var(--space-md)', padding: '0 var(--space-md)' }}>
+        <button 
+          className="btn btn-secondary text-sm" 
+          disabled={page === 1}
+          onClick={() => setPage(p => p - 1)}
+        >
+          &larr; Previous
+        </button>
+        <span className="text-sm font-medium text-muted">
+          Page {page} of {orders?.totalPages || 1}
+        </span>
+        <button 
+          className="btn btn-secondary text-sm"
+          disabled={!orders?.totalPages || page === orders.totalPages}
+          onClick={() => setPage(p => p + 1)}
+        >
+          Next &rarr;
+        </button>
+      </div>
+
+      {editingOrder && (
+        <EditOrderModal 
+          open={!!editingOrder} 
+          onClose={() => setEditingOrder(null)} 
+          order={editingOrder} 
+        />
+      )}
 
       <style>{`
         .ledger-row {

@@ -52,6 +52,18 @@ export interface CapacityStatus {
   message: string
 }
 
+export interface UrgentGarment {
+  garmentId: string
+  garmentName: string
+  garmentStatus: string
+  storeId: string
+  orderId: string
+  orderNumber: number
+  customerName: string
+  eventDate: string
+  riskLevel: "ON_TRACK" | "AT_RISK" | "OVERDUE"
+}
+
 export interface OrdersResponse {
   items: Order[]
   total: number
@@ -72,6 +84,11 @@ export const ordersApi = {
     const { data } = await apiClient.get<CapacityStatus>(
       "/orders/capacity-status",
     )
+    return data
+  },
+
+  getUrgentGarments: async () => {
+    const { data } = await apiClient.get<UrgentGarment[]>("/orders/urgent-garments")
     return data
   },
 

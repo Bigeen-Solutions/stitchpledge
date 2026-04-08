@@ -44,10 +44,10 @@ import {
 } from '@mui/icons-material';
 import type {
   ActivityItem,
-  MaterialStock,
-  RecentOrderRow
+  MaterialStock
 } from '../../features/dashboard/analytics.api';
 import { useAdminAnalytics } from '../../features/dashboard/useAdminAnalytics';
+import { useOrders } from '../../features/orders/hooks/useOrders';
 
 const countUp = keyframes`
   from { opacity: 0; transform: translateY(10px); }
@@ -120,6 +120,7 @@ export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const { data: analytics, isLoading, isError } = useAdminAnalytics();
+  const { data: ordersData } = useOrders(1, 5);
 
   if (isError) {
     return (
@@ -148,7 +149,7 @@ export const AdminDashboard: React.FC = () => {
     completed: Math.floor(tasksByStage[name] * 0.3),
     inProgress: Math.ceil(tasksByStage[name] * 0.7)
   }));
-  const recentOrders: RecentOrderRow[] = analytics?.recentOrders || [];
+  const recentOrders = ordersData?.items || [];
 
   return (
     <Box sx={{ pb: 8 }}>
@@ -282,40 +283,46 @@ export const AdminDashboard: React.FC = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {recentOrders.map((order) => (
-                      <TableRow
-                        key={order.id}
-                        hover
-                        onClick={() => navigate(`/orders/${order.id}`)}
-                        sx={{ cursor: 'pointer', transition: 'background 0.2s ease', '&:hover': { bgcolor: alpha('#1e5c3a', 0.04) } }}
-                      >
-                        <TableCell sx={{ fontWeight: 700, color: '#1a2340', fontFamily: 'monospace' }}>
-                          #{order.id.split('-')[0].toUpperCase()}
-                        </TableCell>
-                        <TableCell sx={{ color: '#1a2340', fontWeight: 500 }}>{order.customerName}</TableCell>
-                        <TableCell sx={{ color: '#6b7280' }}>{order.garmentName}</TableCell>
-                        <TableCell>
-                          <Stack direction="row" alignItems="center" spacing={1}>
-                            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#c49a1a' }} />
-                            <Typography variant="body2" sx={{ fontSize: '13px', fontWeight: 500 }}>Sewing</Typography>
-                          </Stack>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={order.riskLevel}
-                            size="small"
-                            sx={{
-                              height: 24,
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              bgcolor: order.riskLevel === 'OVERDUE' ? '#fde8e8' : order.riskLevel === 'AT_RISK' ? '#fef3e2' : '#e8f5ee',
-                              color: order.riskLevel === 'OVERDUE' ? '#c0392b' : order.riskLevel === 'AT_RISK' ? '#c49a1a' : '#1e5c3a',
-                              borderRadius: '6px',
-                            }}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {recentOrders.map((order: any) => {
+                      const renderRisk = order.status === 'COMPLETED' ? 'ON_TRACK' : (order.riskLevel || 'ON_TRACK');
+                      const stageColor = order.status === 'COMPLETED' ? '#1e5c3a' : '#c49a1a';
+                      return (
+                        <TableRow
+                          key={order.garmentId || order.id}
+                          hover
+                          onClick={() => navigate(`/orders/${order.id}`)}
+                          sx={{ cursor: 'pointer', transition: 'background 0.2s ease', '&:hover': { bgcolor: alpha('#1e5c3a', 0.04) } }}
+                        >
+                          <TableCell sx={{ fontWeight: 700, color: '#1a2340', fontFamily: 'monospace' }}>
+                            #{order.id.split('-')[0].toUpperCase()}
+                          </TableCell>
+                          <TableCell sx={{ color: '#1a2340', fontWeight: 500 }}>{order.customerName}</TableCell>
+                          <TableCell sx={{ color: '#6b7280' }}>{order.garmentName}</TableCell>
+                          <TableCell>
+                            <Stack direction="row" alignItems="center" spacing={1}>
+                              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: stageColor }} />
+                              <Typography variant="body2" sx={{ fontSize: '13px', fontWeight: 500, textTransform: 'capitalize' }}>
+                                {order.status?.replace(/_/g, ' ').toLowerCase() || 'Processing'}
+                              </Typography>
+                            </Stack>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={renderRisk}
+                              size="small"
+                              sx={{
+                                height: 24,
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                bgcolor: renderRisk === 'OVERDUE' ? '#fde8e8' : renderRisk === 'AT_RISK' ? '#fef3e2' : '#e8f5ee',
+                                color: renderRisk === 'OVERDUE' ? '#c0392b' : renderRisk === 'AT_RISK' ? '#c49a1a' : '#1e5c3a',
+                                borderRadius: '6px',
+                              }}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </TableContainer>

@@ -1,16 +1,14 @@
-import { useOrders } from '../hooks/useOrders.ts';
+import { useUrgentGarments } from '../hooks/useUrgentGarments.ts';
 import { useNavigate } from 'react-router-dom';
 import { RiskBadge } from '../../../components/ui/RiskBadge.tsx';
 
 export function UrgentGarments() {
   const navigate = useNavigate();
-  const { data: orders, isLoading } = useOrders();
+  const { data: urgentGarments, isLoading } = useUrgentGarments();
 
   if (isLoading) return null;
 
-  const urgentOrders = orders?.items?.filter(o => o.isUrgent);
-
-  if (!urgentOrders || urgentOrders.length === 0) return null;
+  if (!urgentGarments || urgentGarments.length === 0) return null;
 
   return (
     <section className="mb-lg">
@@ -19,7 +17,7 @@ export function UrgentGarments() {
           <span className="pulse-dot"></span>
           High-Risk Production Focus
         </h2>
-        <span className="text-sm font-medium text-muted">{urgentOrders.length} garments requiring attention</span>
+        <span className="text-sm font-medium text-muted">{urgentGarments.length} garments requiring attention</span>
       </div>
       
       <div className="urgent-grid" style={{ 
@@ -27,38 +25,38 @@ export function UrgentGarments() {
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
         gap: 'var(--space-md)' 
       }}>
-        {urgentOrders.map(order => (
-          <div key={order.garmentId} className="sf-card urgent-card" style={{
-            borderLeft: `4px solid var(--risk-${order.riskLevel.toLowerCase()})`,
+        {urgentGarments.map(garment => (
+          <div key={garment.garmentId} className="sf-card urgent-card" style={{
+            borderLeft: `4px solid var(--risk-${garment.riskLevel.toLowerCase()})`,
             padding: 'var(--space-md)',
             position: 'relative',
             overflow: 'hidden'
           }}>
             <div className="flex justify-between items-start mb-sm">
               <div>
-                <span className="text-xs font-bold text-muted uppercase tracking-wider">{order.orderNumber}</span>
-                <h3 className="text-lg font-bold" style={{ marginTop: 'var(--space-xs)' }}>{order.garmentName}</h3>
+                <span className="text-xs font-bold text-muted uppercase tracking-wider">Order #{garment.orderNumber}</span>
+                <h3 className="text-lg font-bold" style={{ marginTop: 'var(--space-xs)' }}>{garment.garmentName}</h3>
               </div>
-              <RiskBadge level={order.riskLevel} />
+              <RiskBadge level={garment.riskLevel} />
             </div>
             
             <div className="mt-md flex justify-between items-end">
               <div>
-                <p className="text-sm text-secondary">{order.customerName}</p>
+                <p className="text-sm text-secondary">{garment.customerName}</p>
                 <div className="deadline-dominant" style={{ fontSize: '1.25rem', marginTop: 'var(--space-xs)' }}>
-                  {order.deadline}
+                  {new Date(garment.eventDate).toLocaleDateString()}
                 </div>
               </div>
               <button 
                 className="text-button" 
                 style={{ fontWeight: 700 }}
-                onClick={() => navigate(`/orders/${order.id}`, { state: { targetGarmentId: order.garmentId } })}
+                onClick={() => navigate(`/orders/${garment.orderId}`, { state: { targetGarmentId: garment.garmentId } })}
               >
                 START NOW →
               </button>
             </div>
 
-            {order.riskLevel === 'OVERDUE' && (
+            {garment.riskLevel === 'OVERDUE' && (
               <div style={{
                 position: 'absolute',
                 top: 0,
