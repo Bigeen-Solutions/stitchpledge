@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useOrderDetail, useOrderGarments } from '../features/orders/hooks/useOrderDetail.ts';
 import { useStaffList } from '../features/auth/hooks/useStaff.ts';
 import { usePermissions } from '../features/auth/use-permissions.ts';
@@ -29,6 +29,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const showToast = useToastStore((state) => state.showToast);
   const { isCompanyAdminOrManager } = usePermissions();
   const { data: detail, isLoading, isError } = useOrderDetail(id!);
@@ -43,9 +44,16 @@ export function OrderDetailPage() {
 
   useEffect(() => {
     if (garments && garments.length > 0 && !selectedGarmentId) {
-      setSelectedGarmentId(garments[0].id);
+      const targetId = (location.state as any)?.targetGarmentId;
+      const isValidTarget = targetId && garments?.some(g => g.id === targetId);
+
+      if (isValidTarget) {
+        setSelectedGarmentId(targetId);
+      } else {
+        setSelectedGarmentId(garments[0].id);
+      }
     }
-  }, [garments, selectedGarmentId]);
+  }, [garments, selectedGarmentId, location.state]);
 
   if (isLoading || isLoadingGarments) return <div className="sf-loading-overlay sf-glass">Syncing Production Context...</div>;
   if (isError || !detail) return <div className="container p-lg text-center"><h1>Order Not Found</h1><p>This production record does not exist or access is restricted.</p></div>;
@@ -215,7 +223,7 @@ export function OrderDetailPage() {
         </Grid>
 
         {/* 3. Main Content Area (8 Columns) */}
-        <Grid size={{ xs: 12, md: 4 }}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Stack spacing={3}>
             {/* Component A: Garment Evidence */}
             <Card className="sf-card" sx={{ p: 4, borderRadius: 3 }}>

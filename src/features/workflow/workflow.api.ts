@@ -24,9 +24,23 @@ export interface WorkflowInstance {
   templateVersionId: string;
 }
 
+export interface WorkflowNode {
+  id: string;
+  name: string;
+  estimated_duration_hours?: number;
+}
+
+export type WorkflowEdge = [string, string]; // [sourceStageId, targetStageId]
+
+export interface WorkflowGraph {
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
+}
+
 export interface GarmentWorkflowResponse {
   instance: WorkflowInstance;
   stages: StageInstance[];
+  graphDefinition: WorkflowGraph;
 }
 
 export interface ActiveFloorTask {

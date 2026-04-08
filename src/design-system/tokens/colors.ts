@@ -1,7 +1,7 @@
 export const cssTokens = `
   :root {
-    --color-primary: #3730A3;
-    --color-secondary: #64748B;
+    --color-primary: #256B45;
+    --color-secondary: #C49A1A;
     --color-success: #4ADE80;
     --color-warning: #F59E0B;
     --color-error: #EF4444;

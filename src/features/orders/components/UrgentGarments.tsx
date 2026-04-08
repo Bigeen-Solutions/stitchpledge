@@ -1,7 +1,9 @@
 import { useOrders } from '../hooks/useOrders.ts';
+import { useNavigate } from 'react-router-dom';
 import { RiskBadge } from '../../../components/ui/RiskBadge.tsx';
 
 export function UrgentGarments() {
+  const navigate = useNavigate();
   const { data: orders, isLoading } = useOrders();
 
   if (isLoading) return null;
@@ -47,7 +49,13 @@ export function UrgentGarments() {
                   {order.deadline}
                 </div>
               </div>
-              <button className="text-button" style={{ fontWeight: 700 }}>START NOW →</button>
+              <button 
+                className="text-button" 
+                style={{ fontWeight: 700 }}
+                onClick={() => navigate(`/orders/${order.id}`, { state: { targetGarmentId: order.garmentId } })}
+              >
+                START NOW →
+              </button>
             </div>
 
             {order.riskLevel === 'OVERDUE' && (
