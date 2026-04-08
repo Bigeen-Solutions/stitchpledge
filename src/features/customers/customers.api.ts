@@ -40,6 +40,7 @@ export interface OrderHistoryItem {
 export interface CustomerProfile {
   customer: Customer;
   latestMeasurement: MeasurementSummary | null;
+  measurementVersions: MeasurementSummary[];
   orderHistory: OrderHistoryItem[];
 }
 

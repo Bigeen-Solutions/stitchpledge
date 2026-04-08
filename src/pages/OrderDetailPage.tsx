@@ -25,7 +25,9 @@ import {
   Chip
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { RiskBadge } from '../components/ui/RiskBadge.tsx';
+import { EditOrderModal } from '../features/orders/components/EditOrderModal.tsx';
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -40,6 +42,7 @@ export function OrderDetailPage() {
     enabled: isCompanyAdminOrManager && !!detail?.order.storeId
   });
   const [selectedGarmentId, setSelectedGarmentId] = useState<string | null>(null);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
 
   const tailors = staff?.filter(s => s.role === 'TAILOR') || [];
 
@@ -61,6 +64,7 @@ export function OrderDetailPage() {
 
   const { order, projection } = detail;
   const selectedGarment = garments?.find(g => g.id === selectedGarmentId);
+  const isOrderCompleted = garments && garments.length > 0 && garments.every((g: any) => g.status === 'COMPLETED');
 
   const handleAssignTailor = async (tailorId: string) => {
     if (!selectedGarmentId) return;
@@ -109,9 +113,23 @@ export function OrderDetailPage() {
             </Box>
           </Stack>
           <Stack alignItems="flex-end" spacing={1}>
-            <div className={`badge ${riskBadgeClass} py-2 px-4 text-sm font-bold shadow-sm`} style={{ borderRadius: '8px' }}>
-              {projection.riskLevel.replace('_', ' ')}
-            </div>
+            <Stack direction="row" spacing={2} alignItems="center">
+              {!isOrderCompleted && isCompanyAdminOrManager && (
+                <Button 
+                  size="small" 
+                  variant="outlined" 
+                  color="inherit" 
+                  startIcon={<SettingsIcon />} 
+                  onClick={() => setEditModalOpen(true)}
+                  sx={{ borderRadius: 2 }}
+                >
+                  Edit Order
+                </Button>
+              )}
+              <div className={`badge ${riskBadgeClass} py-2 px-4 text-sm font-bold shadow-sm`} style={{ borderRadius: '8px' }}>
+                {projection.riskLevel.replace('_', ' ')}
+              </div>
+            </Stack>
             <Typography variant="caption" color="text.secondary">
               Last projection: {new Date(projection.calculatedAt).toLocaleTimeString()}
             </Typography>
@@ -387,6 +405,14 @@ export function OrderDetailPage() {
           </Stack>
         </Grid>
       </Grid>
+
+      {isCompanyAdminOrManager && (
+        <EditOrderModal 
+          open={isEditModalOpen} 
+          onClose={() => setEditModalOpen(false)} 
+          order={order} 
+        />
+      )}
     </Box>
   );
 }

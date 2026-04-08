@@ -96,4 +96,9 @@ export const ordersApi = {
     })
     return data
   },
+
+  updateOrder: async (id: string, data: { eventDate?: string, lockedMeasurementVersionId?: string }) => {
+    const { data: result } = await apiClient.patch(`/orders/${id}`, data)
+    return result
+  },
 }
