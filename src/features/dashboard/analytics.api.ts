@@ -31,9 +31,24 @@ export interface AnalyticsOverview {
   materialStock: MaterialStock[];
 }
 
+export interface AdminAnalyticsResponse {
+  totalActiveOrders: number;
+  highRiskGarments: number;
+  completedOrders: number;
+  avgCompletionTimeHours: number;
+  tasksByStage: Record<string, number>;
+  recentOrders: RecentOrderRow[];
+  activityFeed: ActivityItem[];
+  materialStock: MaterialStock[];
+}
+
 export const analyticsApi = {
   getOverview: async () => {
     const { data } = await apiClient.get<AnalyticsOverview>("/analytics/overview");
+    return data;
+  },
+  getAdminAnalytics: async () => {
+    const { data } = await apiClient.get<AdminAnalyticsResponse>("/analytics/admin");
     return data;
   },
 };

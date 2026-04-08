@@ -60,6 +60,7 @@ export interface ActiveFloorTask {
   fabric_image_base64?: string;
   startDate?: string;
   storeId?: string;
+  status: string;
 }
 
 export const workflowApi = {

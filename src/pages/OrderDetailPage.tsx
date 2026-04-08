@@ -25,6 +25,7 @@ import {
   Chip
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { RiskBadge } from '../components/ui/RiskBadge.tsx';
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -178,9 +179,7 @@ export function OrderDetailPage() {
                         </Typography>
                       )}
                     </Box>
-                    <Typography variant="caption" fontWeight={800} sx={{ textTransform: 'uppercase', color: 'text.secondary' }}>
-                      {garment.status}
-                    </Typography>
+                    <RiskBadge level={garment.status === 'COMPLETED' ? 'ON_TRACK' : projection.riskLevel} />
                   </Button>
                 ))}
               </Stack>
@@ -232,11 +231,14 @@ export function OrderDetailPage() {
                   <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                     <Box>
                       <Typography variant="h5" fontWeight={800}>{selectedGarment.name}</Typography>
-                      <Chip
-                        label={selectedGarment.status}
-                        size="small"
-                        sx={{ mt: 1, fontWeight: 700, borderRadius: 1.5, textTransform: 'uppercase' }}
-                      />
+                      <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                        <Chip
+                          label={selectedGarment.status}
+                          size="small"
+                          sx={{ fontWeight: 700, borderRadius: 1.5, textTransform: 'uppercase' }}
+                        />
+                        <RiskBadge level={selectedGarment.status === 'COMPLETED' ? 'ON_TRACK' : projection.riskLevel} />
+                      </Stack>
                     </Box>
                   </Stack>
 

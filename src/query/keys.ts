@@ -30,6 +30,7 @@ export const keys = {
   },
   analytics: {
     overview: ['analytics', 'overview'] as const,
+    admin: ['analytics', 'admin'] as const,
   },
   customers: {
     search: (query: string) => ['customers', 'search', query] as const,

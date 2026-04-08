@@ -26,6 +26,9 @@ import {
   Stack,
   alpha,
   keyframes,
+  Skeleton,
+  Alert,
+  AlertTitle,
 } from '@mui/material';
 import {
   Assignment as ClipboardList,
@@ -39,9 +42,12 @@ import {
   ErrorOutline as AlertCircle,
   ContentCut as Scissors,
 } from '@mui/icons-material';
-import { useQuery } from '@tanstack/react-query';
-import { analyticsApi } from '../../features/dashboard/analytics.api';
-import { keys } from '../../query/keys';
+import type {
+  ActivityItem,
+  MaterialStock,
+  RecentOrderRow
+} from '../../features/dashboard/analytics.api';
+import { useAdminAnalytics } from '../../features/dashboard/useAdminAnalytics';
 
 const countUp = keyframes`
   from { opacity: 0; transform: translateY(10px); }
@@ -113,66 +119,92 @@ const KPICard: React.FC<KPICardProps> = ({ label, value, icon: Icon, trend, dela
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  const { data: analytics } = useQuery({
-    queryKey: keys.analytics.overview,
-    queryFn: analyticsApi.getOverview,
-  });
+  const { data: analytics, isLoading, isError } = useAdminAnalytics();
 
+  if (isError) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Alert severity="error" variant="filled" sx={{ borderRadius: '12px' }}>
+          <AlertTitle sx={{ fontWeight: 700 }}>Telemetry Sync Failure</AlertTitle>
+          The Admin Analytics engine is currently unreachable. Please verify network connectivity and risk engine status.
+        </Alert>
+      </Box>
+    );
+  }
+
+  const stats = {
+    activeOrders: analytics?.totalActiveOrders ?? 0,
+    highRisk: analytics?.highRiskGarments ?? 0,
+    completedOrders: analytics?.completedOrders ?? 0,
+    avgTime: analytics?.avgCompletionTimeHours ? `${analytics.avgCompletionTimeHours}h` : '--',
+  };
+
+  const activity: ActivityItem[] = analytics?.activityFeed || [];
+  const stocks: MaterialStock[] = analytics?.materialStock || [];
   const tasksByStage = analytics?.tasksByStage || {};
-  const stages = Object.entries(tasksByStage).map(([name, count]) => ({
+  const stages = Object.keys(tasksByStage).map(name => ({
     name,
-    count: Number(count),
-    completed: Math.floor(Number(count) * 0.7), // Mocking split for visual bar
-    inProgress: Math.ceil(Number(count) * 0.3),
+    count: tasksByStage[name],
+    completed: Math.floor(tasksByStage[name] * 0.3),
+    inProgress: Math.ceil(tasksByStage[name] * 0.7)
   }));
-
-  const recentOrders = analytics?.recentOrders || [];
-  const activity = (analytics?.activityFeed || []).map(item => ({
-    ...item,
-    icon: item.icon === 'Check' ? Check : item.icon === 'AlertCircle' ? AlertCircle : undefined
-  }));
-
-  const stocks = analytics?.materialStock || [];
+  const recentOrders: RecentOrderRow[] = analytics?.recentOrders || [];
 
   return (
     <Box sx={{ pb: 8 }}>
       {/* KPI Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <KPICard
-            label="ACTIVE ORDERS"
-            value={analytics?.totalActiveOrders || 0}
-            icon={ClipboardList}
-            trend={{ value: 'Real-time', type: 'neutral' }}
-            delay="0ms"
-          />
+          {isLoading ? (
+            <Skeleton variant="rectangular" height={160} sx={{ borderRadius: '16px' }} />
+          ) : (
+            <KPICard
+              label="ACTIVE ORDERS"
+              value={stats.activeOrders}
+              icon={ClipboardList}
+              trend={{ value: 'Real-time', type: 'neutral' }}
+              delay="0ms"
+            />
+          )}
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <KPICard
-            label="HIGH-RISK GARMENTS"
-            value={analytics?.highRiskGarments || 0}
-            icon={AlertTriangle}
-            trend={{ value: analytics?.highRiskGarments ? 'Critical' : 'Safe', type: analytics?.highRiskGarments ? 'negative' : 'positive' }}
-            delay="100ms"
-          />
+          {isLoading ? (
+            <Skeleton variant="rectangular" height={160} sx={{ borderRadius: '16px' }} />
+          ) : (
+            <KPICard
+              label="HIGH-RISK GARMENTS"
+              value={stats.highRisk}
+              icon={AlertTriangle}
+              trend={{ value: stats.highRisk ? 'Critical' : 'Safe', type: stats.highRisk ? 'negative' : 'positive' }}
+              delay="100ms"
+            />
+          )}
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <KPICard
-            label="TASKS IN PROGRESS"
-            value={Object.values(analytics?.tasksByStage || {}).reduce((a, b) => a + b, 0)}
-            icon={Activity}
-            trend={{ value: 'Steady', type: 'neutral' }}
-            delay="200ms"
-          />
+          {isLoading ? (
+            <Skeleton variant="rectangular" height={160} sx={{ borderRadius: '16px' }} />
+          ) : (
+            <KPICard
+              label="COMPLETED ORDERS"
+              value={stats.completedOrders}
+              icon={Check}
+              trend={{ value: 'Total', type: 'neutral' }}
+              delay="200ms"
+            />
+          )}
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <KPICard
-            label="FACTORY HEALTH"
-            value={analytics?.highRiskGarments ? "Warning" : "Optimal"}
-            icon={Gauge}
-            trend={{ value: analytics?.highRiskGarments ? 'Attention' : 'Excellent', type: analytics?.highRiskGarments ? 'negative' : 'positive' }}
-            delay="300ms"
-          />
+          {isLoading ? (
+            <Skeleton variant="rectangular" height={160} sx={{ borderRadius: '16px' }} />
+          ) : (
+            <KPICard
+              label="AVG COMPLETION"
+              value={stats.avgTime}
+              icon={Gauge}
+              trend={{ value: 'Optimal', type: 'positive' }}
+              delay="300ms"
+            />
+          )}
         </Grid>
       </Grid>
 

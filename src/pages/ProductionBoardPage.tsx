@@ -80,8 +80,8 @@ const stringToColor = (string: string) => {
   return color;
 };
 
-const isAtRisk = (deadline: string) => {
-  if (!deadline) return false;
+const isAtRisk = (deadline: string, status?: string) => {
+  if (!deadline || status === 'COMPLETED') return false;
   const d = new Date(deadline);
   const now = new Date();
   return isPast(d) || differenceInHours(d, now) < 24;
@@ -581,7 +581,7 @@ export function ProductionBoardPage() {
           <TableBody>
             {paginatedTasks.map((task) => {
               const statusStyle = getStatusStyles(task.stageName);
-              const atRisk = isAtRisk(task.deadline);
+              const atRisk = isAtRisk(task.deadline, task.status);
               
               return (
                 <TableRow key={task.stageInstanceId}>
