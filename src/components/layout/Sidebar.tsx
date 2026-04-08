@@ -44,7 +44,7 @@ const navItems = [
   { label: 'Orders', icon: ClipboardList, path: '/orders', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
   { label: 'New Order', icon: Plus, path: '/orders/new', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
   { label: 'Production', icon: ScissorsIcon, path: '/production', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
-  { label: 'Clients', icon: Users, path: '/clients', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
+  { label: 'Customers', icon: Users, path: '/customers', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Measurements', icon: Ruler, path: '/measurements', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
   { label: 'Payments', icon: CreditCard, path: '/payments', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Staff / Tailors', icon: UserCog, path: '/staff', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },

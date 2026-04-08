@@ -33,6 +33,7 @@ export const keys = {
     admin: ['analytics', 'admin'] as const,
   },
   customers: {
+    list: (page: number, limit: number, search?: string) => ['customers', 'list', { page, limit, search }] as const,
     search: (query: string) => ['customers', 'search', query] as const,
   },
 };

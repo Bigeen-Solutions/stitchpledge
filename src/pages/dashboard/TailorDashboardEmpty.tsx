@@ -164,12 +164,12 @@ export const TailorDashboardEmpty: React.FC = () => {
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, sm: 4 }}>
             <QuickStartTip
-              title="Add a Client"
+              title="View Customers"
               subtitle="Build your digital measurement book."
               icon={UserPlus}
               bgTint={alpha('#1e5c3a', 0.06)}
               delay="100ms"
-              onClick={() => navigate('/clients/new')}
+              onClick={() => navigate('/customers')}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>

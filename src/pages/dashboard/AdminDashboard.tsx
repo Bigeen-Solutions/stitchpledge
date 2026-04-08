@@ -434,8 +434,8 @@ export const AdminDashboard: React.FC = () => {
         />
         <SpeedDialAction
           icon={<UserPlus sx={{ fontSize: 20 }} />}
-          tooltipTitle="Add Client"
-          onClick={() => navigate('/clients/new')}
+          tooltipTitle="See Customers"
+          onClick={() => navigate('/customers')}
         />
         <SpeedDialAction
           icon={<UserCog sx={{ fontSize: 20 }} />}
