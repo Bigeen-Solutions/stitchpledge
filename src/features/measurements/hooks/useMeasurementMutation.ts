@@ -13,14 +13,14 @@ export function useMeasurements(orderId: string) {
   });
 }
 
-export function useRecordMeasurement(orderId: string) {
+export function useRecordMeasurement(customerId: string) {
   const showToast = useToastStore((state) => state.showToast);
   const { handleError } = useDomainError();
 
   return useMutation({
-    mutationFn: (data: any) => measurementApi.recordMeasurement(orderId, data),
+    mutationFn: (measurements: Record<string, number>) => measurementApi.recordMeasurement(customerId, measurements),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.measurements.list(orderId) });
+      queryClient.invalidateQueries({ queryKey: keys.measurements.list(customerId) });
       showToast('Measurement Recorded', 'New measurement version recorded successfully.');
     },
     onError: (err: any) => {

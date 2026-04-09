@@ -2,26 +2,23 @@ import { useState } from 'react';
 import { useRecordMeasurement } from '../hooks/useMeasurementMutation';
 
 interface RecordMeasurementFormProps {
-  orderId: string;
+  customerId: string;
 }
 
-export function RecordMeasurementForm({ orderId }: RecordMeasurementFormProps) {
+export function RecordMeasurementForm({ customerId }: RecordMeasurementFormProps) {
   const [changes, setChanges] = useState('');
   const [chest, setChest] = useState('');
   const [waist, setWaist] = useState('');
   const [sleeve, setSleeve] = useState('');
   
-  const recordMutation = useRecordMeasurement(orderId);
+  const recordMutation = useRecordMeasurement(customerId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     recordMutation.mutate({
-      changes,
-      values: {
-        chest: parseFloat(chest),
-        waist: parseFloat(waist),
-        sleeve: parseFloat(sleeve),
-      }
+      chest: parseFloat(chest),
+      waist: parseFloat(waist),
+      sleeve: parseFloat(sleeve),
     }, {
       onSuccess: () => {
         setChanges('');

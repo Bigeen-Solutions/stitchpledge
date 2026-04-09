@@ -232,7 +232,7 @@ export function OrderDetailPage() {
             <Card className="sf-card" sx={{ p: 3, borderRadius: 3 }}>
               <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Quick Actions</Typography>
               <Stack spacing={2}>
-                <RecordMeasurementForm orderId={order.id} />
+                <RecordMeasurementForm customerId={order.customerId} />
                 <MaterialAdjustmentForm orderId={order.id} />
               </Stack>
             </Card>

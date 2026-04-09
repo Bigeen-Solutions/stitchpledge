@@ -15,8 +15,8 @@ export const measurementApi = {
     return data;
   },
   
-  recordMeasurement: async (customerId: string, data: any) => {
-    await apiClient.post(`/customers/${customerId}/measurements`, data);
+  recordMeasurement: async (customerId: string, measurements: Record<string, number>) => {
+    await apiClient.post(`/customers/${customerId}/measurements`, { measurements });
   }
 };
 
