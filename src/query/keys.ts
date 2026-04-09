@@ -32,6 +32,9 @@ export const keys = {
     overview: ['analytics', 'overview'] as const,
     admin: ['analytics', 'admin'] as const,
   },
+  inventory: {
+    overview: ['inventory', 'overview'] as const,
+  },
   customers: {
     list: (page: number, limit: number, search?: string) => ['customers', 'list', { page, limit, search }] as const,
     search: (query: string) => ['customers', 'search', query] as const,

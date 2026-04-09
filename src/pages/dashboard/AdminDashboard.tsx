@@ -48,6 +48,7 @@ import type {
 } from '../../features/dashboard/analytics.api';
 import { useAdminAnalytics } from '../../features/dashboard/useAdminAnalytics';
 import { useOrders } from '../../features/orders/hooks/useOrders';
+import { useInventory } from '../../features/inventory/useInventory';
 
 const countUp = keyframes`
   from { opacity: 0; transform: translateY(10px); }
@@ -121,6 +122,7 @@ export const AdminDashboard: React.FC = () => {
 
   const { data: analytics, isLoading, isError } = useAdminAnalytics();
   const { data: ordersData } = useOrders(1, 5);
+  const { data: rawInventory, dataUpdatedAt: inventoryUpdatedAt } = useInventory();
 
   if (isError) {
     return (
@@ -141,7 +143,25 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const activity: ActivityItem[] = analytics?.activityFeed || [];
-  const stocks: MaterialStock[] = analytics?.materialStock || [];
+  
+  // Connect real inventory data with NaN defense
+  const stocks = (rawInventory || []).map(item => {
+    const percentage = item.totalLedger > 0 
+      ? Math.round((item.quantityAvailable / item.totalLedger) * 100) 
+      : 0;
+      
+    // Defensive color mapping for the premium UI
+    let color = '#4caf50'; // Green
+    if (percentage <= 30) color = '#f44336'; // Red
+    else if (percentage <= 70) color = '#ff9800'; // Orange
+
+    return {
+      name: item.name,
+      level: percentage,
+      color
+    };
+  });
+
   const tasksByStage = analytics?.tasksByStage || {};
   const stages = Object.keys(tasksByStage).map(name => ({
     name,
@@ -411,8 +431,8 @@ export const AdminDashboard: React.FC = () => {
                   </Box>
                 ))}
               </Stack>
-              <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.4), fontSize: '10px' }}>
-                Inventory last synced 12 mins ago.
+               <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.4), fontSize: '10px' }}>
+                {inventoryUpdatedAt ? `Live Inventory (Synced ${new Date(inventoryUpdatedAt).toLocaleTimeString()})` : 'Syncing...'}
               </Typography>
               <Box sx={{ position: 'absolute', bottom: -10, right: -10, opacity: 0.05, transform: 'rotate(-15deg)' }}>
                 <Scissors sx={{ fontSize: 80 }} />
