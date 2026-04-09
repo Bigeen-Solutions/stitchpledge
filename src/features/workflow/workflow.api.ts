@@ -84,6 +84,19 @@ export const workflowApi = {
     return data;
   },
 
+  getTemplateStages: async (templateId: string) => {
+    const { data } = await apiClient.get<WorkflowNode[]>(`/workflow-templates/${templateId}/stages`);
+    return data;
+  },
+
+  addTemplateStage: async (templateId: string, name: string, estimatedDuration: number) => {
+    const { data } = await apiClient.post(`/workflow-templates/${templateId}/stages`, {
+      name,
+      estimated_duration_hours: estimatedDuration
+    });
+    return data;
+  },
+
   getActiveTasks: async (): Promise<ActiveFloorTask[]> => {
     const { data } = await apiClient.get<ActiveFloorTask[]>('/workflows/tasks/active');
     return data;

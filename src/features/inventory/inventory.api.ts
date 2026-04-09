@@ -3,6 +3,7 @@ import { apiClient } from '../../infrastructure/http/axios.client';
 export interface StockPosition {
   materialId: string;
   name: string;
+  sku: string | null;
   unit: string;
   totalLedger: number;
   activeReservations: number;
@@ -12,6 +13,14 @@ export interface StockPosition {
 export const inventoryApi = {
   getInventoryOverview: async () => {
     const { data } = await apiClient.get<StockPosition[]>('/inventory');
+    return data;
+  },
+
+  receiveShipment: async (materialId: string, quantity: number, notes: string) => {
+    const { data } = await apiClient.post(`/inventory/${materialId}/receive`, {
+      quantity,
+      notes
+    });
     return data;
   }
 };
