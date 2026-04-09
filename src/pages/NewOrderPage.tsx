@@ -87,7 +87,6 @@ export function NewOrderPage() {
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
   const [fabricDetails, setFabricDetails] = useState({
     fabricImageBase64: "",
-    fabricType: "Cotton",
     colorSwatch: "#000000",
     designNotes: ""
   });
@@ -208,7 +207,7 @@ export function NewOrderPage() {
           assignedTailorId: g.assignedTailorId || null,
           estimatedTotalDurationHours: g.estimatedTotalDurationHours || 24,
           fabricImageBase64: fabricDetails.fabricImageBase64,
-          fabricType: fabricDetails.fabricType,
+          fabricType: inventory?.find(m => m.materialId === selectedMaterialId)?.name || null,
           colorSwatch: fabricDetails.colorSwatch,
           designNotes: fabricDetails.designNotes
         })),
@@ -730,118 +729,121 @@ export function NewOrderPage() {
 
                 {/* Fabric Type & Swatch */}
                 <Grid size={{ xs: 12, md: 7 }}>
-                  <Stack spacing={3}>
-                    <FormControl fullWidth>
-                      <InputLabel>Material Type / Preset</InputLabel>
+                  {/* EMPTY VAULT GUARDRAIL */}
+                  {inventory !== undefined && inventory.length === 0 && (
+                    <Box sx={{ 
+                      p: 2.5, 
+                      bgcolor: alpha('#f59e0b', 0.1), 
+                      border: '1px solid', 
+                      borderColor: alpha('#f59e0b', 0.5), 
+                      borderRadius: '12px',
+                      mb: 4,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2
+                    }}>
+                      <Box sx={{ color: '#f59e0b', fontSize: 24, fontWeight: 700 }}>⚠️</Box>
+                      <Typography variant="body2" sx={{ color: '#92400e', fontWeight: 600 }}>
+                        No materials found in the Vault. Please configure materials in the Settings Hub before creating an order.
+                      </Typography>
+                    </Box>
+                  )}
+
+                  <Stack direction="row" spacing={2}>
+                    <FormControl sx={{ flex: 1 }}>
+                      <InputLabel>Required Material (Stock)</InputLabel>
                       <Select
-                        value={fabricDetails.fabricType}
-                        label="Material Type / Preset"
-                        onChange={(e) => setFabricDetails({ ...fabricDetails, fabricType: e.target.value })}
-                        sx={{ borderRadius: '12px' }}
+                        value={selectedMaterialId}
+                        label="Required Material (Stock)"
+                        onChange={(e) => setSelectedMaterialId(e.target.value)}
+                        sx={{ borderRadius: '12px', bgcolor: alpha('#c49a1a', 0.02) }}
+                        error={inventory !== undefined && inventory.length === 0}
                       >
-                        {['Wool', 'Cotton', 'Linen', 'Silk', 'Cashmere', 'Velvet'].map(type => (
-                          <MenuItem key={type} value={type}>{type}</MenuItem>
-                        ))}
+                        <MenuItem value=""><em>-- Select Material --</em></MenuItem>
+                        {inventory?.map((m: any) => {
+                          const isOutOfStock = m.quantityAvailable <= 0;
+                          return (
+                            <MenuItem 
+                              key={m.materialId} 
+                              value={m.materialId}
+                              disabled={isOutOfStock}
+                            >
+                              {m.name} ({m.quantityAvailable} {m.unit} available)
+                            </MenuItem>
+                          );
+                        })}
                       </Select>
                     </FormControl>
 
-                    <Divider sx={{ my: 1 }}>
-                      <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>MATERIAL VAULT SYNC</Typography>
-                    </Divider>
-
-                    <Stack direction="row" spacing={2}>
-                      <FormControl sx={{ flex: 2 }}>
-                        <InputLabel>Required Material (Stock)</InputLabel>
-                        <Select
-                          value={selectedMaterialId}
-                          label="Required Material (Stock)"
-                          onChange={(e) => setSelectedMaterialId(e.target.value)}
-                          sx={{ borderRadius: '12px', bgcolor: alpha('#c49a1a', 0.02) }}
-                        >
-                          <MenuItem value=""><em>No formal reservation</em></MenuItem>
-                          {inventory?.map((m: any) => {
-                            const isOutOfStock = m.quantityAvailable <= 0;
-                            return (
-                              <MenuItem 
-                                key={m.materialId} 
-                                value={m.materialId}
-                                disabled={isOutOfStock}
-                              >
-                                {m.name} {isOutOfStock ? "(Out of Stock)" : `(Available: ${m.quantityAvailable} ${m.unit})`}
-                              </MenuItem>
-                            );
-                          })}
-                        </Select>
-                      </FormControl>
-
-                      <TextField
-                        sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-                        label="Qty / Yardage"
-                        type="number"
-                        value={materialQuantity}
-                        onChange={(e) => setMaterialQuantity(e.target.value === "" ? "" : parseFloat(e.target.value))}
-                        disabled={!selectedMaterialId}
-                      />
-                    </Stack>
-
-                    <Box>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
-                        Color Swatch
-                      </Typography>
-                      <Stack direction="row" spacing={1.5} flexWrap="wrap">
-                        {['#0F172A', '#475569', '#1E293B', '#FFFFFF', '#0EA5E9', '#7F1D1D', '#064E3B', '#C49A1A'].map(color => (
-                          <Box
-                            key={color}
-                            onClick={() => setFabricDetails({ ...fabricDetails, colorSwatch: color })}
-                            sx={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: '50%',
-                              bgcolor: color,
-                              cursor: 'pointer',
-                              border: '2px solid',
-                              borderColor: fabricDetails.colorSwatch === color ? 'secondary.main' : (color === '#FFFFFF' ? 'divider' : 'transparent'),
-                              boxShadow: fabricDetails.colorSwatch === color ? `0 0 10px ${alpha('#c49a1a', 0.5)}` : 'none',
-                              transition: 'transform 0.2s',
-                              outline: fabricDetails.colorSwatch === color ? `2px solid ${alpha('#c49a1a', 0.3)}` : 'none',
-                              outlineOffset: 3,
-                              '&:hover': { transform: 'scale(1.1)' }
-                            }}
-                          />
-                        ))}
-                      </Stack>
-                    </Box>
-
                     <TextField
-                      fullWidth
-                      label="Design Notes"
-                      multiline
-                      rows={3}
-                      value={fabricDetails.designNotes}
-                      onChange={(e) => setFabricDetails({ ...fabricDetails, designNotes: e.target.value })}
-                      placeholder="Special lining, unique buttons, or specific stitching requests..."
-                      sx={{
-                        '& .MuiOutlinedInput-root': { borderRadius: '12px' }
-                      }}
+                      sx={{ width: 150, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                      label="Qty / Yardage"
+                      type="number"
+                      value={materialQuantity}
+                      onChange={(e) => setMaterialQuantity(e.target.value === "" ? "" : parseFloat(e.target.value))}
+                      disabled={!selectedMaterialId}
                     />
                   </Stack>
-                </Grid>
+
+                  <Box>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
+                      Color Swatch
+                    </Typography>
+                    <Stack direction="row" spacing={1.5} flexWrap="wrap">
+                      {['#0F172A', '#475569', '#1E293B', '#FFFFFF', '#0EA5E9', '#7F1D1D', '#064E3B', '#C49A1A'].map(color => (
+                        <Box
+                          key={color}
+                          onClick={() => setFabricDetails({ ...fabricDetails, colorSwatch: color })}
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '50%',
+                            bgcolor: color,
+                            cursor: 'pointer',
+                            border: '2px solid',
+                            borderColor: fabricDetails.colorSwatch === color ? 'secondary.main' : (color === '#FFFFFF' ? 'divider' : 'transparent'),
+                            boxShadow: fabricDetails.colorSwatch === color ? `0 0 10px ${alpha('#c49a1a', 0.5)}` : 'none',
+                            transition: 'transform 0.2s',
+                            outline: fabricDetails.colorSwatch === color ? `2px solid ${alpha('#c49a1a', 0.3)}` : 'none',
+                            outlineOffset: 3,
+                            '&:hover': { transform: 'scale(1.1)' }
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
+
+                  <TextField
+                    fullWidth
+                    label="Design Notes"
+                    multiline
+                    rows={3}
+                    value={fabricDetails.designNotes}
+                    onChange={(e) => setFabricDetails({ ...fabricDetails, designNotes: e.target.value })}
+                    placeholder="Special lining, unique buttons, or specific stitching requests..."
+                    sx={{
+                      '& .MuiOutlinedInput-root': { borderRadius: '12px' }
+                    }}
+                  />
+                </Stack>
               </Grid>
+            </Grid>
 
-              <Divider sx={{ my: 4 }} />
+            <Divider sx={{ my: 4 }} />
 
-              <Stack direction="row" spacing={2} justifyContent="space-between">
-                <Button onClick={() => setStep("GARMENTS_TIMELINE")} sx={{ color: 'text.primary' }}>Back</Button>
-                <Button
-                  variant="contained"
-                  onClick={() => setStep("MEASUREMENTS")}
-                  sx={{ bgcolor: 'secondary.main', height: 52, px: 6, borderRadius: '12px', '&:hover': { bgcolor: '#d4aa2a' } }}
-                >
-                  Capture Measurements
-                </Button>
-              </Stack>
-            </Box>
-          )}
+            <Stack direction="row" spacing={2} justifyContent="space-between">
+              <Button onClick={() => setStep("GARMENTS_TIMELINE")} sx={{ color: 'text.primary' }}>Back</Button>
+              <Button
+                variant="contained"
+                disabled={!selectedMaterialId || (inventory !== undefined && inventory.length === 0)}
+                onClick={() => setStep("MEASUREMENTS")}
+                sx={{ bgcolor: 'secondary.main', height: 52, px: 6, borderRadius: '12px', '&:hover': { bgcolor: '#d4aa2a' } }}
+              >
+                Capture Measurements
+              </Button>
+            </Stack>
+          </Box>
+        )}
           {step === "MEASUREMENTS" && (
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
               <Typography variant="h5" sx={{ mb: 4, fontWeight: 700, color: 'text.primary' }}>4. Recording Measurements (cm)</Typography>
@@ -1020,7 +1022,9 @@ export function NewOrderPage() {
                     <Box>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Box sx={{ width: 16, height: 16, borderRadius: '50%', bgcolor: fabricDetails.colorSwatch, border: '1px solid', borderColor: 'divider' }} />
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>{fabricDetails.fabricType}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                          {inventory?.find(m => m.materialId === selectedMaterialId)?.name || "No Material Selected"}
+                        </Typography>
                       </Stack>
                       <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5, maxWidth: 300 }}>
                         {fabricDetails.designNotes || "No specific design notes."}
