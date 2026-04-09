@@ -6,8 +6,6 @@ import { usePermissions } from '../features/auth/use-permissions.ts';
 import { ordersApi } from '../features/orders/orders.api.ts';
 import { useToastStore } from '../components/feedback/Toast.tsx';
 import { WorkflowGraph } from '../features/workflow/components/WorkflowGraph.tsx';
-import { MaterialHistory } from '../features/materials/components/MaterialHistory.tsx';
-import { MaterialAdjustmentForm } from '../features/materials/components/MaterialAdjustmentForm.tsx';
 import { MeasurementHistory } from '../features/measurements/components/MeasurementHistory.tsx';
 import { RecordMeasurementForm } from '../features/measurements/components/RecordMeasurementForm.tsx';
 import {
@@ -233,7 +231,6 @@ export function OrderDetailPage() {
               <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Quick Actions</Typography>
               <Stack spacing={2}>
                 <RecordMeasurementForm customerId={order.customerId} />
-                <MaterialAdjustmentForm orderId={order.id} />
               </Stack>
             </Card>
           </Stack>
@@ -390,18 +387,11 @@ export function OrderDetailPage() {
             </Card>
 
             {/* Component C: History Logs */}
-            <Grid container spacing={3}>
-              <Grid size = {{xs: 12, sm: 6}}>
-                <Card className="sf-card" sx={{ height: '100%', borderRadius: 3, p: 3 }}>
-                   <MaterialHistory orderId={order.id} />
-                </Card>
-              </Grid>
-              <Grid size = {{xs: 12, sm: 6}}>
+              <Grid size = {{xs: 12}}>
                 <Card className="sf-card" sx={{ height: '100%', borderRadius: 3, p: 3 }}>
                   <MeasurementHistory orderId={order.id} />
                 </Card>
               </Grid>
-            </Grid>
           </Stack>
         </Grid>
       </Grid>
