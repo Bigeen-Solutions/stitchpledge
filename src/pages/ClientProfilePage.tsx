@@ -7,7 +7,6 @@ import {
   Card,
   Button,
   Stack,
-  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -130,7 +129,7 @@ export function ClientProfilePage() {
 
       <Grid container spacing={4}>
         {/* LEFT PANEL: Info Card */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card className="sf-card" sx={{ p: 4, height: '100%', borderRadius: '24px' }}>
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
               <PersonIcon color="secondary" /> Client Context
@@ -165,7 +164,7 @@ export function ClientProfilePage() {
         </Grid>
 
         {/* CENTER PANEL: Measurements Grid */}
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Card className="sf-glass" sx={{ p: 4, borderRadius: '24px', position: 'relative', overflow: 'hidden' }}>
             <Box sx={{ position: 'absolute', top: -20, right: -20, opacity: 0.05 }}>
               <MeasurementsIcon sx={{ fontSize: 150 }} />
@@ -183,7 +182,7 @@ export function ClientProfilePage() {
             ) : (
               <Grid container spacing={3}>
                 {Object.entries(latestMeasurement.measurements).map(([key, value]) => (
-                  <Grid item xs={6} sm={4} lg={3} key={key}>
+                  <Grid size={{ xs: 6, sm: 4, lg: 3 }} key={key}>
                     <Box sx={{ p: 2, bgcolor: alpha('#fff', 0.5), borderRadius: '12px', border: '1px solid', borderColor: alpha('#000', 0.05) }}>
                       <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block' }}>{key}</Typography>
                       <Typography variant="h5" sx={{ fontWeight: 800 }}>{value}<small style={{ fontSize: '0.6em', opacity: 0.5, marginLeft: 2 }}>cm</small></Typography>
@@ -202,7 +201,7 @@ export function ClientProfilePage() {
         </Grid>
 
         {/* BOTTOM PANEL: Order History */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Card className="sf-card" sx={{ p: 4, borderRadius: '24px' }}>
             <Typography variant="h6" sx={{ mb: 4, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
               <HistoryIcon color="secondary" /> Recent Order History
@@ -272,7 +271,7 @@ export function ClientProfilePage() {
           
           <Grid container spacing={2}>
             {Object.keys(formValues).map((key) => (
-              <Grid item xs={12} sm={4} key={key}>
+              <Grid size={{ xs: 12, sm: 4 }} key={key}>
                 <TextField
                   fullWidth
                   label={key}

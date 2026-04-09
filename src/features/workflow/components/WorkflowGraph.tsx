@@ -1,6 +1,6 @@
 import { useGarmentWorkflow, useReportStageCompletion } from '../hooks/useWorkflowMutation';
 import type { StageInstance, WorkflowEdge } from '../workflow.api';
-import { CheckCircle, Lock, RadioButtonUnchecked } from '@mui/icons-material';
+import { CheckCircle, Lock } from '@mui/icons-material';
 
 interface WorkflowGraphProps {
   garmentId: string;

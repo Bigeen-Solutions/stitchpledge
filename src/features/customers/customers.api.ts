@@ -5,6 +5,7 @@ export interface Customer {
   name: string;
   phone: string | null;
   email: string | null;
+  createdAt: string;
 }
 
 export interface CustomerSummary extends Customer {

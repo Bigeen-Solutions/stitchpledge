@@ -33,13 +33,11 @@ import {
 import {
   Assignment as ClipboardList,
   Warning as AlertTriangle,
-  Insights as Activity,
   Speed as Gauge,
   Add as Plus,
   PersonAdd as UserPlus,
   ManageAccounts as UserCog,
   Check,
-  ErrorOutline as AlertCircle,
   ContentCut as Scissors,
 } from '@mui/icons-material';
 import type {
@@ -145,7 +143,7 @@ export const AdminDashboard: React.FC = () => {
   const activity: ActivityItem[] = analytics?.activityFeed || [];
   
   // Connect real inventory data with NaN defense
-  const stocks = (rawInventory || []).map(item => {
+  const stocks: MaterialStock[] = (rawInventory || []).map(item => {
     const percentage = item.totalLedger > 0 
       ? Math.round((item.quantityAvailable / item.totalLedger) * 100) 
       : 0;

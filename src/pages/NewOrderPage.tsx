@@ -40,6 +40,7 @@ import { useStores, useStaffList } from "../features/auth/hooks/useStaff";
 import { usePermissions } from "../features/auth/use-permissions";
 import { ordersApi } from "../features/orders/orders.api";
 import { useToastStore } from "../components/feedback/Toast";
+import { useInventory } from "../features/inventory/useInventory";
 
 type Step = "CLIENT_SELECTION" | "CLIENT_DETAILS" | "GARMENTS_TIMELINE" | "FABRIC_DETAILS" | "MEASUREMENTS" | "SUMMARY";
 
@@ -92,8 +93,10 @@ export function NewOrderPage() {
   });
   const [eventDate, setEventDate] = useState<Date | null>(null);
   const [selectedStoreId, setSelectedStoreId] = useState("");
+  const [selectedMaterialId, setSelectedMaterialId] = useState("");
+  const [materialQuantity, setMaterialQuantity] = useState<number | "">("");
   
-  // Use the effectively selected store to filter staff
+  const { data: inventory } = useInventory();
   const effectiveStoreId = role === 'COMPANY_ADMIN' ? selectedStoreId : userStoreId || undefined;
   const { data: staff } = useStaffList({ 
     storeId: effectiveStoreId,
@@ -208,7 +211,9 @@ export function NewOrderPage() {
           fabricType: fabricDetails.fabricType,
           colorSwatch: fabricDetails.colorSwatch,
           designNotes: fabricDetails.designNotes
-        }))
+        })),
+        materialId: selectedMaterialId || undefined,
+        materialQuantity: materialQuantity || undefined
       });
 
       showToast("Order Intake Complete", "Your order has been committed to production.", "success");
@@ -216,7 +221,14 @@ export function NewOrderPage() {
       setSuccessOrder(result.order || result);
     } catch (err: any) {
       console.error("[Intake Engine Error]", err);
-      const errorMessage = err.response?.data?.message || err.message || "Failed to finalize order";
+      const errorData = err.response?.data;
+      let errorMessage = errorData?.message || err.message || "Failed to finalize order";
+      
+      // The UI Guardrail: Specific handling for material failures
+      if (errorData?.code === 'INSUFFICIENT_STOCK') {
+        errorMessage = `Material Vault Error: ${errorMessage}`;
+      }
+      
       showToast("Intake Error", errorMessage, "error");
     }
   };
@@ -720,10 +732,10 @@ export function NewOrderPage() {
                 <Grid size={{ xs: 12, md: 7 }}>
                   <Stack spacing={3}>
                     <FormControl fullWidth>
-                      <InputLabel>Material Type</InputLabel>
+                      <InputLabel>Material Type / Preset</InputLabel>
                       <Select
                         value={fabricDetails.fabricType}
-                        label="Material Type"
+                        label="Material Type / Preset"
                         onChange={(e) => setFabricDetails({ ...fabricDetails, fabricType: e.target.value })}
                         sx={{ borderRadius: '12px' }}
                       >
@@ -732,6 +744,45 @@ export function NewOrderPage() {
                         ))}
                       </Select>
                     </FormControl>
+
+                    <Divider sx={{ my: 1 }}>
+                      <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>MATERIAL VAULT SYNC</Typography>
+                    </Divider>
+
+                    <Stack direction="row" spacing={2}>
+                      <FormControl sx={{ flex: 2 }}>
+                        <InputLabel>Required Material (Stock)</InputLabel>
+                        <Select
+                          value={selectedMaterialId}
+                          label="Required Material (Stock)"
+                          onChange={(e) => setSelectedMaterialId(e.target.value)}
+                          sx={{ borderRadius: '12px', bgcolor: alpha('#c49a1a', 0.02) }}
+                        >
+                          <MenuItem value=""><em>No formal reservation</em></MenuItem>
+                          {inventory?.map((m: any) => {
+                            const isOutOfStock = m.quantityAvailable <= 0;
+                            return (
+                              <MenuItem 
+                                key={m.materialId} 
+                                value={m.materialId}
+                                disabled={isOutOfStock}
+                              >
+                                {m.name} {isOutOfStock ? "(Out of Stock)" : `(Available: ${m.quantityAvailable} ${m.unit})`}
+                              </MenuItem>
+                            );
+                          })}
+                        </Select>
+                      </FormControl>
+
+                      <TextField
+                        sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                        label="Qty / Yardage"
+                        type="number"
+                        value={materialQuantity}
+                        onChange={(e) => setMaterialQuantity(e.target.value === "" ? "" : parseFloat(e.target.value))}
+                        disabled={!selectedMaterialId}
+                      />
+                    </Stack>
 
                     <Box>
                       <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
