@@ -561,7 +561,7 @@ export function ProductionBoardPage() {
           border: '1px solid', 
           borderColor: 'divider', 
           borderRadius: 3,
-          overflow: 'hidden'
+          overflowX: 'auto'
         }}
       >
         <Table size="medium">

@@ -18,6 +18,7 @@ export function StaffManagementPage() {
 
   const [inviteData, setInviteData] = useState({
     email: "",
+    fullName: "",
     role: "TAILOR",
     storeId: "",
     initialPassword: "",
@@ -33,6 +34,7 @@ export function StaffManagementPage() {
     }
     setInviteData({
       email: "",
+      fullName: "",
       role: "TAILOR",
       storeId: "",
       initialPassword: "",
@@ -54,9 +56,9 @@ export function StaffManagementPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-12 gap-xl">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-xl">
         {/* SECTION A: THE ROSTER */}
-        <div className="col-span-8">
+        <div className="md:col-span-8 order-2 md:order-1">
           <div className="sf-card sf-glass p-lg">
             <h3 className="text-h3 mb-lg">Staff Roster</h3>
             <div className="overflow-x-auto">
@@ -64,6 +66,7 @@ export function StaffManagementPage() {
                 <thead>
                   <tr>
                     <th>Status</th>
+                    <th>Full Name</th>
                     <th>Email</th>
                     <th>Role</th>
                     <th>Store</th>
@@ -87,10 +90,11 @@ export function StaffManagementPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="font-medium">{member.email}</td>
+                      <td className="font-bold">{member.fullName || "—"}</td>
+                      <td className="text-muted">{member.email}</td>
                       <td>
                         <span className="badge badge-secondary text-xs">
-                          {member.role.replace("_", " ")}
+                          {member.role?.replace("_", " ")}
                         </span>
                       </td>
                       <td className="text-muted text-sm">
@@ -127,10 +131,24 @@ export function StaffManagementPage() {
         </div>
 
         {/* SECTION B: THE INVITATION GATE */}
-        <div className="col-span-4">
-          <div className="sf-card p-lg">
+        <div className="md:col-span-4 order-1 md:order-2">
+          <div className="sf-card sf-glass p-lg border-accent">
             <h3 className="text-h3 mb-lg">Invite New Staff</h3>
             <form onSubmit={handleInvite} className="grid gap-md">
+              <div className="form-group">
+                <label>Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={inviteData.fullName}
+                  onChange={(e) =>
+                    setInviteData({ ...inviteData, fullName: e.target.value })
+                  }
+                  placeholder="Tailor's Name"
+                  className="sf-input"
+                />
+              </div>
+
               <div className="form-group">
                 <label>Email Address</label>
                 <input
