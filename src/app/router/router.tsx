@@ -11,9 +11,8 @@ import { ProductionBoardPage } from '../../pages/ProductionBoardPage.tsx';
 import { DashboardPage } from '../../pages/DashboardPage.tsx';
 import { CustomersPage } from '../../pages/CustomersPage.tsx';
 import { ClientProfilePage } from '../../pages/ClientProfilePage.tsx';
-import TemplateSettings from '../../pages/dashboard/TemplateSettings.tsx';
 import { InventoryPage } from '../../pages/InventoryPage.tsx';
-import { WorkflowTemplatesPage } from '../../pages/WorkflowTemplatesPage.tsx';
+import { SettingsPage } from '../../pages/SettingsPage.tsx';
 
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
 import { CustomerOrderPage } from '../../features/customer/pages/CustomerOrderPage.tsx';
@@ -116,18 +115,10 @@ export const router = createBrowserRouter([
             )
           },
           {
-            path: '/settings/workflows',
+            path: '/settings',
             element: (
               <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'STORE_MANAGER']}>
-                <WorkflowTemplatesPage />
-              </ProtectedRoute>
-            )
-          },
-          {
-            path: '/settings/templates',
-            element: (
-              <ProtectedRoute allowedRoles={['COMPANY_ADMIN']}>
-                <TemplateSettings />
+                <SettingsPage />
               </ProtectedRoute>
             )
           },

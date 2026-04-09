@@ -47,7 +47,6 @@ const navItems = [
   { label: 'Customers', icon: Users, path: '/customers', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Inventory', icon: ClipboardList, path: '/inventory', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Measurements', icon: Ruler, path: '/measurements', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
-  { label: 'Workflow Blueprints', icon: LayoutDashboard, path: '/settings/workflows', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Payments', icon: CreditCard, path: '/payments', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Staff / Tailors', icon: UserCog, path: '/staff', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Reports', icon: BarChart2, path: '/reports', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
@@ -121,26 +120,36 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
 
       {/* Bottom Actions */}
       <Box sx={{ mt: 'auto' }}>
-        <List sx={{ px: 0, pb: 2 }}>
-          <ListItem disablePadding>
-            <ListItemButton
-              onClick={() => handleNavigation('/settings')}
-              sx={{
-                py: 1.5,
-                px: 2,
-                '&:hover': { bgcolor: alpha('#ffffff', 0.07) },
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 40, color: alpha('#ffffff', 0.6) }}>
-                <Settings sx={{ fontSize: 20 }} />
-              </ListItemIcon>
-              <ListItemText
-                primary="Settings"
-                primaryTypographyProps={{ fontSize: '14px', color: alpha('#ffffff', 0.6) }}
-              />
-            </ListItemButton>
-          </ListItem>
-        </List>
+        {(user?.role === 'COMPANY_ADMIN' || user?.role === 'STORE_MANAGER') && (
+          <List sx={{ px: 0, pb: 2 }}>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={() => handleNavigation('/settings')}
+                sx={{
+                  py: 1.5,
+                  px: 2,
+                  bgcolor: location.pathname === '/settings' ? alpha('#ffffff', 0.1) : 'transparent',
+                  '&:hover': { bgcolor: alpha('#ffffff', 0.07) },
+                }}
+              >
+                <ListItemIcon sx={{ 
+                  minWidth: 40, 
+                  color: location.pathname === '/settings' ? 'white' : alpha('#ffffff', 0.6) 
+                }}>
+                  <Settings sx={{ fontSize: 20 }} />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Settings"
+                  primaryTypographyProps={{ 
+                    fontSize: '14px', 
+                    fontWeight: location.pathname === '/settings' ? 600 : 400,
+                    color: location.pathname === '/settings' ? 'white' : alpha('#ffffff', 0.6) 
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        )}
 
         {/* User Card */}
         <Box
