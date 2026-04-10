@@ -63,7 +63,7 @@ export function WorkshopConfiguration() {
 
       <Grid container spacing={3}>
         {/* TEMPLATE LIST */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, textTransform: 'uppercase', color: 'text.secondary', letterSpacing: 1 }}>
             Garment Templates
           </Typography>
@@ -107,7 +107,7 @@ export function WorkshopConfiguration() {
         </Grid>
 
         {/* STAGE BUILDER / DETAIL */}
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           {selectedTemplateId ? (
             <Card sx={{ 
               p: 3, 

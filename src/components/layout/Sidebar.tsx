@@ -12,7 +12,6 @@ import {
   Typography,
   Stack,
   Avatar,
-  useTheme,
   useMediaQuery,
   alpha,
 } from '@mui/material';
@@ -53,7 +52,6 @@ const navItems = [
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }) => {
-  const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width:768px)');

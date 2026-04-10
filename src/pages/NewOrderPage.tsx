@@ -825,9 +825,8 @@ export function NewOrderPage() {
                       '& .MuiOutlinedInput-root': { borderRadius: '12px' }
                     }}
                   />
-                </Stack>
+                </Grid>
               </Grid>
-            </Grid>
 
             <Divider sx={{ my: 4 }} />
 

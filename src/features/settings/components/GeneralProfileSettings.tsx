@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { 
   Box, 
   Typography, 
@@ -31,7 +31,7 @@ export function GeneralProfileSettings() {
       </header>
 
       <Grid container spacing={4}>
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Card sx={{ 
             p: 4, 
             borderRadius: '24px', 

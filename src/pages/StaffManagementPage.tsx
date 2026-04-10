@@ -30,7 +30,7 @@ export function StaffManagementPage() {
       // Auto-select first store if none selected
       await inviteStaff.mutateAsync({ ...inviteData, storeId: stores[0].id })
     } else {
-      await inviteStaff.mutateAsync(inviteData as any)
+      await inviteStaff.mutateAsync(inviteData)
     }
     setInviteData({
       email: "",

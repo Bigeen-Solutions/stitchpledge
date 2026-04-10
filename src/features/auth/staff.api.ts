@@ -3,6 +3,7 @@ import { apiClient } from "../../api/client.ts";
 export interface Staff {
   id: string;
   email: string;
+  fullName: string;
   role: "COMPANY_ADMIN" | "STORE_MANAGER" | "TAILOR" | "FRONT_DESK" | "CUSTOMER";
   storeId: string | null;
   isActive: boolean;
@@ -11,6 +12,7 @@ export interface Staff {
 
 export interface InviteStaffRequest {
   email: string;
+  fullName: string;
   role: string;
   storeId: string;
   initialPassword: string;
