@@ -47,10 +47,17 @@ const AuditLogPage: React.FC = () => {
       <Breadcrumbs sx={{ mb: 2 }}>
         <Link 
           component="button" 
-          onClick={() => navigate('/')} 
+          onClick={() => navigate('/dashboard')} 
           sx={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px', '&:hover': { color: '#1e5c3a' } }}
         >
           Dashboard
+        </Link>
+        <Link 
+          component="button" 
+          onClick={() => navigate('/reports')} 
+          sx={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px', '&:hover': { color: '#1e5c3a' } }}
+        >
+          Reports
         </Link>
         <Typography color="text.primary" sx={{ fontSize: '14px', fontWeight: 500 }}>Audit Log</Typography>
       </Breadcrumbs>

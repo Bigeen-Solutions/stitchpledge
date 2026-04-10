@@ -39,7 +39,9 @@ import {
   ManageAccounts as UserCog,
   Check,
   ContentCut as Scissors,
+  History,
 } from '@mui/icons-material';
+import { formatDistanceToNow } from 'date-fns';
 import type {
   ActivityItem,
   MaterialStock
@@ -113,6 +115,21 @@ const KPICard: React.FC<KPICardProps> = ({ label, value, icon: Icon, trend, dela
       />
     </Card>
   );
+};
+
+const getActivityIcon = (iconType?: string) => {
+  switch (iconType) {
+    case 'STAGE':
+      return Scissors;
+    case 'MATERIAL':
+      return ClipboardList;
+    case 'ORDER':
+      return Plus;
+    case 'CHECK':
+      return Check;
+    default:
+      return History;
+  }
 };
 
 export const AdminDashboard: React.FC = () => {
@@ -357,24 +374,27 @@ export const AdminDashboard: React.FC = () => {
                 Team Activity
               </Typography>
               <List disablePadding>
-                {activity.map((item, index) => (
-                  <ListItem key={index} disablePadding sx={{ mb: 2.5 }}>
-                    <ListItemAvatar sx={{ minWidth: 48 }}>
-                      <Avatar sx={{ width: 36, height: 36, bgcolor: alpha(item.color || '#1e5c3a', 0.1), color: item.color }}>
-                        {item.icon ? <item.icon sx={{ fontSize: 18 }} /> : item.text.charAt(0)}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#1a2340' }}>
-                          {item.text} <Box component="span" sx={{ fontWeight: 400, color: '#6b7280' }}>{item.detail}</Box>
-                        </Typography>
-                      }
-                      secondary={item.time}
-                      secondaryTypographyProps={{ fontSize: '11px', color: '#9CA3AF', mt: 0.5 }}
-                    />
-                  </ListItem>
-                ))}
+                {activity.map((item, index) => {
+                  const ActivityIcon = getActivityIcon(item.iconType);
+                  return (
+                    <ListItem key={index} disablePadding sx={{ mb: 2.5 }}>
+                      <ListItemAvatar sx={{ minWidth: 48 }}>
+                        <Avatar sx={{ width: 36, height: 36, bgcolor: alpha(item.color || '#1e5c3a', 0.1), color: item.color }}>
+                          <ActivityIcon sx={{ fontSize: 18 }} />
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#1a2340' }}>
+                            {item.text} <Box component="span" sx={{ fontWeight: 400, color: '#6b7280' }}>{item.detail}</Box>
+                          </Typography>
+                        }
+                        secondary={item.time ? formatDistanceToNow(new Date(item.time), { addSuffix: true }) : 'Just now'}
+                        secondaryTypographyProps={{ fontSize: '11px', color: '#9CA3AF', mt: 0.5 }}
+                      />
+                    </ListItem>
+                  );
+                })}
               </List>
               <Button
                 variant="outlined"

@@ -16,6 +16,7 @@ import { SettingsPage } from '../../pages/SettingsPage.tsx';
 import AuditLogPage from '../../pages/AuditLogPage.tsx';
 import { ForbiddenPage } from '../../pages/error/ForbiddenPage.tsx';
 import { ServerErrorPage } from '../../pages/error/ServerErrorPage.tsx';
+import ReportsPage from '../../pages/ReportsPage.tsx';
 
 
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
@@ -123,6 +124,14 @@ export const router = createBrowserRouter([
             element: (
               <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'STORE_MANAGER']}>
                 <SettingsPage />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: '/reports',
+            element: (
+              <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'STORE_MANAGER']}>
+                <ReportsPage />
               </ProtectedRoute>
             )
           },

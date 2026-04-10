@@ -13,7 +13,7 @@ export interface ActivityItem {
   detail: string;
   time: string;
   color?: string;
-  icon?: any;
+  iconType?: "STAGE" | "MATERIAL" | "ORDER" | "CHECK";
 }
 
 export interface MaterialStock {
