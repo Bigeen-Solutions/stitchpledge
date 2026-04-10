@@ -62,15 +62,15 @@ export function StaffManagementPage() {
           <div className="sf-card sf-glass p-lg">
             <h3 className="text-h3 mb-lg">Staff Roster</h3>
             <div className="overflow-x-auto">
-              <table className="sf-table w-full">
+              <table className="sf-table w-full" style={{ tableLayout: 'fixed' }}>
                 <thead>
                   <tr>
-                    <th>Status</th>
-                    <th>Full Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Store</th>
-                    <th>Actions</th>
+                    <th style={{ width: '12%' }}>Status</th>
+                    <th style={{ width: '22%' }}>Full Name</th>
+                    <th style={{ width: '25%' }}>Email</th>
+                    <th style={{ width: '15%' }}>Role</th>
+                    <th style={{ width: '15%' }}>Store</th>
+                    <th style={{ width: '11%' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -90,14 +90,14 @@ export function StaffManagementPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="font-bold">{member.fullName || "—"}</td>
-                      <td className="text-muted">{member.email}</td>
+                      <td className="font-bold truncate" title={member.fullName || ""}>{member.fullName || "—"}</td>
+                      <td className="text-muted truncate" title={member.email}>{member.email}</td>
                       <td>
                         <span className="badge badge-secondary text-xs">
                           {member.role?.replace("_", " ")}
                         </span>
                       </td>
-                      <td className="text-muted text-sm">
+                      <td className="text-muted text-sm truncate">
                         {stores?.find((s) => s.id === member.storeId)?.name ||
                           "Global / HQ"}
                       </td>

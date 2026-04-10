@@ -13,6 +13,8 @@ import { CustomersPage } from '../../pages/CustomersPage.tsx';
 import { ClientProfilePage } from '../../pages/ClientProfilePage.tsx';
 import { InventoryPage } from '../../pages/InventoryPage.tsx';
 import { SettingsPage } from '../../pages/SettingsPage.tsx';
+import AuditLogPage from '../../pages/AuditLogPage.tsx';
+
 
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
 import { CustomerOrderPage } from '../../features/customer/pages/CustomerOrderPage.tsx';
@@ -119,6 +121,14 @@ export const router = createBrowserRouter([
             element: (
               <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'STORE_MANAGER']}>
                 <SettingsPage />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: '/reports/audit',
+            element: (
+              <ProtectedRoute allowedRoles={['COMPANY_ADMIN']}>
+                <AuditLogPage />
               </ProtectedRoute>
             )
           },

@@ -778,9 +778,17 @@ export function NewOrderPage() {
                     <TextField
                       sx={{ width: 150, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                       label="Qty / Yardage"
-                      type="number"
                       value={materialQuantity}
-                      onChange={(e) => setMaterialQuantity(e.target.value === "" ? "" : parseFloat(e.target.value))}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.]/g, '');
+                        if ((val.match(/\./g) || []).length <= 1) {
+                          setMaterialQuantity(val === "" ? "" : val as any);
+                        }
+                      }}
+                      inputProps={{
+                        inputMode: 'decimal',
+                        pattern: '[0-9]*\\.?[0-9]*',
+                      }}
                       disabled={!selectedMaterialId}
                     />
                   </Stack>

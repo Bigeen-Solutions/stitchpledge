@@ -42,6 +42,7 @@ export default function TemplateSettings() {
   // New Template State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
+  const [newTemplateDescription, setNewTemplateDescription] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   const handleOpenEditor = (template: any) => {
@@ -86,7 +87,7 @@ export default function TemplateSettings() {
     if (!newTemplateName.trim()) return;
     setIsCreating(true);
     try {
-      await workflowApi.createTemplate(newTemplateName.trim());
+      await workflowApi.createTemplate(newTemplateName.trim(), newTemplateDescription.trim());
       showToast("Template Minted", `${newTemplateName} is now available in the forge.`, "success");
       
       // Invalidate cache to show new template
@@ -94,6 +95,7 @@ export default function TemplateSettings() {
       
       setIsCreateModalOpen(false);
       setNewTemplateName("");
+      setNewTemplateDescription("");
     } catch (err: any) {
       showToast("Creation Failed", err.message || "Failed to create template", "error");
     } finally {
@@ -307,7 +309,20 @@ export default function TemplateSettings() {
               placeholder="e.g. Winter Coat, Tuxedo"
               value={newTemplateName}
               onChange={(e) => setNewTemplateName(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleCreateTemplate()}
+              disabled={isCreating}
+              sx={{
+                mb: 3,
+                '& .MuiOutlinedInput-root': { borderRadius: '12px' }
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Description (Optional)"
+              placeholder="Briefly describe the garment scope..."
+              multiline
+              rows={3}
+              value={newTemplateDescription}
+              onChange={(e) => setNewTemplateDescription(e.target.value)}
               disabled={isCreating}
               sx={{
                 '& .MuiOutlinedInput-root': { borderRadius: '12px' }

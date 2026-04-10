@@ -25,16 +25,19 @@ import {
   ArrowForward as ArrowIcon,
   Category as GarmentIcon
 } from '@mui/icons-material';
-import { useWorkflowTemplates, useTemplateStages, useAddTemplateStage } from '../hooks/useWorkflowTemplates';
+import { useWorkflowTemplates, useTemplateStages, useAddTemplateStage, useCreateTemplate } from '../hooks/useWorkflowTemplates';
 
 export function WorkshopConfiguration() {
   const { data: templates, isLoading: isLoadingTemplates } = useWorkflowTemplates();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const { data: stages, isLoading: isLoadingStages } = useTemplateStages(selectedTemplateId || undefined);
   const addStageMutation = useAddTemplateStage();
-
+  const createTemplateMutation = useCreateTemplate();
+ 
   const [isAddStageOpen, setIsAddStageOpen] = useState(false);
+  const [isCreateTemplateOpen, setIsCreateTemplateOpen] = useState(false);
   const [newStage, setNewStage] = useState({ name: '', duration: '8' });
+  const [newTemplate, setNewTemplate] = useState({ name: '', description: '' });
 
   const selectedTemplate = templates?.find(t => t.id === selectedTemplateId);
 
@@ -47,6 +50,13 @@ export function WorkshopConfiguration() {
     });
     setIsAddStageOpen(false);
     setNewStage({ name: '', duration: '8' });
+  };
+ 
+  const handleCreateTemplate = async () => {
+    if (!newTemplate.name) return;
+    await createTemplateMutation.mutateAsync(newTemplate);
+    setIsCreateTemplateOpen(false);
+    setNewTemplate({ name: '', description: '' });
   };
 
   return (
@@ -64,9 +74,19 @@ export function WorkshopConfiguration() {
       <Grid container spacing={3}>
         {/* TEMPLATE LIST */}
         <Grid size={{ xs: 12, md: 4 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, textTransform: 'uppercase', color: 'text.secondary', letterSpacing: 1 }}>
-            Garment Templates
-          </Typography>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, textTransform: 'uppercase', color: 'text.secondary', letterSpacing: 1 }}>
+              Garment Templates
+            </Typography>
+            <Button 
+              size="small" 
+              startIcon={<AddIcon />} 
+              onClick={() => setIsCreateTemplateOpen(true)}
+              sx={{ minWidth: 0, p: 0.5, borderRadius: '8px', color: 'primary.main', '&:hover': { bgcolor: alpha('#1e5c3a', 0.1) } }}
+            >
+              New
+            </Button>
+          </Stack>
           <Stack spacing={1.5}>
             {isLoadingTemplates ? (
               <Typography variant="body2">Loading templates...</Typography>
@@ -252,11 +272,19 @@ export function WorkshopConfiguration() {
               />
               <TextField
                 label="Estimated Duration (Hours)"
-                type="number"
                 fullWidth
                 size="small"
                 value={newStage.duration}
-                onChange={(e) => setNewStage({ ...newStage, duration: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9.]/g, '');
+                  if ((val.match(/\./g) || []).length <= 1) {
+                    setNewStage({ ...newStage, duration: val });
+                  }
+                }}
+                inputProps={{
+                  inputMode: 'decimal',
+                  pattern: '[0-9]*\\.?[0-9]*',
+                }}
                 placeholder="8"
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
               />
@@ -272,6 +300,55 @@ export function WorkshopConfiguration() {
             sx={{ borderRadius: '12px', fontWeight: 700, px: 3 }}
           >
             {addStageMutation.isPending ? 'Adding...' : 'Add Stage'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+ 
+      {/* CREATE TEMPLATE DIALOG */}
+      <Dialog 
+        open={isCreateTemplateOpen} 
+        onClose={() => setIsCreateTemplateOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}
+      >
+        <DialogTitle sx={{ fontWeight: 800 }}>Create New Blueprint</DialogTitle>
+        <DialogContent>
+          <Box sx={{ py: 1 }}>
+            <Stack spacing={2.5}>
+              <TextField
+                label="Template Name"
+                fullWidth
+                size="small"
+                value={newTemplate.name}
+                onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
+                autoFocus
+                placeholder="e.g. Standard Tuxedo, Summer Dress"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              />
+              <TextField
+                label="Description"
+                fullWidth
+                size="small"
+                multiline
+                rows={3}
+                value={newTemplate.description}
+                onChange={(e) => setNewTemplate({ ...newTemplate, description: e.target.value })}
+                placeholder="Briefly describe what this blueprint is for..."
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              />
+            </Stack>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setIsCreateTemplateOpen(false)} sx={{ color: 'text.secondary', fontWeight: 600 }}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            onClick={handleCreateTemplate}
+            disabled={!newTemplate.name || createTemplateMutation.isPending}
+            sx={{ borderRadius: '12px', fontWeight: 700, px: 3, bgcolor: '#1e5c3a', '&:hover': { bgcolor: '#2a7a4d' } }}
+          >
+            {createTemplateMutation.isPending ? 'Creating...' : 'Create Blueprint'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -16,7 +16,7 @@ import {
   Inventory as InventoryIcon,
   LocalShipping as ShippingIcon
 } from '@mui/icons-material';
-import { useInventory, useReceiveShipment } from '../features/inventory/useInventory';
+import { useInventory, useReceiveShipment, useRegisterMaterial } from '../features/inventory/useInventory';
 import { WorkshopTable } from '../components/ui/WorkshopTable';
 import { WorkshopTableSkeleton } from '../components/ui/WorkshopTableSkeleton';
 import { ErrorState } from '../components/feedback/ErrorState';
@@ -24,9 +24,12 @@ import { ErrorState } from '../components/feedback/ErrorState';
 export function InventoryPage() {
   const { data: inventory, isLoading, isError, error, refetch } = useInventory();
   const receiveMutation = useReceiveShipment();
-
+  const registerMutation = useRegisterMaterial();
+ 
   const [selectedMaterial, setSelectedMaterial] = useState<{ id: string, name: string } | null>(null);
   const [receiveData, setReceiveData] = useState({ quantity: '', notes: '' });
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [newMaterial, setNewMaterial] = useState({ name: '', sku: '', canonicalUnit: 'Yards' });
 
   const handleOpenReceive = (material: { materialId: string, name: string }) => {
     setSelectedMaterial({ id: material.materialId, name: material.name });
@@ -49,6 +52,13 @@ export function InventoryPage() {
     
     handleCloseReceive();
   };
+ 
+  const handleRegisterMaterial = async () => {
+    if (!newMaterial.name || !newMaterial.canonicalUnit) return;
+    await registerMutation.mutateAsync(newMaterial);
+    setIsRegisterOpen(false);
+    setNewMaterial({ name: '', sku: '', canonicalUnit: 'Yards' });
+  };
 
   if (isError) {
     return (
@@ -65,13 +75,31 @@ export function InventoryPage() {
   return (
     <Box className="container">
       <header style={{ marginBottom: 40 }}>
-        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
-          <InventoryIcon color="primary" sx={{ fontSize: 32 }} />
-          <Typography variant="h4" sx={{ fontWeight: 800 }}>The Material Vault</Typography>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+          <Box>
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
+              <InventoryIcon color="primary" sx={{ fontSize: 32 }} />
+              <Typography variant="h4" sx={{ fontWeight: 800 }}>The Material Vault</Typography>
+            </Stack>
+            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+              Physical stock ledger and real-time inventory positions. Immutable and event-driven.
+            </Typography>
+          </Box>
+          <Button 
+            variant="contained" 
+            startIcon={<AddIcon />}
+            onClick={() => setIsRegisterOpen(true)}
+            sx={{ 
+              borderRadius: '12px', 
+              fontWeight: 700, 
+              bgcolor: '#1e5c3a',
+              px: 3,
+              '&:hover': { bgcolor: '#277a4d' }
+            }}
+          >
+            Register New Material
+          </Button>
         </Stack>
-        <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-          Physical stock ledger and real-time inventory positions. Immutable and event-driven.
-        </Typography>
       </header>
 
       {isLoading ? (
@@ -144,12 +172,21 @@ export function InventoryPage() {
             <Stack spacing={3}>
               <TextField
                 label="Quantity (Yards/Units)"
-                type="number"
                 fullWidth
                 value={receiveData.quantity}
-                onChange={(e) => setReceiveData({ ...receiveData, quantity: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9.]/g, '');
+                  if ((val.match(/\./g) || []).length <= 1) {
+                    setReceiveData({ ...receiveData, quantity: val });
+                  }
+                }}
+                inputProps={{
+                  inputMode: 'decimal',
+                  pattern: '[0-9]*\\.?[0-9]*',
+                }}
                 autoFocus
                 placeholder="0.00"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
               />
               <TextField
                 label="Notes"
@@ -173,6 +210,61 @@ export function InventoryPage() {
             sx={{ borderRadius: '12px', fontWeight: 700, px: 3 }}
           >
             {receiveMutation.isPending ? 'Logging...' : 'Confirm Shipment'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+ 
+      {/* REGISTER MATERIAL MODAL */}
+      <Dialog 
+        open={isRegisterOpen} 
+        onClose={() => setIsRegisterOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}
+      >
+        <DialogTitle sx={{ fontWeight: 800 }}>Register New Material</DialogTitle>
+        <DialogContent>
+          <Box sx={{ py: 1 }}>
+            <Stack spacing={2.5}>
+              <TextField
+                label="Material Name"
+                fullWidth
+                size="small"
+                value={newMaterial.name}
+                onChange={(e) => setNewMaterial({ ...newMaterial, name: e.target.value })}
+                placeholder="e.g. Italian Merino Wool"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              />
+              <TextField
+                label="SKU / Reference"
+                fullWidth
+                size="small"
+                value={newMaterial.sku}
+                onChange={(e) => setNewMaterial({ ...newMaterial, sku: e.target.value })}
+                placeholder="e.g. WOO-MER-IT-001"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              />
+              <TextField
+                label="Canonical Unit"
+                fullWidth
+                size="small"
+                value={newMaterial.canonicalUnit}
+                onChange={(e) => setNewMaterial({ ...newMaterial, canonicalUnit: e.target.value })}
+                placeholder="e.g. Yards, Meters, Units"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              />
+            </Stack>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setIsRegisterOpen(false)} sx={{ color: 'text.secondary' }}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            onClick={handleRegisterMaterial}
+            disabled={!newMaterial.name || registerMutation.isPending}
+            sx={{ borderRadius: '12px', fontWeight: 700, px: 3, bgcolor: '#1e5c3a' }}
+          >
+            {registerMutation.isPending ? 'Registering...' : 'Register Material'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -35,3 +35,20 @@ export function useAddTemplateStage() {
     }
   });
 }
+
+export function useCreateTemplate() {
+  const queryClient = useQueryClient();
+  const showToast = useToastStore((state) => state.showToast);
+
+  return useMutation({
+    mutationFn: ({ name, description }: { name: string; description: string }) =>
+      workflowApi.createTemplate(name, description),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.workflow.templates });
+      showToast('Template Created', 'New workflow blueprint has been registered.', 'success');
+    },
+    onError: (error: any) => {
+      showToast('Error', error.message || 'Failed to create template', 'error');
+    }
+  });
+}

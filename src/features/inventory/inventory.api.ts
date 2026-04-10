@@ -22,5 +22,10 @@ export const inventoryApi = {
       notes
     });
     return data;
+  },
+
+  registerMaterial: async (data: { name: string; sku: string | null; canonicalUnit: string }) => {
+    const { data: result } = await apiClient.post('/inventory/materials', data);
+    return result;
   }
 };

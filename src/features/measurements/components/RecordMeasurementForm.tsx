@@ -37,10 +37,16 @@ export function RecordMeasurementForm({ customerId }: RecordMeasurementFormProps
           <div className="form-group">
             <label>Chest (in)</label>
             <input 
-              type="number" 
-              step="0.1" 
+              type="text" 
+              inputMode="decimal"
+              pattern="[0-9]*\.?[0-9]*"
               value={chest} 
-              onChange={(e) => setChest(e.target.value)} 
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9.]/g, '');
+                if ((val.match(/\./g) || []).length <= 1) {
+                  setChest(val);
+                }
+              }} 
               required 
               placeholder="e.g. 42.5"
             />
@@ -48,10 +54,16 @@ export function RecordMeasurementForm({ customerId }: RecordMeasurementFormProps
           <div className="form-group">
             <label>Waist (in)</label>
             <input 
-              type="number" 
-              step="0.1" 
+              type="text" 
+              inputMode="decimal"
+              pattern="[0-9]*\.?[0-9]*"
               value={waist} 
-              onChange={(e) => setWaist(e.target.value)} 
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9.]/g, '');
+                if ((val.match(/\./g) || []).length <= 1) {
+                  setWaist(val);
+                }
+              }} 
               required 
               placeholder="e.g. 34.0"
             />
@@ -59,10 +71,16 @@ export function RecordMeasurementForm({ customerId }: RecordMeasurementFormProps
           <div className="form-group">
             <label>Sleeve (in)</label>
             <input 
-              type="number" 
-              step="0.1" 
+              type="text" 
+              inputMode="decimal"
+              pattern="[0-9]*\.?[0-9]*"
               value={sleeve} 
-              onChange={(e) => setSleeve(e.target.value)} 
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9.]/g, '');
+                if ((val.match(/\./g) || []).length <= 1) {
+                  setSleeve(val);
+                }
+              }} 
               required 
               placeholder="e.g. 25.5"
             />

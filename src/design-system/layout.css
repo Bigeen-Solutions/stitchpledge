@@ -71,3 +71,9 @@
 .p-lg { padding: var(--space-lg); }
 .order-1 { order: 1; }
 .order-2 { order: 2; }
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

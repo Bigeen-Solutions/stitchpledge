@@ -34,3 +34,23 @@ export const useReceiveShipment = () => {
     }
   });
 };
+
+/**
+ * Mutation hook to register a brand new material record.
+ */
+export const useRegisterMaterial = () => {
+  const queryClient = useQueryClient();
+  const showToast = useToastStore((state) => state.showToast);
+
+  return useMutation({
+    mutationFn: (data: { name: string; sku: string | null; canonicalUnit: string }) =>
+      inventoryApi.registerMaterial(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.inventory.overview });
+      showToast('Material Registered', 'New material master record has been created.', 'success');
+    },
+    onError: (error: any) => {
+      showToast('Error', error.message || 'Failed to register material', 'error');
+    }
+  });
+};

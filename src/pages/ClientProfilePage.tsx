@@ -275,9 +275,17 @@ export function ClientProfilePage() {
                 <TextField
                   fullWidth
                   label={key}
-                  type="number"
                   value={formValues[key]}
-                  onChange={(e) => setFormValues({ ...formValues, [key]: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9.]/g, '');
+                    if ((val.match(/\./g) || []).length <= 1) {
+                      setFormValues({ ...formValues, [key]: val === "" ? 0 : val as any });
+                    }
+                  }}
+                  inputProps={{
+                    inputMode: 'decimal',
+                    pattern: '[0-9]*\\.?[0-9]*',
+                  }}
                   InputProps={{
                     endAdornment: <Typography variant="caption" sx={{ opacity: 0.5 }}>cm</Typography>
                   }}

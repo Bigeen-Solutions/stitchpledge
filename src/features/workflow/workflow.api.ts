@@ -4,6 +4,7 @@ export interface WorkflowTemplate {
   id: string;
   companyId: string;
   name: string;
+  description?: string;
   requiredMeasurements: string[];
   createdAt: string;
 }
@@ -79,8 +80,8 @@ export const workflowApi = {
     return data;
   },
 
-  createTemplate: async (name: string) => {
-    const { data } = await apiClient.post<WorkflowTemplate>('/workflows/templates', { name });
+  createTemplate: async (name: string, description?: string) => {
+    const { data } = await apiClient.post<WorkflowTemplate>('/workflow-templates', { name, description });
     return data;
   },
 
