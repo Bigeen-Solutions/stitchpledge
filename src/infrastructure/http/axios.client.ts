@@ -3,7 +3,8 @@ import { useAuthStore } from "../../features/auth/auth.store"
 
 // Create the centralized Axios instance
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001",
+  // baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001",
+  baseURL: import.meta.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
   headers: {
     "Content-Type": "application/json",
   },
