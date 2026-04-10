@@ -42,7 +42,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/', element: <SplashScreen /> },
           { path: '/login', element: <LoginPage /> },
-          { path: '/design-system', element: <DesignSystemPage /> },
+          ...(import.meta.env.DEV ? [{ path: '/design-system', element: <DesignSystemPage /> }] : []),
         ],
       },
       {
@@ -52,13 +52,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          { path: '/dashboard',
-            element: (
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            )
-          },
+          { path: '/dashboard', element: <DashboardPage /> },
           {
             path: '/orders',
             element: (

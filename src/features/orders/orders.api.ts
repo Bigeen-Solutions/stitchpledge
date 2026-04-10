@@ -1,4 +1,4 @@
-import { apiClient } from "../../api/client.ts"
+import { apiClient } from "../../infrastructure/http/axios.client"
 
 export interface Order {
   id: string

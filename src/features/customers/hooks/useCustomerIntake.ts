@@ -1,7 +1,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { customersApi } from "../customers.api";
 import type { CreateCustomerRequest } from "../customers.api";
-import { measurementsApi } from "../../measurements/measurements.api";
+import { measurementApi } from "../../measurements/measurement.api";
 import { keys } from "../../../query/keys";
 import { useDomainError } from "../../../lib/errors";
 
@@ -26,7 +26,7 @@ export function useCreateMeasurement() {
   const { handleError } = useDomainError();
   return useMutation({
     mutationFn: (data: { customerId: string; measurements: Record<string, number> }) =>
-      measurementsApi.createMeasurement(data),
+      measurementApi.recordMeasurement(data.customerId, data.measurements),
     onError: (err: any) => handleError(err),
   });
 }

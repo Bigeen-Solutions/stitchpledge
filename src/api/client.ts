@@ -1,1 +1,0 @@
-export { apiClient } from "../infrastructure/http/axios.client";
