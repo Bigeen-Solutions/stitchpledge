@@ -41,6 +41,7 @@ import { usePermissions } from "../features/auth/use-permissions";
 import { ordersApi } from "../features/orders/orders.api";
 import { useToastStore } from "../components/feedback/Toast";
 import { useInventory } from "../features/inventory/useInventory";
+import { truncateId } from "../utils/format";
 
 type Step = "CLIENT_SELECTION" | "CLIENT_DETAILS" | "GARMENTS_TIMELINE" | "FABRIC_DETAILS" | "MEASUREMENTS" | "SUMMARY";
 
@@ -1104,7 +1105,7 @@ export function NewOrderPage() {
             Order Created Successfully
           </Typography>
           <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4 }}>
-            Order ID: <strong>{successOrder?.id?.split('-')[0].toUpperCase()}</strong>
+            Order ID: <strong>{(truncateId(successOrder?.id) || '').toUpperCase()}</strong>
           </Typography>
           <Stack spacing={2}>
             <Button 

@@ -1,4 +1,4 @@
-type RiskLevel = "ON_TRACK" | "AT_RISK" | "OVERDUE" | "UNKNOWN"
+export type RiskLevel = "ON_TRACK" | "AT_RISK" | "OVERDUE" | "UNKNOWN"
 
 interface RiskBadgeProps {
   level: RiskLevel

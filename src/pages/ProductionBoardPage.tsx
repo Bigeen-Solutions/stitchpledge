@@ -373,7 +373,8 @@ export function ProductionBoardPage() {
   
   // Local Filtering & Pagination State
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [stageFilter, setStageFilter] = useState('All');
+  const [lifecycleStatusFilter, setLifecycleStatusFilter] = useState('All');
   const [tailorFilter, setTailorFilter] = useState('All');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -398,11 +399,16 @@ export function ProductionBoardPage() {
     ];
   }, [tasks]);
 
-  // Derive Tailors for Filter
-  const uniqueTailors = useMemo(() => {
-    const tailors = Array.from(new Set(tasks.map(t => t.assignedTailorId).filter(Boolean))) as string[];
-    return tailors;
+  // Derive Available Filters Dynamically
+  const uniqueStages = useMemo(() => {
+    return Array.from(new Set(tasks.map(t => t.stageName))).sort();
   }, [tasks]);
+
+  const uniqueTailors = useMemo(() => {
+    return Array.from(new Set(tasks.map(t => t.assignedTailorId).filter(Boolean))) as string[];
+  }, [tasks]);
+
+  const lifecycleStatuses = ['PENDING', 'ACTIVE', 'COMPLETED', 'BLOCKED'];
 
   // Handle Filtering
   const filteredTasks = useMemo(() => {
@@ -414,11 +420,14 @@ export function ProductionBoardPage() {
       const matchesSearch = 
         orderId.toLowerCase().includes(searchStr) || 
         customerName.toLowerCase().includes(searchStr);
-      const matchesStatus = statusFilter === 'All' || task.stageName === statusFilter;
+      
+      const matchesStage = stageFilter === 'All' || task.stageName === stageFilter;
+      const matchesLifecycle = lifecycleStatusFilter === 'All' || task.status === lifecycleStatusFilter;
       const matchesTailor = tailorFilter === 'All' || task.assignedTailorId === tailorFilter;
-      return matchesSearch && matchesStatus && matchesTailor;
+      
+      return matchesSearch && matchesStage && matchesLifecycle && matchesTailor;
     });
-  }, [tasks, search, statusFilter, tailorFilter]);
+  }, [tasks, search, stageFilter, lifecycleStatusFilter, tailorFilter]);
 
   // Handle Pagination
   const paginatedTasks = useMemo(() => {
@@ -505,24 +514,42 @@ export function ProductionBoardPage() {
         }}
       >
         <Typography variant="body2" fontWeight={700} color="text.secondary" sx={{ mr: 1 }}>Filters:</Typography>
+        
+        {/* Stage Filter */}
         <Select 
-          value={statusFilter} 
-          onChange={(e) => setStatusFilter(e.target.value)}
+          value={stageFilter} 
+          onChange={(e) => setStageFilter(e.target.value)}
           size="small"
-          sx={{ minWidth: 150, borderRadius: 3 }}
+          sx={{ minWidth: 160, borderRadius: 3, bgcolor: 'background.paper' }}
+          displayEmpty
+        >
+          <MenuItem value="All">All Workflow Stages</MenuItem>
+          {uniqueStages.map((stage) => (
+            <MenuItem key={stage} value={stage}>{stage}</MenuItem>
+          ))}
+        </Select>
+
+        {/* Lifecycle Status Filter */}
+        <Select 
+          value={lifecycleStatusFilter} 
+          onChange={(e) => setLifecycleStatusFilter(e.target.value)}
+          size="small"
+          sx={{ minWidth: 160, borderRadius: 3, bgcolor: 'background.paper' }}
         >
           <MenuItem value="All">All Statuses</MenuItem>
-          <MenuItem value="Cutting">Cutting</MenuItem>
-          <MenuItem value="Sewing">Sewing</MenuItem>
-          <MenuItem value="Fitting">Fitting</MenuItem>
-          <MenuItem value="Finishing">Finishing</MenuItem>
+          {lifecycleStatuses.map((status) => (
+            <MenuItem key={status} value={status}>
+              {status.charAt(0) + status.slice(1).toLowerCase()}
+            </MenuItem>
+          ))}
         </Select>
         
+        {/* Tailor Filter */}
         <Select 
           value={tailorFilter} 
           onChange={(e) => setTailorFilter(e.target.value)}
           size="small"
-          sx={{ minWidth: 150, borderRadius: 3 }}
+          sx={{ minWidth: 150, borderRadius: 3, bgcolor: 'background.paper' }}
         >
           <MenuItem value="All">All Tailors</MenuItem>
           {uniqueTailors.map((id: string) => (

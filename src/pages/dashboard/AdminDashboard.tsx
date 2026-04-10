@@ -7,12 +7,6 @@ import {
   Card,
   Chip,
   LinearProgress,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Link,
   Avatar,
   List,
@@ -41,7 +35,7 @@ import {
   ContentCut as Scissors,
   History,
 } from '@mui/icons-material';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '../../utils/format';
 import type {
   ActivityItem,
   MaterialStock
@@ -49,6 +43,7 @@ import type {
 import { useAdminAnalytics } from '../../features/dashboard/useAdminAnalytics';
 import { useOrders } from '../../features/orders/hooks/useOrders';
 import { useInventory } from '../../features/inventory/useInventory';
+import { OrderEntryItem } from '../../features/orders/components/OrderEntryItem';
 
 const countUp = keyframes`
   from { opacity: 0; transform: translateY(10px); }
@@ -292,9 +287,9 @@ export const AdminDashboard: React.FC = () => {
               </Stack>
             </Card>
 
-            {/* Recent Orders Table */}
-            <Card sx={{ borderRadius: '16px', border: '1px solid #e5e4e0', bgcolor: '#fafaf8', overflow: 'hidden' }}>
-              <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {/* Recent Orders List */}
+            <Box sx={{ p: 3 }}>
+              <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a2340' }}>
                   Recent Orders / High Risk
                 </Typography>
@@ -306,62 +301,23 @@ export const AdminDashboard: React.FC = () => {
                   View All Orders
                 </Link>
               </Box>
-              <TableContainer>
-                <Table>
-                  <TableHead sx={{ bgcolor: alpha('#f5f4f0', 0.5) }}>
-                    <TableRow>
-                      <TableCell sx={{ fontWeight: 700, color: '#6b7280', fontSize: '12px' }}>ORDER ID</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: '#6b7280', fontSize: '12px' }}>CUSTOMER</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: '#6b7280', fontSize: '12px' }}>GARMENT</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: '#6b7280', fontSize: '12px' }}>STAGE</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: '#6b7280', fontSize: '12px' }}>RISK LEVEL</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {recentOrders.map((order: any) => {
-                      const renderRisk = order.status === 'COMPLETED' ? 'ON_TRACK' : (order.riskLevel || 'ON_TRACK');
-                      const stageColor = order.status === 'COMPLETED' ? '#1e5c3a' : '#c49a1a';
-                      return (
-                        <TableRow
-                          key={order.garmentId || order.id}
-                          hover
-                          onClick={() => navigate(`/orders/${order.id}`)}
-                          sx={{ cursor: 'pointer', transition: 'background 0.2s ease', '&:hover': { bgcolor: alpha('#1e5c3a', 0.04) } }}
-                        >
-                          <TableCell sx={{ fontWeight: 700, color: '#1a2340', fontFamily: 'monospace' }}>
-                            #{order.id.split('-')[0].toUpperCase()}
-                          </TableCell>
-                          <TableCell sx={{ color: '#1a2340', fontWeight: 500 }}>{order.customerName}</TableCell>
-                          <TableCell sx={{ color: '#6b7280' }}>{order.garmentName}</TableCell>
-                          <TableCell>
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: stageColor }} />
-                              <Typography variant="body2" sx={{ fontSize: '13px', fontWeight: 500, textTransform: 'capitalize' }}>
-                                {order.status?.replace(/_/g, ' ').toLowerCase() || 'Processing'}
-                              </Typography>
-                            </Stack>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={renderRisk}
-                              size="small"
-                              sx={{
-                                height: 24,
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                bgcolor: renderRisk === 'OVERDUE' ? '#fde8e8' : renderRisk === 'AT_RISK' ? '#fef3e2' : '#e8f5ee',
-                                color: renderRisk === 'OVERDUE' ? '#c0392b' : renderRisk === 'AT_RISK' ? '#c49a1a' : '#1e5c3a',
-                                borderRadius: '6px',
-                              }}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Card>
+              
+              <Stack spacing={0}>
+                {recentOrders.length === 0 ? (
+                  <Typography variant="body2" sx={{ color: 'text.secondary', p: 4, textAlign: 'center' }}>
+                    No active orders found in the production projection.
+                  </Typography>
+                ) : (
+                  recentOrders.map((order: any) => (
+                    <OrderEntryItem 
+                      key={order.id} 
+                      order={order} 
+                      onClick={() => navigate(`/orders/${order.id}`)}
+                    />
+                  ))
+                )}
+              </Stack>
+            </Box>
           </Stack>
         </Grid>
 
@@ -389,7 +345,7 @@ export const AdminDashboard: React.FC = () => {
                             {item.text} <Box component="span" sx={{ fontWeight: 400, color: '#6b7280' }}>{item.detail}</Box>
                           </Typography>
                         }
-                        secondary={item.time ? formatDistanceToNow(new Date(item.time), { addSuffix: true }) : 'Just now'}
+                        secondary={item.time ? safeFormatDistanceToNow(item.time) : 'Just now'}
                         secondaryTypographyProps={{ fontSize: '11px', color: '#9CA3AF', mt: 0.5 }}
                       />
                     </ListItem>

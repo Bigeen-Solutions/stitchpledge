@@ -27,6 +27,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { RiskBadge } from '../components/ui/RiskBadge.tsx';
 import { EditOrderModal } from '../features/orders/components/EditOrderModal.tsx';
 
+import { truncateId } from '../utils/format.ts';
+
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -98,7 +100,7 @@ export function OrderDetailPage() {
                 Production Record
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 800 }}>
-                #{order.orderNumber}
+                #{truncateId(order.id).toUpperCase()}
               </Typography>
             </Box>
             <Box sx={{ borderLeft: '1px solid', borderColor: 'divider', pl: 3 }}>

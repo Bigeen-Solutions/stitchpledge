@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -25,15 +25,18 @@ import {
   ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
 import { useCustomerProfile, useUpdateMeasurements } from '../features/customers/hooks/useCustomerProfile';
-import { WorkshopTable } from '../components/ui/WorkshopTable';
 import { ErrorState } from '../components/feedback/ErrorState';
 import { useToastStore } from '../components/feedback/Toast';
+import { truncateId, safeFormatDistanceToNow, safeLocaleDate } from '../utils/format';
+import { OrderEntryItem } from '../features/orders/components/OrderEntryItem';
+import { Timeline, TimelineItem } from '../components/timeline/Timeline';
 
 const DEFAULT_MEASUREMENT_KEYS = [
   'Neck', 'Chest', 'Waist', 'Hips', 'Shoulder', 'Sleeve', 'Inseam', 'Outseam'
 ];
 
 export function ClientProfilePage() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const showToast = useToastStore((state) => state.showToast);
   const { data: profile, isLoading, isError, error, refetch } = useCustomerProfile(id!);
@@ -78,12 +81,11 @@ export function ClientProfilePage() {
 
   const handleUpdateSubmit = async () => {
     try {
-      // Only send non-zero measurements or all? Let's send what's in the form.
       await updateMutation.mutateAsync(formValues);
-      showToast("Measurements Updated", "Historical version created successfully.", "success");
+      showToast("Measurement Recorded", "A new immutable version has been saved to the ledger.", "success");
       setIsModalOpen(false);
     } catch (err: any) {
-      showToast("Update Failed", err.message || "Could not save measurements.", "error");
+      showToast("Record Failed", err.message || "Could not save measurements.", "error");
     }
   };
 
@@ -123,7 +125,7 @@ export function ClientProfilePage() {
           onClick={() => setIsModalOpen(true)}
           sx={{ borderRadius: '12px', px: 3, py: 1.5, fontWeight: 700 }}
         >
-          Update Measurements
+          Record New Measurement
         </Button>
       </header>
 
@@ -136,9 +138,9 @@ export function ClientProfilePage() {
             </Typography>
             <Stack spacing={3}>
               <Box>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase' }}>System Identifier</Typography>
-                <Typography variant="body1" sx={{ fontFamily: 'monospace', bgcolor: 'background.default', p: 1, borderRadius: '4px', mt: 0.5 }}>
-                  {customer.id}
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase' }}>Secure System Identifier</Typography>
+                <Typography variant="body1" sx={{ fontFamily: 'monospace', bgcolor: alpha('#1e5c3a', 0.05), p: 1, borderRadius: '8px', mt: 0.5, color: 'primary.dark', fontWeight: 700 }}>
+                  {truncateId(customer.id).toUpperCase()}
                 </Typography>
               </Box>
               <Box>
@@ -194,17 +196,16 @@ export function ClientProfilePage() {
             
             {latestMeasurement && (
               <Typography variant="caption" sx={{ display: 'block', mt: 4, textAlign: 'right', color: 'text.secondary' }}>
-                Last updated: {new Date(latestMeasurement.createdAt).toLocaleString()}
+                Last updated: {safeLocaleDate(latestMeasurement.createdAt)}
               </Typography>
             )}
           </Card>
         </Grid>
 
-        {/* BOTTOM PANEL: Order History */}
-        <Grid size={{ xs: 12 }}>
-          <Card className="sf-card" sx={{ p: 4, borderRadius: '24px' }}>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card className="sf-card" sx={{ p: 4, borderRadius: '24px', height: '100%' }}>
             <Typography variant="h6" sx={{ mb: 4, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <HistoryIcon color="secondary" /> Recent Order History
+              <HistoryIcon color="secondary" /> Order History Projection
             </Typography>
 
             {orderHistory.length === 0 ? (
@@ -212,41 +213,55 @@ export function ClientProfilePage() {
                 No past orders found for this client.
               </Box>
             ) : (
-              <WorkshopTable headers={['Order #', 'Date', 'Status', 'Actions']}>
+              <Stack spacing={0}>
                 {orderHistory.map((order) => (
-                  <tr key={order.id}>
-                    <td>
-                      <Typography variant="body2" sx={{ fontWeight: 700 }}>{order.orderNumber}</Typography>
-                    </td>
-                    <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                    <td>
-                      <Box component="span" sx={{ 
-                        px: 1.5, py: 0.5, 
-                        bgcolor: alpha('#1e5c3a', 0.05), 
-                        color: 'primary.main', 
-                        borderRadius: 'pill', 
-                        fontSize: '0.7rem', 
-                        fontWeight: 700,
-                        textTransform: 'uppercase'
-                      }}>
-                        {order.status}
-                      </Box>
-                    </td>
-                    <td>
-                      <Button 
-                        component={Link} 
-                        to={`/orders/${order.id}`}
-                        size="small" 
-                        variant="outlined" 
-                        sx={{ fontSize: '0.7rem', borderRadius: '8px' }}
-                      >
-                        View Details
-                      </Button>
-                    </td>
-                  </tr>
+                  <OrderEntryItem 
+                    key={order.id} 
+                    order={{
+                      ...order,
+                      customerName: customer.name,
+                      garmentName: "Archived Production",
+                      eventDate: "" // Not always available in summary
+                    }}
+                    onClick={() => navigate(`/orders/${order.id}`)}
+                  />
                 ))}
-              </WorkshopTable>
+              </Stack>
             )}
+          </Card>
+        </Grid>
+
+        {/* RIGHT PANEL: Measurement History Timeline */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card className="sf-card" sx={{ p: 4, borderRadius: '24px', height: '100%' }}>
+            <Typography variant="h6" sx={{ mb: 4, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <MeasurementsIcon color="secondary" /> Measurement Lifecycle
+            </Typography>
+
+            <Timeline>
+              {(profile.measurementVersions || []).map((v) => (
+                <TimelineItem
+                  key={v.id}
+                  actor="System Recorder"
+                  timestamp={safeFormatDistanceToNow(v.createdAt)}
+                  action={
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                        Version {v.versionNumber} Committed
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        {Object.keys(v.measurements).length} precision points recorded
+                      </Typography>
+                    </Box>
+                  }
+                />
+              ))}
+              {(!profile.measurementVersions || profile.measurementVersions.length === 0) && (
+                <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center', py: 4 }}>
+                  No historical versions available.
+                </Typography>
+              )}
+            </Timeline>
           </Card>
         </Grid>
       </Grid>
@@ -262,7 +277,7 @@ export function ClientProfilePage() {
         }}
       >
         <DialogTitle sx={{ fontWeight: 800 }}>
-          {latestMeasurement ? `Update Measurements (Version ${latestMeasurement.versionNumber + 1})` : 'Initialize Measurements'}
+          {latestMeasurement ? `Record New Measurement Version (v${latestMeasurement.versionNumber + 1})` : 'Initialize Measurements'}
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>

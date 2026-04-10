@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useOrders } from '../hooks/useOrders.ts';
-import { WorkshopTable } from '../../../components/ui/WorkshopTable.tsx';
-import { RiskBadge } from '../../../components/ui/RiskBadge.tsx';
 import { WorkshopTableSkeleton } from '../../../components/ui/WorkshopTableSkeleton.tsx';
 import { ErrorState } from '../../../components/feedback/ErrorState.tsx';
 import { EditOrderModal } from './EditOrderModal.tsx';
+import { OrderEntryItem } from './OrderEntryItem.tsx';
+import { useNavigate } from 'react-router-dom';
+import { Box, Stack, Typography } from '@mui/material';
 
 export function OrdersList() {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [editingOrder, setEditingOrder] = useState<any>(null);
 
@@ -37,47 +39,27 @@ export function OrdersList() {
   return (
     <div className="orders-ledger">
       <div className="flex justify-between items-center mb-md px-md">
-        <h2 className="text-h2">Active Order Overview</h2>
-        <div className="text-sm text-black">Showing all active workshop projections</div>
+        <h2 className="text-h2">Production Ledger</h2>
+        <div className="text-sm text-black">High-fidelity projection of workshop workload</div>
       </div>
       
-      <WorkshopTable headers={['Order #', 'Customer', 'Garment', 'Deadline', 'Risk State', 'Actions']}>
-        {orders?.items?.map(order => {
-          const renderRisk = order.status === 'COMPLETED' ? 'ON_TRACK' : order.riskLevel;
-          const isOverdue = new Date(order.eventDate) < new Date() && order.status !== 'COMPLETED';
-          return (
-            <tr key={order.garmentId} className={`ledger-row risk-${renderRisk.toLowerCase()}`}>
-              <td>
-                <div className="font-bold text-black" style={{ fontSize: '1rem' }}>{order.orderNumber}</div>
-                <div className="text-xs text-black uppercase font-bold opacity-70">{order.status}</div>
-              </td>
-              <td className="text-black font-medium">{order.customerName}</td>
-              <td className="text-black">{order.garmentName}</td>
-              <td>
-                <div className="deadline-dominant" style={{ 
-                  fontSize: '1.25rem', 
-                  fontWeight: 800,
-                  color: isOverdue ? 'var(--risk-overdue)' : 'var(--color-text-primary)'
-                }}>
-                  {order.deadline}
-                </div>
-              </td>
-              <td><RiskBadge level={renderRisk} /></td>
-              <td>
-                {order.status !== 'COMPLETED' && (
-                  <button 
-                    className="text-button" 
-                    style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary)' }}
-                    onClick={() => setEditingOrder(order)}
-                  >
-                    Edit
-                  </button>
-                )}
-              </td>
-            </tr>
-          );
-        })}
-      </WorkshopTable>
+      <Box sx={{ px: 2, mb: 4 }}>
+        <Stack spacing={0}>
+          {orders?.items?.length === 0 ? (
+            <Typography variant="body2" sx={{ color: 'text.secondary', p: 4, textAlign: 'center' }}>
+              No orders found in the ledger.
+            </Typography>
+          ) : (
+            orders?.items?.map(order => (
+              <OrderEntryItem 
+                key={order.id} 
+                order={order} 
+                onClick={() => navigate(`/orders/${order.id}`)}
+              />
+            ))
+          )}
+        </Stack>
+      </Box>
 
       <div className="flex justify-between items-center" style={{ marginTop: 'var(--space-md)', padding: '0 var(--space-md)' }}>
         <button 
