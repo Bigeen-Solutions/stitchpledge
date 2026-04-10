@@ -92,19 +92,23 @@ export function useAxiosInterceptors() {
           return Promise.reject(error);
         }
 
-        // 3. Handle 5xx Errors (Server side)
+        // 3. Handle 5xx Errors (Server side) - DEACTIVATED
+        /*
         if (error.response && error.response.status >= 500) {
           if (window.location.pathname !== "/500") {
             navigate('/500');
           }
           return Promise.reject(error);
         }
+        */
 
-        // 4. Handle Network Errors (Server unreachable)
+        // 4. Handle Network Errors (Server unreachable) - DEACTIVATED
+        /*
         if (!error.response && error.message === "Network Error") {
           navigate('/500');
           return Promise.reject(error);
         }
+        */
 
         // 5. Attach parsed error
         const parsedError = parseApiError(error);

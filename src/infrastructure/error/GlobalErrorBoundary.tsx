@@ -25,11 +25,13 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     
     // In a production app, we would log this to an external service like Sentry
     // For now, we redirect to the 500 page via window.location if we're not already there
+    /*
     if (!window.location.pathname.includes('/500')) {
        // We use window.location because we might be outside the Router context 
        // or the Router itself might have crashed
        window.location.href = '/500';
     }
+    */
   }
 
   public render() {
