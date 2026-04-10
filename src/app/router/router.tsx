@@ -14,6 +14,8 @@ import { ClientProfilePage } from '../../pages/ClientProfilePage.tsx';
 import { InventoryPage } from '../../pages/InventoryPage.tsx';
 import { SettingsPage } from '../../pages/SettingsPage.tsx';
 import AuditLogPage from '../../pages/AuditLogPage.tsx';
+import { ForbiddenPage } from '../../pages/error/ForbiddenPage.tsx';
+import { ServerErrorPage } from '../../pages/error/ServerErrorPage.tsx';
 
 
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
@@ -144,7 +146,9 @@ export const router = createBrowserRouter([
           { path: '/portal/orders/:id', element: <CustomerOrderPage /> },
         ],
       },
+      { path: '/403', element: <ForbiddenPage /> },
       { path: '/404', element: <NotFoundPage /> },
+      { path: '/500', element: <ServerErrorPage /> },
       { path: '*', element: <Navigate to="/404" replace /> },
     ],
   },

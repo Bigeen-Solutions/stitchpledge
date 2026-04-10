@@ -105,7 +105,7 @@ const AuditLogPage: React.FC = () => {
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
                   <TableCell sx={{ color: '#6b7280', fontSize: '13px', fontWeight: 500 }}>
-                    {new Date(event.created_at).toLocaleString()}
+                    {event.createdAt ? new Date(event.createdAt).toLocaleString() : 'Unknown Date'}
                   </TableCell>
                   <TableCell>
                     {getEventChip(event.event_type)}

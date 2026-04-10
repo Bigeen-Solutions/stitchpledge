@@ -4,7 +4,6 @@ import axios from 'axios';
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { apiClient } from './axios.client';
 import { useAuthStore } from '../../features/auth/auth.store';
-import { useToastStore } from '../../components/feedback/Toast';
 import { parseApiError } from '../../lib/errors/parse-api-error';
 
 // Mutex state (module scope)
@@ -87,15 +86,27 @@ export function useAxiosInterceptors() {
 
         // 2. Handle 403 Forbidden
         if (error.response?.status === 403) {
-          useToastStore.getState().showToast("Access Denied: You do not have permission for this area", "error");
-          
-          if (window.location.pathname !== "/dashboard" && window.location.pathname !== "/login") {
-            navigate('/dashboard');
+          if (window.location.pathname !== "/403") {
+            navigate('/403');
           }
           return Promise.reject(error);
         }
 
-        // 3. Attach parsed error
+        // 3. Handle 5xx Errors (Server side)
+        if (error.response && error.response.status >= 500) {
+          if (window.location.pathname !== "/500") {
+            navigate('/500');
+          }
+          return Promise.reject(error);
+        }
+
+        // 4. Handle Network Errors (Server unreachable)
+        if (!error.response && error.message === "Network Error") {
+          navigate('/500');
+          return Promise.reject(error);
+        }
+
+        // 5. Attach parsed error
         const parsedError = parseApiError(error);
         (error as any).parsedError = parsedError;
 

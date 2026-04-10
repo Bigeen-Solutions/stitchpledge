@@ -82,7 +82,12 @@ export const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isSidebarOpen }) 
           {isAdmin && (
             <Chip
               icon={<Calendar sx={{ fontSize: 16, color: '#c49a1a !important' }} />}
-              label="Mar 18 - Mar 24"
+              label={new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric', 
+                year: 'numeric' 
+              })}
               variant="outlined"
               sx={{
                 display: { xs: 'none', sm: 'flex' },
