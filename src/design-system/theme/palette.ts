@@ -28,11 +28,11 @@ export const palette: PaletteOptions = {
     unknown: '#6b7280',
   },
   primary: {
-    main: '#1e5c3a', // Dark forest green — buttons, highlights
+    main: '#1e5c3a',
     contrastText: '#ffffff',
   },
   secondary: {
-    main: '#c49a1a', // Golden amber — accents, warnings
+    main: '#c49a1a',
     contrastText: '#ffffff',
   },
   success: {
@@ -45,14 +45,14 @@ export const palette: PaletteOptions = {
     main: '#EF4444',
   },
   info: {
-    main: '#38BDF8', // Sky Blue — informational, non-urgent
+    main: '#38BDF8',
   },
   background: {
-    default: '#f5f4f0', // Milky off-white — app background
-    paper: '#fafaf8',   // Warm white — cards/surfaces
+    default: '#f5f4f0',
+    paper: '#fafaf8',
   },
   text: {
-    primary: '#1a2340',   // Deep navy — headings + body
-    secondary: '#6b7280', // Medium gray — labels, placeholders
+    primary: '#1a2340',
+    secondary: '#6b7280',
   },
 };
