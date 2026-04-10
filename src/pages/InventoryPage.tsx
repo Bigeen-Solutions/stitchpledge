@@ -30,6 +30,8 @@ export function InventoryPage() {
   const [receiveData, setReceiveData] = useState({ quantity: '', notes: '' });
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [newMaterial, setNewMaterial] = useState({ name: '', sku: '', canonicalUnit: 'Yards' });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const handleOpenReceive = (material: { materialId: string, name: string }) => {
     setSelectedMaterial({ id: material.materialId, name: material.name });
@@ -55,9 +57,29 @@ export function InventoryPage() {
  
   const handleRegisterMaterial = async () => {
     if (!newMaterial.name || !newMaterial.canonicalUnit) return;
-    await registerMutation.mutateAsync(newMaterial);
+    
+    const formData = new FormData();
+    formData.append('name', newMaterial.name);
+    if (newMaterial.sku) formData.append('sku', newMaterial.sku);
+    formData.append('canonicalUnit', newMaterial.canonicalUnit);
+    if (selectedImage) {
+      formData.append('image', selectedImage);
+    }
+
+    await registerMutation.mutateAsync(formData as any);
     setIsRegisterOpen(false);
     setNewMaterial({ name: '', sku: '', canonicalUnit: 'Yards' });
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const url = URL.createObjectURL(file);
+      setImagePreview(url);
+    }
   };
 
   if (isError) {
@@ -110,8 +132,38 @@ export function InventoryPage() {
             {inventory?.map((item) => (
               <tr key={item.materialId}>
                 <td>
-                  <Typography variant="body1" sx={{ fontWeight: 700 }}>{item.name}</Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>Unit: {item.unit}</Typography>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    {item.imageUrl ? (
+                      <Box 
+                        component="img" 
+                        src={item.imageUrl} 
+                        sx={{ 
+                          width: 48, 
+                          height: 48, 
+                          borderRadius: '8px', 
+                          objectFit: 'cover', 
+                          border: '1px solid',
+                          borderColor: 'divider'
+                        }} 
+                      />
+                    ) : (
+                      <Box sx={{ 
+                        width: 48, 
+                        height: 48, 
+                        borderRadius: '8px', 
+                        bgcolor: alpha('#000', 0.05), 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center' 
+                      }}>
+                        <InventoryIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
+                      </Box>
+                    )}
+                    <Box>
+                      <Typography variant="body1" sx={{ fontWeight: 700 }}>{item.name}</Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>Unit: {item.unit}</Typography>
+                    </Box>
+                  </Stack>
                 </td>
                 <td>
                   <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>{item.sku || 'N/A'}</Typography>
@@ -226,6 +278,56 @@ export function InventoryPage() {
         <DialogContent>
           <Box sx={{ py: 1 }}>
             <Stack spacing={2.5}>
+              <Box sx={{ mb: 1 }}>
+                <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', display: 'block', mb: 1 }}>
+                  Visual Verification
+                </Typography>
+                <Stack spacing={2} alignItems="center">
+                  {imagePreview ? (
+                    <Box 
+                      component="img" 
+                      src={imagePreview} 
+                      sx={{ width: '100%', height: 160, borderRadius: '16px', objectFit: 'cover', border: '1px solid var(--color-border)' }} 
+                    />
+                  ) : (
+                    <Box sx={{ 
+                      width: '100%', 
+                      height: 120, 
+                      borderRadius: '16px', 
+                      border: '2px dashed',
+                      borderColor: 'divider',
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      bgcolor: alpha('#000', 0.02)
+                    }}>
+                      <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>No Fabric Photo Captured</Typography>
+                    </Box>
+                  )}
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    fullWidth
+                    startIcon={<AddIcon />}
+                    sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700 }}
+                  >
+                    {imagePreview ? 'Retake Photo' : 'Capture Fabric Photo'}
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleImageChange}
+                    />
+                  </Button>
+                </Stack>
+              </Box>
+
+              <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', display: 'block' }}>
+                Material Metadata
+              </Typography>
+              
               <TextField
                 label="Material Name"
                 fullWidth

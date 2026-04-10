@@ -5,6 +5,7 @@ export interface StockPosition {
   name: string;
   sku: string | null;
   unit: string;
+  imageUrl?: string;
   totalLedger: number;
   activeReservations: number;
   quantityAvailable: number;
@@ -24,8 +25,10 @@ export const inventoryApi = {
     return data;
   },
 
-  registerMaterial: async (data: { name: string; sku: string | null; canonicalUnit: string }) => {
-    const { data: result } = await apiClient.post('/inventory/materials', data);
+  registerMaterial: async (data: FormData | { name: string; sku: string | null; canonicalUnit: string }) => {
+    const { data: result } = await apiClient.post('/inventory/materials', data, {
+      headers: data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : undefined
+    });
     return result;
   }
 };
