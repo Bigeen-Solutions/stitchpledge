@@ -52,3 +52,19 @@ export function useCreateTemplate() {
     }
   });
 }
+export function useUpdateTemplateMeasurements() {
+  const queryClient = useQueryClient();
+  const showToast = useToastStore((state) => state.showToast);
+
+  return useMutation({
+    mutationFn: ({ templateId, measurements }: { templateId: string; measurements: string[] }) =>
+      workflowApi.updateTemplateMeasurements(templateId, measurements),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.workflow.templates });
+      showToast('Measurements Updated', 'Template measurement requirements have been synchronized.', 'success');
+    },
+    onError: (error: any) => {
+      showToast('Error', error.message || 'Failed to update measurements', 'error');
+    }
+  });
+}

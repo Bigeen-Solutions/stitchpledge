@@ -17,6 +17,7 @@ import AuditLogPage from '../../pages/AuditLogPage.tsx';
 import { ForbiddenPage } from '../../pages/error/ForbiddenPage.tsx';
 // import { ServerErrorPage } from '../../pages/error/ServerErrorPage.tsx';
 import ReportsPage from '../../pages/ReportsPage.tsx';
+import { BetaFeatureGuard } from '../../components/feedback/BetaFeatureGuard.tsx';
 
 
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
@@ -136,6 +137,14 @@ export const router = createBrowserRouter([
                 <AuditLogPage />
               </ProtectedRoute>
             )
+          },
+          {
+            path: '/measurements',
+            element: <BetaFeatureGuard featureName="Measurement Vault" />
+          },
+          {
+            path: '/payments',
+            element: <BetaFeatureGuard featureName="Payment Ledger" />
           },
         ],
       },

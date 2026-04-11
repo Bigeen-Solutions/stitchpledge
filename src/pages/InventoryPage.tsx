@@ -9,7 +9,8 @@ import {
   DialogActions, 
   TextField, 
   Stack,
-  alpha
+  alpha,
+  MenuItem
 } from '@mui/material';
 import { 
   Add as AddIcon,
@@ -97,7 +98,12 @@ export function InventoryPage() {
   return (
     <Box className="container">
       <header style={{ marginBottom: 40 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          justifyContent="space-between" 
+          alignItems={{ xs: 'stretch', sm: 'flex-start' }}
+          spacing={3}
+        >
           <Box>
             <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
               <InventoryIcon color="primary" sx={{ fontSize: 32 }} />
@@ -116,6 +122,7 @@ export function InventoryPage() {
               fontWeight: 700, 
               bgcolor: '#1e5c3a',
               px: 3,
+              py: { xs: 1.5, sm: 1 },
               '&:hover': { bgcolor: '#277a4d' }
             }}
           >
@@ -347,14 +354,19 @@ export function InventoryPage() {
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
               />
               <TextField
+                select
                 label="Canonical Unit"
                 fullWidth
                 size="small"
                 value={newMaterial.canonicalUnit}
                 onChange={(e) => setNewMaterial({ ...newMaterial, canonicalUnit: e.target.value })}
-                placeholder="e.g. Yards, Meters, Units"
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-              />
+              >
+                <MenuItem value="Yards">Yards</MenuItem>
+                <MenuItem value="Meters">Meters</MenuItem>
+                <MenuItem value="Pieces">Pieces</MenuItem>
+                <MenuItem value="Boxes">Boxes</MenuItem>
+              </TextField>
             </Stack>
           </Box>
         </DialogContent>

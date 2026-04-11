@@ -16,16 +16,19 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField
+  TextField,
+  Chip,
+  Paper
 } from '@mui/material';
 import { 
   AccountTree as WorkflowIcon,
   Add as AddIcon,
   Timer as TimerIcon,
   ArrowForward as ArrowIcon,
-  Category as GarmentIcon
+  Category as GarmentIcon,
+  Straighten as RulerIcon
 } from '@mui/icons-material';
-import { useWorkflowTemplates, useTemplateStages, useAddTemplateStage, useCreateTemplate } from '../hooks/useWorkflowTemplates';
+import { useWorkflowTemplates, useTemplateStages, useAddTemplateStage, useCreateTemplate, useUpdateTemplateMeasurements } from '../hooks/useWorkflowTemplates';
 
 export function WorkshopConfiguration() {
   const { data: templates, isLoading: isLoadingTemplates } = useWorkflowTemplates();
@@ -38,6 +41,8 @@ export function WorkshopConfiguration() {
   const [isCreateTemplateOpen, setIsCreateTemplateOpen] = useState(false);
   const [newStage, setNewStage] = useState({ name: '', duration: '8' });
   const [newTemplate, setNewTemplate] = useState({ name: '', description: '' });
+  const [measurementInput, setMeasurementInput] = useState('');
+  const updateMeasurementsMutation = useUpdateTemplateMeasurements();
 
   const selectedTemplate = templates?.find(t => t.id === selectedTemplateId);
 
@@ -57,6 +62,28 @@ export function WorkshopConfiguration() {
     await createTemplateMutation.mutateAsync(newTemplate);
     setIsCreateTemplateOpen(false);
     setNewTemplate({ name: '', description: '' });
+  };
+
+  const handleAddMeasurement = async () => {
+    if (!selectedTemplateId || !measurementInput.trim()) return;
+    const currentSpecs = selectedTemplate?.requiredMeasurements || [];
+    if (currentSpecs.includes(measurementInput.trim())) return;
+    
+    await updateMeasurementsMutation.mutateAsync({
+      templateId: selectedTemplateId,
+      measurements: [...currentSpecs, measurementInput.trim()]
+    });
+    setMeasurementInput('');
+  };
+
+  const handleRemoveMeasurement = async (item: string) => {
+    if (!selectedTemplateId) return;
+    const currentSpecs = selectedTemplate?.requiredMeasurements || [];
+    
+    await updateMeasurementsMutation.mutateAsync({
+      templateId: selectedTemplateId,
+      measurements: currentSpecs.filter(m => m !== item)
+    });
   };
 
   return (
@@ -154,6 +181,74 @@ export function WorkshopConfiguration() {
               </Stack>
 
               <Divider sx={{ mb: 3 }} />
+
+              <Box sx={{ mb: 4 }}>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                  <RulerIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                  <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: 1 }}>
+                    Required Measurements
+                  </Typography>
+                </Stack>
+                <Paper 
+                  variant="outlined" 
+                  sx={{ 
+                    p: 2, 
+                    borderRadius: '16px', 
+                    bgcolor: alpha('#f8fbf9', 0.5),
+                    borderStyle: 'dashed'
+                  }}
+                >
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
+                    {(selectedTemplate?.requiredMeasurements || []).map((m: string) => (
+                      <Chip 
+                        key={m} 
+                        label={m} 
+                        onDelete={() => handleRemoveMeasurement(m)}
+                        sx={{ 
+                          fontWeight: 700, 
+                          borderRadius: '8px',
+                          bgcolor: 'white',
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          '& .MuiChip-deleteIcon': { color: 'error.light' }
+                        }} 
+                      />
+                    ))}
+                    {(selectedTemplate?.requiredMeasurements || []).length === 0 && (
+                      <Typography variant="caption" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>
+                        No required measurements defined.
+                      </Typography>
+                    )}
+                  </Stack>
+                  <Stack direction="row" spacing={1}>
+                    <TextField 
+                      size="small" 
+                      placeholder="Add measurement (e.g. Chest)" 
+                      value={measurementInput}
+                      onChange={(e) => setMeasurementInput(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') handleAddMeasurement();
+                      }}
+                      sx={{ flexGrow: 1, '& .MuiOutlinedInput-root': { borderRadius: '10px', bgcolor: 'white' } }}
+                    />
+                    <Button 
+                      variant="contained" 
+                      onClick={handleAddMeasurement}
+                      disabled={!measurementInput.trim() || updateMeasurementsMutation.isPending}
+                      sx={{ borderRadius: '10px', fontWeight: 700 }}
+                    >
+                      Add
+                    </Button>
+                  </Stack>
+                </Paper>
+              </Box>
+
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                <TimerIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: 1 }}>
+                  Production Sequence
+                </Typography>
+              </Stack>
 
               {isLoadingStages ? (
                 <Typography variant="body2">Loading stages...</Typography>

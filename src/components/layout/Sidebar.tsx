@@ -27,6 +27,7 @@ import {
   BarChart as BarChart2,
   Settings,
   Add as Plus,
+  NewReleases as BetaIcon
 } from '@mui/icons-material';
 import { useAuthStore } from '../../features/auth/auth.store';
 
@@ -45,8 +46,8 @@ const navItems = [
   { label: 'Production', icon: ScissorsIcon, path: '/production', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
   { label: 'Customers', icon: Users, path: '/customers', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Inventory', icon: ClipboardList, path: '/inventory', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
-  { label: 'Measurements', icon: Ruler, path: '/measurements', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
-  { label: 'Payments', icon: CreditCard, path: '/payments', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
+  { label: 'Measurements', icon: Ruler, path: '/measurements', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'], isBeta: true },
+  { label: 'Payments', icon: CreditCard, path: '/payments', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'], isBeta: true },
   { label: 'Staff / Tailors', icon: UserCog, path: '/staff', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Reports', icon: BarChart2, path: '/reports', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
 ];
@@ -103,12 +104,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
                   <item.icon sx={{ fontSize: 20 }} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={item.label}
-                  primaryTypographyProps={{
-                    fontSize: '13px',
-                    fontWeight: isActive ? 600 : 400,
-                    color: isActive ? 'white' : alpha('#ffffff', 0.6),
-                  }}
+                  primary={
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Typography sx={{ 
+                        fontSize: '13px', 
+                        fontWeight: isActive ? 600 : 400,
+                        color: isActive ? 'white' : alpha('#ffffff', 0.6),
+                      }}>
+                        {item.label}
+                      </Typography>
+                      {(item as any).isBeta && (
+                        <Box sx={{ 
+                          px: 0.6, 
+                          py: 0.1, 
+                          borderRadius: '4px', 
+                          bgcolor: alpha('#c49a1a', 0.15), 
+                          color: '#c49a1a',
+                          fontSize: '8px',
+                          fontWeight: 900,
+                          lineHeight: 1,
+                          letterSpacing: 0.5
+                        }}>
+                          BETA
+                        </Box>
+                      )}
+                    </Stack>
+                  }
                 />
               </ListItemButton>
             </ListItem>
