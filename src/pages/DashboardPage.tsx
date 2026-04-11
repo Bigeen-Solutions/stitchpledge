@@ -31,12 +31,12 @@ export const DashboardPage: React.FC = () => {
 
   // Role names from auth.types.ts: 'COMPANY_ADMIN' | 'STORE_MANAGER' | 'TAILOR' | 'CUSTOMER'
   
-  if (role === 'TAILOR' || role === 'STORE_MANAGER') {
+  if (role === 'TAILOR') {
     if (!hasOrders) return <TailorDashboardEmpty />;
     return <TailorDashboard />;
   }
 
-  if (role === 'COMPANY_ADMIN') {
+  if (role === 'COMPANY_ADMIN' || role === 'STORE_MANAGER') {
     return <AdminDashboard />;
   }
 

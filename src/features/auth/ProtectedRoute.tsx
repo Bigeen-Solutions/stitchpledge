@@ -44,7 +44,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // 4. Authenticated but wrong role — cleanly intercept at router level
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/production" replace />; // Direct tailors to their floor
+    const fallback = user.role === 'TAILOR' ? '/production' : '/dashboard';
+    return <Navigate to={fallback} replace />;
   }
 
   // 5. Authorized — render children

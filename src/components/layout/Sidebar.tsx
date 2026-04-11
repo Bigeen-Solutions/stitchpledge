@@ -27,7 +27,6 @@ import {
   BarChart as BarChart2,
   Settings,
   Add as Plus,
-  NewReleases as BetaIcon
 } from '@mui/icons-material';
 import { useAuthStore } from '../../features/auth/auth.store';
 
