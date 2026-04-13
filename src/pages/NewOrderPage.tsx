@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Box,
   Typography,
@@ -28,12 +29,15 @@ import {
   ArrowForward as ArrowForwardIcon,
   ArrowBack as ArrowBackIcon,
   Delete as DeleteIcon,
-  EmojiEvents as EventIcon
+  EmojiEvents as EventIcon,
+  TipsAndUpdates as IntelIcon,
+  Lightbulb as IdeaIcon
 } from "@mui/icons-material";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
-import { useCustomerSearch, useCreateCustomer, useCreateMeasurement } from "../features/customers/hooks/useCustomerIntake";
+import { useCustomerSearch, useCreateCustomer, useCreateMeasurement, useCustomerIntake } from "../features/customers/hooks/useCustomerIntake";
+import { useCustomerProfile } from "../features/customers/hooks/useCustomerProfile";
 import { useWorkflowTemplates } from "../features/workflow/hooks/useWorkflowTemplates";
 import { useAuthStore } from "../features/auth/auth.store";
 import { useStores, useStaffList } from "../features/auth/hooks/useStaff";
@@ -41,7 +45,7 @@ import { usePermissions } from "../features/auth/use-permissions";
 import { ordersApi } from "../features/orders/orders.api";
 import { useToastStore } from "../components/feedback/Toast";
 import { useInventory } from "../features/inventory/useInventory";
-import { truncateId } from "../utils/format";
+import { truncateId, safeLocaleDate } from "../utils/format";
 
 type Step = "CLIENT_SELECTION" | "CLIENT_DETAILS" | "GARMENTS_TIMELINE" | "FABRIC_DETAILS" | "MEASUREMENTS" | "SUMMARY";
 
@@ -63,6 +67,8 @@ const getGarmentIconLarge = (templateName: string) => {
 
 export function NewOrderPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const queryClient = useQueryClient();
   const showToast = useToastStore((state) => state.showToast);
   const { role, isStoreManager, isTailor, storeId: userStoreId } = usePermissions();
   const user = useAuthStore((state) => state.user);
@@ -108,8 +114,86 @@ export function NewOrderPage() {
     assignedTailorId?: string | null;
   }[]>([]);
   const [successOrder, setSuccessOrder] = useState<{ id: string } | null>(null);
+  
+  // Measurement Intelligence State
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [autoSelectedMeasurement, setAutoSelectedMeasurement] = useState<{
+    measurementId: string;
+    takenAt: string;
+  } | null>(null);
+  const [isPreloadingProfile, setIsPreloadingProfile] = useState(false);
 
   const activeMeasurementField = measurementEntries.find(e => e.id === activeEntryId)?.label || "";
+
+  // 1. Initial Load: Pre-load customer if ID in URL
+  useEffect(() => {
+    const customerId = searchParams.get("customerId");
+    if (customerId && !selectedCustomer) {
+      const loadCustomer = async () => {
+        setIsPreloadingProfile(true);
+        try {
+          const profile = await queryClient.fetchQuery({
+            queryKey: ['customers', 'detail', customerId],
+            queryFn: () => customersApi.getCustomerProfile(customerId)
+          });
+          setSelectedCustomer(profile.customer);
+          setStep("GARMENTS_TIMELINE");
+        } catch (error) {
+          console.error("Failed to pre-load customer profile", error);
+          // Fall back to identification step silently
+        } finally {
+          setIsPreloadingProfile(false);
+        }
+      };
+      loadCustomer();
+    }
+  }, [searchParams, queryClient, selectedCustomer]);
+
+  // 2. Intelligence Gate: Check compatibility when template is selected
+  const handleTemplateSelection = async (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    
+    // Add to items
+    const template = templates?.find(t => t.id === templateId);
+    if (!template) return;
+
+    setOrderItems([...orderItems, {
+      templateId: template.id,
+      estimatedTotalDurationHours: 24,
+      assignedTailorId: role === 'TAILOR' ? user?.userId : null
+    }]);
+
+    // If we have a customer, check measurements for this template
+    if (selectedCustomer?.id) {
+       try {
+         const profile = await queryClient.fetchQuery({
+           queryKey: ['customers', 'detail', selectedCustomer.id, { garmentTemplateId: templateId }],
+           queryFn: () => customersApi.getCustomerProfile(selectedCustomer.id, templateId)
+         });
+
+         const { isUsable, measurementId, takenAt } = profile.measurementCompatibility ?? {};
+         
+         if (isUsable && measurementId) {
+           setAutoSelectedMeasurement({ 
+             measurementId, 
+             takenAt: takenAt ? takenAt.toString() : new Date().toISOString() 
+           });
+           showToast("Measurement Intelligence", "Compatible existing measurements found and auto-selected.", "success");
+         }
+       } catch (error) {
+         // Log for observability, but degrade silently
+         console.error("Measurement intelligence fetch failed", error);
+       }
+    }
+  };
+
+  const goToMeasurementsOrSummary = () => {
+    if (autoSelectedMeasurement) {
+      setStep("SUMMARY");
+    } else {
+      setStep("MEASUREMENTS");
+    }
+  };
 
   // THE AGGREGATION FORGE
   const dynamicMeasurementFields = useMemo(() => {
@@ -175,20 +259,26 @@ export function NewOrderPage() {
         finalCustomerName = c.name;
       }
 
-      showToast("Recording immutable measurements...", "Saving measurement snapshot.", "success");
-      const numericMeasurements: Record<string, number> = {};
-      measurementEntries.forEach(entry => {
-        if (entry.label.trim() && entry.value.trim()) {
-          numericMeasurements[entry.label.trim()] = parseFloat(entry.value) || 0;
-        }
-      });
+      let finalMeasurementVersionId = autoSelectedMeasurement?.measurementId;
+      
+      if (!finalMeasurementVersionId) {
+        showToast("Recording immutable measurements...", "Saving measurement snapshot.", "success");
+        const numericMeasurements: Record<string, number> = {};
+        measurementEntries.forEach(entry => {
+          if (entry.label.trim() && entry.value.trim()) {
+            numericMeasurements[entry.label.trim()] = parseFloat(entry.value) || 0;
+          }
+        });
 
-      const mv = await createMeasurement.mutateAsync({
-        customerId: finalCustomerId,
-        measurements: numericMeasurements
-      });
-
-      if (!mv?.id) throw new Error("Critical: Measurement version ID not returned by system.");
+        const mv = await createMeasurement.mutateAsync({
+          customerId: finalCustomerId,
+          measurements: numericMeasurements,
+          status: 'complete' // Explicitly completing on submission
+        });
+        
+        if (!mv?.id) throw new Error("Critical: Measurement version ID not returned by system.");
+        finalMeasurementVersionId = mv.id;
+      }
 
       const finalStoreId = role === 'COMPANY_ADMIN' ? selectedStoreId : userStoreId;
       if (!finalStoreId) {
@@ -202,7 +292,7 @@ export function NewOrderPage() {
         customerName: finalCustomerName.trim(),
         storeId: finalStoreId,
         eventDate: eventDate ? eventDate.toISOString() : new Date().toISOString(),
-        lockedMeasurementVersionId: mv.id,
+        lockedMeasurementVersionId: finalMeasurementVersionId,
         garments: orderItems.map(g => ({
           workflowTemplateId: g.templateId,
           assignedTailorId: g.assignedTailorId || null,
@@ -326,50 +416,57 @@ export function NewOrderPage() {
             <Box className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <Typography variant="h5" sx={{ mb: 4, fontWeight: 700, color: 'text.primary' }}>1. Perimeter: Client Identification</Typography>
               <Stack spacing={4}>
-                <Box>
+                <Box sx={{ position: 'relative' }}>
                   <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 1, display: 'block' }}>
                     Search Infrastructure
                   </Typography>
-                  <Autocomplete
-                    options={searchResults || []}
-                    getOptionLabel={(option: any) => `${option.name} (${option.phone || option.email || 'N/A'})`}
-                    loading={isSearching}
-                    onInputChange={(_, value) => setSearchQuery(value)}
-                    onChange={(_, value) => {
-                      if (value) {
-                        setSelectedCustomer(value);
-                        setStep("GARMENTS_TIMELINE");
-                      }
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        placeholder="Search existing clients..."
-                        variant="outlined"
-                        fullWidth
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            height: 64,
-                            bgcolor: 'background.default',
-                            borderRadius: '12px',
-                            '& fieldset': { borderColor: 'divider' },
-                            '&:hover fieldset': { borderColor: 'primary.main' },
-                            '&.Mui-focused fieldset': { borderColor: 'secondary.main' },
-                          },
-                        }}
-                        InputProps={{
-                          ...params.InputProps,
-                          startAdornment: <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />,
-                          endAdornment: (
-                            <>
-                              {isSearching ? <CircularProgress color="inherit" size={20} /> : null}
-                              {params.InputProps.endAdornment}
-                            </>
-                          ),
-                        }}
-                      />
-                    )}
-                  />
+                  {isPreloadingProfile ? (
+                    <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, bgcolor: 'background.default', borderRadius: '12px', border: '1px solid', borderColor: 'divider' }}>
+                      <CircularProgress size={32} color="secondary" />
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>Synthesizing client context...</Typography>
+                    </Box>
+                  ) : (
+                    <Autocomplete
+                      options={searchResults || []}
+                      getOptionLabel={(option: any) => `${option.name} (${option.phone || option.email || 'N/A'})`}
+                      loading={isSearching}
+                      onInputChange={(_, value) => setSearchQuery(value)}
+                      onChange={(_, value) => {
+                        if (value) {
+                          setSelectedCustomer(value);
+                          setStep("GARMENTS_TIMELINE");
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          placeholder="Search existing clients..."
+                          variant="outlined"
+                          fullWidth
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              height: 64,
+                              bgcolor: 'background.default',
+                              borderRadius: '12px',
+                              '& fieldset': { borderColor: 'divider' },
+                              '&:hover fieldset': { borderColor: 'primary.main' },
+                              '&.Mui-focused fieldset': { borderColor: 'secondary.main' },
+                            },
+                          }}
+                          InputProps={{
+                            ...params.InputProps,
+                            startAdornment: <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />,
+                            endAdornment: (
+                              <>
+                                {isSearching ? <CircularProgress color="inherit" size={20} /> : null}
+                                {params.InputProps.endAdornment}
+                              </>
+                            ),
+                          }}
+                        />
+                      )}
+                    />
+                  )}
                 </Box>
 
                 <Box sx={{ textAlign: 'center' }}>
@@ -486,7 +583,7 @@ export function NewOrderPage() {
                     {templates?.map((template) => (
                       <Grid size={{ xs: 6, sm: 4 }} key={template.id}>
                         <Card
-                          onClick={() => addGarmentById(template.id)}
+                          onClick={() => handleTemplateSelection(template.id)}
                           sx={{
                             bgcolor: 'background.default',
                             border: '1px solid',
@@ -837,6 +934,37 @@ export function NewOrderPage() {
                 </Grid>
               </Grid>
 
+            {autoSelectedMeasurement && (
+              <Box sx={{ 
+                p: 2, 
+                mb: 3, 
+                bgcolor: alpha('#1e5c3a', 0.05), 
+                borderRadius: '12px', 
+                border: '1px solid', 
+                borderColor: alpha('#1e5c3a', 0.2),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <IntelIcon sx={{ color: 'primary.main' }} />
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    Using complete measurements from {safeLocaleDate(new Date(autoSelectedMeasurement.takenAt))}
+                  </Typography>
+                </Stack>
+                <Button 
+                  size="small" 
+                  onClick={() => {
+                    setAutoSelectedMeasurement(null);
+                    showToast("Intelligence Cleared", "System will now capture fresh measurements.", "info");
+                  }}
+                  sx={{ textTransform: 'none', fontWeight: 700 }}
+                >
+                  Change
+                </Button>
+              </Box>
+            )}
+
             <Divider sx={{ my: 4 }} />
 
             <Stack direction="row" spacing={2} justifyContent="space-between">
@@ -844,10 +972,10 @@ export function NewOrderPage() {
               <Button
                 variant="contained"
                 disabled={!selectedMaterialId || (inventory !== undefined && inventory.length === 0)}
-                onClick={() => setStep("MEASUREMENTS")}
+                onClick={goToMeasurementsOrSummary}
                 sx={{ bgcolor: 'secondary.main', height: 52, px: 6, borderRadius: '12px', '&:hover': { bgcolor: '#d4aa2a' } }}
               >
-                Capture Measurements
+                {autoSelectedMeasurement ? "Proceed to Review" : "Capture Measurements"}
               </Button>
             </Stack>
           </Box>

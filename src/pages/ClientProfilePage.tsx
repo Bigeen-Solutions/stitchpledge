@@ -22,7 +22,8 @@ import {
   Straighten as MeasurementsIcon,
   History as HistoryIcon,
   Edit as EditIcon,
-  ArrowBack as ArrowBackIcon
+  ArrowBack as ArrowBackIcon,
+  ShoppingBag as OrderIcon
 } from '@mui/icons-material';
 import { useCustomerProfile, useUpdateMeasurements } from '../features/customers/hooks/useCustomerProfile';
 import { ErrorState } from '../components/feedback/ErrorState';
@@ -118,15 +119,26 @@ export function ClientProfilePage() {
             </Box>
           </Stack>
         </Box>
-        <Button 
-          variant="contained" 
-          color="secondary"
-          startIcon={<EditIcon />}
-          onClick={() => setIsModalOpen(true)}
-          sx={{ borderRadius: '12px', px: 3, py: 1.5, fontWeight: 700 }}
-        >
-          Record New Measurement
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button 
+            variant="contained" 
+            color="primary"
+            startIcon={<OrderIcon />}
+            onClick={() => navigate(`/orders/new?customerId=${customer.id}`)}
+            sx={{ borderRadius: '12px', px: 3, py: 1.5, fontWeight: 700 }}
+          >
+            Create New Order
+          </Button>
+          <Button 
+            variant="contained" 
+            color="secondary"
+            startIcon={<EditIcon />}
+            onClick={() => setIsModalOpen(true)}
+            sx={{ borderRadius: '12px', px: 3, py: 1.5, fontWeight: 700 }}
+          >
+            Record New Measurement
+          </Button>
+        </Stack>
       </header>
 
       <Grid container spacing={4}>

@@ -43,6 +43,12 @@ export interface CustomerProfile {
   latestMeasurement: MeasurementSummary | null;
   measurementVersions: MeasurementSummary[];
   orderHistory: OrderHistoryItem[];
+  measurementCompatibility?: {
+    isUsable: boolean;
+    measurementId: string | null;
+    versionNumber: number | null;
+    takenAt: string | null;
+  } | null;
 }
 
 export const customersApi = {
@@ -65,8 +71,10 @@ export const customersApi = {
     return response.data;
   },
 
-  getCustomerProfile: async (id: string): Promise<CustomerProfile> => {
-    const response = await apiClient.get<CustomerProfile>(`/customers/${id}`);
+  getCustomerProfile: async (id: string, garmentTemplateId?: string): Promise<CustomerProfile> => {
+    const response = await apiClient.get<CustomerProfile>(`/customers/${id}`, {
+      params: { garmentTemplateId }
+    });
     return response.data;
   },
 

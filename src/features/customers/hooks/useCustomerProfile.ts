@@ -2,10 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customersApi } from '../customers.api.ts';
 import { keys } from '../../../query/keys.ts';
 
-export function useCustomerProfile(id: string) {
+export function useCustomerProfile(id: string, garmentTemplateId?: string) {
   return useQuery({
-    queryKey: keys.customers.detail(id),
-    queryFn: () => customersApi.getCustomerProfile(id),
+    queryKey: garmentTemplateId ? [...keys.customers.detail(id), { garmentTemplateId }] : keys.customers.detail(id),
+    queryFn: () => customersApi.getCustomerProfile(id, garmentTemplateId),
     enabled: !!id,
   });
 }
