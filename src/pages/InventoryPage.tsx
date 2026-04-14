@@ -72,7 +72,7 @@ export function InventoryPage() {
       formData.append('image', selectedImage);
     }
 
-    await registerMutation.mutateAsync(formData as any);
+    await registerMutation.mutateAsync(formData);
     setIsRegisterOpen(false);
     setNewMaterial({ name: '', sku: '', canonicalUnit: 'Yards' });
     setSelectedImage(null);
@@ -328,7 +328,7 @@ export function InventoryPage() {
             <Stack spacing={2.5}>
               <Box sx={{ mb: 1 }}>
                 <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', display: 'block', mb: 1 }}>
-                  Visual Verification
+                  Visual Verification <span style={{ color: 'var(--color-error)' }}>*</span>
                 </Typography>
                 <Stack spacing={2} alignItems="center">
                   {imagePreview ? (
@@ -416,8 +416,14 @@ export function InventoryPage() {
           <Button 
             variant="contained" 
             onClick={handleRegisterMaterial}
-            disabled={!newMaterial.name || registerMutation.isPending}
-            sx={{ borderRadius: '12px', fontWeight: 700, px: 3, bgcolor: '#1e5c3a' }}
+            disabled={!newMaterial.name || !selectedImage || registerMutation.isPending}
+            sx={{ 
+              borderRadius: '12px', 
+              fontWeight: 700, 
+              px: 3, 
+              bgcolor: '#1e5c3a',
+              '&.Mui-disabled': { bgcolor: alpha('#1e5c3a', 0.1) }
+            }}
           >
             {registerMutation.isPending ? 'Registering...' : 'Register Material'}
           </Button>

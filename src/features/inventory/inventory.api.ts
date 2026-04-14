@@ -26,9 +26,7 @@ export const inventoryApi = {
   },
 
   registerMaterial: async (data: FormData | { name: string; sku: string | null; canonicalUnit: string }) => {
-    const { data: result } = await apiClient.post('/inventory/materials', data, {
-      headers: data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : undefined
-    });
+    const { data: result } = await apiClient.post('/inventory/materials', data);
     return result;
   }
 };

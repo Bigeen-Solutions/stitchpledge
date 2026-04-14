@@ -43,7 +43,7 @@ export const useRegisterMaterial = () => {
   const showToast = useToastStore((state) => state.showToast);
 
   return useMutation({
-    mutationFn: (data: { name: string; sku: string | null; canonicalUnit: string }) =>
+    mutationFn: (data: FormData | { name: string; sku: string | null; canonicalUnit: string }) =>
       inventoryApi.registerMaterial(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.inventory.overview });

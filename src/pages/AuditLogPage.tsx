@@ -16,10 +16,15 @@ import {
   alpha
 } from '@mui/material';
 import {
-  AddShoppingCart as AddShoppingCartIcon,
-  CheckCircleOutline as CheckCircleOutlineIcon,
-  LocalShipping as LocalShippingIcon,
-  InfoOutlined as InfoOutlinedIcon
+  InfoOutlined as InfoOutlinedIcon,
+  ContentCut as ContentCutIcon,
+  Straighten as StraightenIcon,
+  Verified as VerifiedIcon,
+  ShoppingBag as ShoppingBagIcon,
+  Warehouse as WarehouseIcon,
+  Engineering as EngineeringIcon,
+  FactCheck as FactCheckIcon,
+  AutoFixHigh as FinishingIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -37,16 +42,56 @@ const AuditLogPage: React.FC = () => {
     },
   });
 
-  const getEventAvatarProps = (type: string) => {
+  const getEventAvatarProps = (type: string, detail: string = '') => {
+    const detailLower = detail.toLowerCase();
+
     switch (type) {
       case 'ORDER_CREATED':
-        return { icon: <AddShoppingCartIcon fontSize="small" />, bgcolor: alpha('#0d47a1', 0.1), color: '#0d47a1', label: 'ORDER CREATED' };
-      case 'STAGE_COMPLETED':
-        return { icon: <CheckCircleOutlineIcon fontSize="small" />, bgcolor: alpha('#1b5e20', 0.1), color: '#1b5e20', label: 'STAGE COMPLETED' };
+        return { 
+          icon: <ShoppingBagIcon fontSize="small" />, 
+          bgcolor: alpha('#2196f3', 0.1), 
+          color: '#2196f3', 
+          label: 'ORDER CREATED' 
+        };
       case 'MATERIAL_RECEIVED':
-        return { icon: <LocalShippingIcon fontSize="small" />, bgcolor: alpha('#e65100', 0.1), color: '#e65100', label: 'MATERIAL RECEIVED' };
+      case 'MATERIAL_INTAKE':
+        return { 
+          icon: <WarehouseIcon fontSize="small" />, 
+          bgcolor: alpha('#ff9800', 0.1), 
+          color: '#ff9800', 
+          label: 'INVENTORY INTAKE' 
+        };
+      case 'STAGE_COMPLETED':
+        // Granular Stage Matching
+        if (detailLower.includes('cutting')) {
+          return { icon: <ContentCutIcon fontSize="small" />, bgcolor: alpha('#1b5e20', 0.1), color: '#1b5e20', label: 'CUTTING COMPLETE' };
+        }
+        if (detailLower.includes('sewing')) {
+          return { icon: <FactCheckIcon fontSize="small" />, bgcolor: alpha('#1b5e20', 0.1), color: '#1b5e20', label: 'SEWING COMPLETE' };
+        }
+        if (detailLower.includes('quality') || detailLower.includes('qc')) {
+          return { icon: <VerifiedIcon fontSize="small" />, bgcolor: alpha('#00867d', 0.1), color: '#00867d', label: 'QA PASSED' };
+        }
+        if (detailLower.includes('measurement')) {
+          return { icon: <StraightenIcon fontSize="small" />, bgcolor: alpha('#43a047', 0.1), color: '#43a047', label: 'MEASUREMENTS TAKEN' };
+        }
+        if (detailLower.includes('finishing')) {
+          return { icon: <FinishingIcon fontSize="small" />, bgcolor: alpha('#1b5e20', 0.1), color: '#1b5e20', label: 'FINISHING COMPLETE' };
+        }
+        
+        return { 
+          icon: <EngineeringIcon fontSize="small" />, 
+          bgcolor: alpha('#1b5e20', 0.1), 
+          color: '#1b5e20', 
+          label: 'STAGE COMPLETED' 
+        };
       default:
-        return { icon: <InfoOutlinedIcon fontSize="small" />, bgcolor: alpha('#000', 0.05), color: 'text.secondary', label: type || 'SYSTEM EVENT' };
+        return { 
+          icon: <InfoOutlinedIcon fontSize="small" />, 
+          bgcolor: alpha('#000', 0.05), 
+          color: 'text.secondary', 
+          label: type?.replace('_', ' ') || 'SYSTEM EVENT' 
+        };
     }
   };
 
@@ -103,7 +148,7 @@ const AuditLogPage: React.FC = () => {
         <Card sx={{ borderRadius: '24px', boxShadow: '0 8px 32px rgba(0,0,0,0.04)', border: '1px solid', borderColor: 'divider' }}>
           <List sx={{ p: 0 }}>
             {events.map((event, index) => {
-              const eventProps = getEventAvatarProps(event.event_type);
+              const eventProps = getEventAvatarProps(event.event_type, event.detail);
               return (
                 <Box key={`${event.id || 'evt'}-${index}`}>
                   <ListItem 

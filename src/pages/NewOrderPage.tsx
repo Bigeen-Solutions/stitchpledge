@@ -250,7 +250,7 @@ export function NewOrderPage() {
           next.push({
             id: Math.random().toString(36).substr(2, 9),
             label: label,
-            value: value.toString(),
+            value: String(value),
             isTemplateField: false
           });
           existingLabels.add(label);
@@ -259,7 +259,7 @@ export function NewOrderPage() {
           // If it exists, update the value IF it's empty (intelligent seeding)
           const idx = next.findIndex(e => e.label === label);
           if (idx !== -1 && next[idx].value === "") {
-            next[idx].value = value.toString();
+            next[idx].value = String(value);
             changed = true;
           }
         }
