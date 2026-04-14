@@ -18,7 +18,15 @@ import {
   CircularProgress,
   alpha,
   Dialog,
-  IconButton
+  IconButton,
+  SwipeableDrawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemAvatar,
+  ListItemText,
+  Avatar
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -29,7 +37,9 @@ import {
   Delete as DeleteIcon,
   EmojiEvents as EventIcon,
   TipsAndUpdates as IntelIcon,
-  Category as CategoryIcon
+  Category as CategoryIcon,
+  Person as PersonIcon,
+  ChevronRight as ChevronRightIcon
 } from "@mui/icons-material";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -112,6 +122,10 @@ export function NewOrderPage() {
     assignedTailorId?: string | null;
   }[]>([]);
   const [successOrder, setSuccessOrder] = useState<{ id: string } | null>(null);
+  
+  // Mobile Tailor Drawer State
+  const [isTailorDrawerOpen, setIsTailorDrawerOpen] = useState(false);
+  const [itemIndexForAssignment, setItemIndexForAssignment] = useState<number | null>(null);
   
   // Measurement Intelligence State
   const [autoSelectedMeasurement, setAutoSelectedMeasurement] = useState<{
@@ -553,7 +567,7 @@ export function NewOrderPage() {
                 sx={{ 
                   pt: 8,
                   position: { xs: 'fixed', md: 'static' },
-                  bottom: 0,
+                  bottom: { xs: 'calc(64px + env(safe-area-inset-bottom, 0px))', md: 0 },
                   left: 0,
                   right: 0,
                   bgcolor: 'background.paper',
@@ -582,11 +596,20 @@ export function NewOrderPage() {
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
               <Box sx={{ mb: 4 }}>
                 <Typography 
-                  variant="h5" 
-                  className="mobile-page-title"
-                  sx={{ mb: 1, color: 'text.primary', display: { xs: 'block', md: 'none' } }}
+                  variant="h3" 
+                  className="mobile-page-title md:text-h2"
+                  sx={{ 
+                    fontSize: { xs: '1.75rem', md: 'clamp(1.5rem, 4vw, 2.25rem)' },
+                    fontWeight: 800,
+                    lineHeight: 1.2,
+                    letterSpacing: '-0.02em',
+                    mb: 1
+                  }}
                 >
-                  Step 2. Production Blueprint
+                  Production Blueprint
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', display: { xs: 'block', md: 'none' } }}>
+                  Defining items and deadlines
                 </Typography>
                 <Typography 
                   variant="h5" 
@@ -598,8 +621,8 @@ export function NewOrderPage() {
 
               <Grid container spacing={4}>
                 <Grid size={{ xs: 12, md: 7 }}>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 2, display: 'block' }}>
-                    Select Garment Types
+                  <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
+                    SELECT GARMENT TYPES
                   </Typography>
                   <Grid container spacing={2}>
                     {templates?.map((template) => {
@@ -612,25 +635,26 @@ export function NewOrderPage() {
                           <Card
                             onClick={() => handleTemplateSelection(template)}
                             sx={{
-                              bgcolor: 'background.default',
+                              bgcolor: 'background.paper',
                               border: '1px solid',
                               borderColor: 'divider',
-                              borderRadius: '16px',
+                              borderRadius: '20px',
                               p: 2,
                               textAlign: 'center',
                               cursor: 'pointer',
-                              transition: 'all 0.2s ease',
+                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                               minHeight: 140,
                               display: 'flex',
                               flexDirection: 'column',
                               justifyContent: 'center',
+                              boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
                               '&:hover': {
                                 bgcolor: alpha('#1e5c3a', 0.04),
                                 transform: 'translateY(-4px)',
                                 borderColor: 'secondary.main',
-                                boxShadow: `0 0 20px ${alpha('#c49a1a', 0.2)}`
+                                boxShadow: `0 12px 24px ${alpha('#c49a1a', 0.15)}`
                               },
-                              '&:active': { transform: 'scale(0.95)' }
+                              '&:active': { transform: 'scale(0.96)' }
                             }}
                           >
                             <Box sx={{ color: 'secondary.main', mb: isGeneral ? 0.5 : 1.5 }}>
@@ -656,80 +680,153 @@ export function NewOrderPage() {
                   </Grid>
 
                   <Box sx={{ mt: 6 }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 2, display: 'block' }}>
-                      Order Items List
+                    <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
+                      ORDER ITEMS LEDGER
                     </Typography>
-                    <Stack spacing={2}>
-                      {orderItems.map((g, idx) => (
-                        <Box key={idx} sx={{
-                          p: 2,
-                          bgcolor: 'background.default',
-                          borderRadius: '12px',
-                          border: '1px solid',
-                          borderColor: 'divider',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between'
-                        }}>
-                          <Stack direction="row" spacing={2} alignItems="center">
-                            <Box sx={{ p: 1, bgcolor: alpha('#c49a1a', 0.1), borderRadius: '8px', color: 'secondary.main' }}>
-                              {getGarmentIcon(templates?.find(t => t.id === g.templateId)?.name || '')}
-                            </Box>
-                            <Box>
-                              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>{templates?.find(t => t.id === g.templateId)?.name}</Typography>
-                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>24h duration estimate</Typography>
-                            </Box>
-                          </Stack>
-                          <Stack direction="row" spacing={2} sx={{ flex: 1, ml: 2 }}>
-                            <FormControl size="small" sx={{ minWidth: 150 }}>
-                              <InputLabel>Assign Tailor</InputLabel>
-                              <Select
-                                value={g.assignedTailorId || ""}
-                                label="Assign Tailor"
-                                onChange={(e) => {
-                                  const next = [...orderItems];
-                                  next[idx].assignedTailorId = e.target.value;
-                                  setOrderItems(next);
+                    
+                    <Card sx={{ borderRadius: '24px', boxShadow: 'none', border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+                      <List sx={{ p: 0 }}>
+                        {orderItems.map((g, idx) => {
+                          const template = templates?.find(t => t.id === g.templateId);
+                          const assignedTailor = staff?.find(s => s.id === g.assignedTailorId);
+                          
+                          return (
+                            <Box key={idx}>
+                              <ListItem 
+                                sx={{ 
+                                  p: { xs: 2, sm: 3 },
+                                  display: 'flex',
+                                  flexDirection: { xs: 'column', sm: 'row' },
+                                  alignItems: { xs: 'stretch', sm: 'center' },
+                                  gap: 2
                                 }}
-                                sx={{ borderRadius: '8px' }}
                               >
-                                <MenuItem value=""><em>Unassigned</em></MenuItem>
-                                {staff?.filter(s => s.role === 'TAILOR').map(s => (
-                                  <MenuItem key={s.id} value={s.id}>{s.email.split('@')[0]}</MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          </Stack>
-                          <IconButton size="small" onClick={() => setOrderItems(orderItems.filter((_, i) => i !== idx))} sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}>
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
-                      ))}
-                      {orderItems.length === 0 && (
-                        <Box sx={{ p: 4, border: '1px dashed', borderColor: 'divider', borderRadius: '12px', textAlign: 'center' }}>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>No items selected yet.</Typography>
-                        </Box>
-                      )}
-                    </Stack>
+                                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, gap: 2 }}>
+                                  <ListItemAvatar>
+                                    <Avatar sx={{ bgcolor: alpha('#c49a1a', 0.1), color: 'secondary.main', borderRadius: '12px', width: 48, height: 48 }}>
+                                      {getGarmentIcon(template?.name || '')}
+                                    </Avatar>
+                                  </ListItemAvatar>
+                                  <ListItemText
+                                    primary={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{template?.name}</Typography>}
+                                    secondary={<Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>24H DURATION ESTIMATE</Typography>}
+                                  />
+                                </Box>
+
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                  {/* Mobile: Drawer Trigger Button | Desktop: Standard Select */}
+                                  <Box sx={{ display: { xs: 'block', sm: 'none' }, width: '100%' }}>
+                                    <Button
+                                      fullWidth
+                                      variant="outlined"
+                                      onClick={() => {
+                                        setItemIndexForAssignment(idx);
+                                        setIsTailorDrawerOpen(true);
+                                      }}
+                                      sx={{ 
+                                        borderRadius: '12px', 
+                                        height: 44, 
+                                        justifyContent: 'space-between',
+                                        px: 2,
+                                        borderColor: alpha('#000', 0.1),
+                                        color: assignedTailor ? 'text.primary' : 'text.secondary',
+                                        fontWeight: assignedTailor ? 700 : 500,
+                                        textTransform: 'none'
+                                      }}
+                                      endIcon={<ChevronRightIcon sx={{ color: 'text.disabled' }} />}
+                                    >
+                                      {assignedTailor ? (
+                                        <Stack direction="row" spacing={1} alignItems="center">
+                                          <Avatar sx={{ width: 24, height: 24, fontSize: 10, bgcolor: 'primary.main' }}>
+                                            {assignedTailor.email[0].toUpperCase()}
+                                          </Avatar>
+                                          <Typography variant="body2">{assignedTailor.email.split('@')[0]}</Typography>
+                                        </Stack>
+                                      ) : (
+                                        "Assign Tailor"
+                                      )}
+                                    </Button>
+                                  </Box>
+
+                                  <Box sx={{ display: { xs: 'none', sm: 'block' }, minWidth: 160 }}>
+                                    <FormControl size="small" fullWidth>
+                                      <Select
+                                        value={g.assignedTailorId || ""}
+                                        displayEmpty
+                                        onChange={(e) => {
+                                          const next = [...orderItems];
+                                          next[idx].assignedTailorId = e.target.value;
+                                          setOrderItems(next);
+                                        }}
+                                        sx={{ borderRadius: '10px', height: 40 }}
+                                      >
+                                        <MenuItem value=""><em>Unassigned</em></MenuItem>
+                                        {staff?.filter(s => s.role === 'TAILOR').map(s => (
+                                          <MenuItem key={s.id} value={s.id}>{s.email.split('@')[0]}</MenuItem>
+                                        ))}
+                                      </Select>
+                                    </FormControl>
+                                  </Box>
+
+                                  <IconButton 
+                                    size="small" 
+                                    onClick={() => setOrderItems(orderItems.filter((_, i) => i !== idx))}
+                                    sx={{ 
+                                      bgcolor: alpha('#d32f2f', 0.05),
+                                      color: 'error.main', 
+                                      '&:hover': { bgcolor: alpha('#d32f2f', 0.1) } 
+                                    }}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Box>
+                              </ListItem>
+                              {idx < orderItems.length - 1 && <Divider sx={{ mx: 2 }} />}
+                            </Box>
+                          );
+                        })}
+                        {orderItems.length === 0 && (
+                          <Box sx={{ p: 6, textAlign: 'center' }}>
+                            <Box sx={{ color: 'text.disabled', opacity: 0.2, mb: 1 }}>
+                              <CategoryIcon sx={{ fontSize: 48 }} />
+                            </Box>
+                            <Typography variant="body2" sx={{ color: 'text.disabled', fontWeight: 600 }}>
+                              No items selected for production yet.
+                            </Typography>
+                          </Box>
+                        )}
+                      </List>
+                    </Card>
                   </Box>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 5 }}>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 2, display: 'block' }}>
-                    Production Deadline
+                  <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
+                    PRODUCTION DEADLINE
                   </Typography>
                   <Box sx={{
-                    bgcolor: 'background.default',
-                    borderRadius: '16px',
-                    p: 1,
+                    bgcolor: 'background.paper',
+                    borderRadius: '24px',
+                    p: { xs: 0, sm: 1 },
                     border: '1px solid',
                     borderColor: 'divider',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.04)',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    justifyContent: 'center'
                   }}>
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                       <DateCalendar
                         value={eventDate}
                         onChange={(newValue) => setEventDate(newValue)}
                         disablePast
+                        sx={{
+                          width: '100%',
+                          maxWidth: '320px',
+                          '& .MuiDayCalendar-header': { justifyContent: 'space-around' },
+                          '& .MuiDayCalendar-weekContainer': { justifyContent: 'space-around' },
+                          '& .MuiDayCalendar-monthContainer': { width: '100%' }
+                        }}
                       />
                     </LocalizationProvider>
                   </Box>
@@ -742,8 +839,8 @@ export function NewOrderPage() {
 
                   {role === 'COMPANY_ADMIN' && !isStoreManager && !isTailor && (
                     <Box sx={{ mt: 4 }}>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 2, display: 'block' }}>
-                        Global Hub: Store Assignment
+                      <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
+                        STORE ASSIGNMENT
                       </Typography>
                       <FormControl fullWidth>
                         <InputLabel>Production Store</InputLabel>
@@ -772,11 +869,11 @@ export function NewOrderPage() {
                 sx={{ 
                   pt: 8,
                   position: { xs: 'fixed', md: 'static' },
-                  bottom: 0,
+                  bottom: { xs: 'calc(64px + env(safe-area-inset-bottom, 0px))', md: 0 },
                   left: 0,
                   right: 0,
                   bgcolor: 'background.paper',
-                  p: { xs: 2, md: 0 },
+                  p: { xs: 2.5, md: 0 },
                   borderTop: { xs: '1px solid', md: 'none' },
                   borderColor: 'divider',
                   zIndex: 10,
@@ -785,7 +882,7 @@ export function NewOrderPage() {
               >
                 <Button
                   onClick={() => setStep(selectedCustomer ? "CLIENT_SELECTION" : "CLIENT_DETAILS")}
-                  sx={{ color: 'text.primary' }}
+                  sx={{ color: 'text.secondary', fontWeight: 600 }}
                 >
                   Back
                 </Button>
@@ -798,12 +895,86 @@ export function NewOrderPage() {
                     height: 52,
                     px: 6,
                     borderRadius: '12px',
-                    '&:hover': { bgcolor: '#d4aa2a' }
+                    fontWeight: 700,
+                    '&:hover': { bgcolor: '#d4aa2a' },
+                    '&.Mui-disabled': { bgcolor: alpha('#c49a1a', 0.3) }
                   }}
                 >
                   Configure Material
                 </Button>
               </Stack>
+
+              {/* MOBILE TAILOR PICKER DRAWER */}
+              <SwipeableDrawer
+                anchor="bottom"
+                open={isTailorDrawerOpen}
+                onClose={() => setIsTailorDrawerOpen(false)}
+                onOpen={() => setIsTailorDrawerOpen(true)}
+                PaperProps={{
+                  sx: {
+                    borderTopLeftRadius: '24px',
+                    borderTopRightRadius: '24px',
+                    maxHeight: '70vh',
+                    bgcolor: 'background.paper'
+                  }
+                }}
+              >
+                <Box sx={{ p: 2, pb: 6 }}>
+                  <Box sx={{ width: 40, height: 4, bgcolor: 'divider', borderRadius: 2, mx: 'auto', mb: 3 }} />
+                  <Typography variant="h6" sx={{ fontWeight: 800, px: 2, mb: 2 }}>Assign Tailor</Typography>
+                  <Typography variant="body2" sx={{ px: 2, mb: 3, color: 'text.secondary' }}>
+                    Select a specialist for this garment.
+                  </Typography>
+                  <List>
+                    <ListItem disablePadding>
+                      <ListItemButton 
+                        onClick={() => {
+                          if (itemIndexForAssignment !== null) {
+                            const next = [...orderItems];
+                            next[itemIndexForAssignment].assignedTailorId = null;
+                            setOrderItems(next);
+                          }
+                          setIsTailorDrawerOpen(false);
+                        }}
+                        sx={{ borderRadius: '12px', mb: 1 }}
+                      >
+                        <ListItemIcon><PersonIcon color="disabled" /></ListItemIcon>
+                        <ListItemText primary="Unassigned" />
+                      </ListItemButton>
+                    </ListItem>
+                    {staff?.filter(s => s.role === 'TAILOR').map((s) => (
+                      <ListItem key={s.id} disablePadding>
+                        <ListItemButton 
+                          onClick={() => {
+                            if (itemIndexForAssignment !== null) {
+                              const next = [...orderItems];
+                              next[itemIndexForAssignment].assignedTailorId = s.id;
+                              setOrderItems(next);
+                            }
+                            setIsTailorDrawerOpen(false);
+                          }}
+                          sx={{ 
+                            borderRadius: '12px', 
+                            mb: 1,
+                            bgcolor: itemIndexForAssignment !== null && orderItems[itemIndexForAssignment].assignedTailorId === s.id ? alpha('#1e5c3a', 0.05) : 'transparent',
+                            '&:hover': { bgcolor: alpha('#1e5c3a', 0.08) }
+                          }}
+                        >
+                          <ListItemAvatar>
+                            <Avatar sx={{ bgcolor: 'primary.main', fontWeight: 800 }}>
+                              {s.email[0].toUpperCase()}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText 
+                            primary={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{s.fullName || s.email.split('@')[0]}</Typography>} 
+                            secondary={s.email}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              </SwipeableDrawer>
             </Box>
           )}
 
@@ -1040,7 +1211,7 @@ export function NewOrderPage() {
               sx={{ 
                 pt: 8,
                 position: { xs: 'fixed', md: 'static' },
-                bottom: 0,
+                bottom: { xs: 'calc(64px + env(safe-area-inset-bottom, 0px))', md: 0 },
                 left: 0,
                 right: 0,
                 bgcolor: 'background.paper',
@@ -1213,7 +1384,7 @@ export function NewOrderPage() {
                 sx={{ 
                   pt: 8,
                   position: { xs: 'fixed', md: 'static' },
-                  bottom: 0,
+                  bottom: { xs: 'calc(64px + env(safe-area-inset-bottom, 0px))', md: 0 },
                   left: 0,
                   right: 0,
                   bgcolor: 'background.paper',
@@ -1315,7 +1486,7 @@ export function NewOrderPage() {
                   sx={{ 
                     pt: 8,
                     position: { xs: 'fixed', md: 'static' },
-                    bottom: 0,
+                    bottom: { xs: 'calc(64px + env(safe-area-inset-bottom, 0px))', md: 0 },
                     left: 0,
                     right: 0,
                     bgcolor: 'background.paper',
