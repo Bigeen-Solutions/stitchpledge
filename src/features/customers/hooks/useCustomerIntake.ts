@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customersApi } from "../customers.api";
 import type { CreateCustomerRequest } from "../customers.api";
 import { measurementApi } from "../../measurements/measurement.api";
@@ -24,9 +24,14 @@ export function useCreateCustomer() {
 
 export function useCreateMeasurement() {
   const { handleError } = useDomainError();
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (data: { customerId: string; measurements: Record<string, number>; status?: 'draft' | 'complete' }) =>
       measurementApi.recordMeasurement(data.customerId, data.measurements, data.status),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: keys.customers.detail(variables.customerId) });
+    },
     onError: (err: any) => handleError(err),
   });
 }

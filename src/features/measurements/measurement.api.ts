@@ -3,7 +3,7 @@ import { apiClient } from '../../infrastructure/http/axios.client';
 export interface MeasurementVersion {
   id: string;
   actor: string;
-  version: number;
+  versionNumber: number;
   timestamp: string;
   changes: string;
   values: Record<string, number | string>;

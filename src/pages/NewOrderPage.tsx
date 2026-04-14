@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -57,6 +57,7 @@ import { ordersApi } from "../features/orders/orders.api";
 import { useToastStore } from "../components/feedback/Toast";
 import { useInventory } from "../features/inventory/useInventory";
 import { truncateId, safeLocaleDate } from "../utils/format";
+import { NumberField } from "../components/inputs/NumberField";
 
 type Step = "CLIENT_SELECTION" | "CLIENT_DETAILS" | "GARMENTS_TIMELINE" | "FABRIC_DETAILS" | "MEASUREMENTS" | "SUMMARY";
 
@@ -138,6 +139,16 @@ export function NewOrderPage() {
   const [isPreloadingProfile, setIsPreloadingProfile] = useState(false);
 
   const activeMeasurementField = measurementEntries.find(e => e.id === activeEntryId)?.label || "";
+  const entryRefs = useRef<Record<string, any>>({});
+
+  const handleEntryAutoAdvance = (currentId: string) => {
+    const currentIndex = measurementEntries.findIndex(e => e.id === currentId);
+    if (currentIndex < measurementEntries.length - 1) {
+      const nextEntry = measurementEntries[currentIndex + 1];
+      setActiveEntryId(nextEntry.id);
+      entryRefs.current[nextEntry.id]?.focus();
+    }
+  };
 
   // 1. Initial Load: Pre-load customer if ID in URL
   useEffect(() => {
@@ -1337,21 +1348,28 @@ export function NewOrderPage() {
                               <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>TEMPLATE METRIC</Typography>
                             )}
                           </Box>
-                          <Box sx={{ 
-                            minWidth: 100, 
-                            height: 48, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            borderRadius: '12px',
-                            border: '2px solid',
-                            borderColor: activeEntryId === entry.id ? 'secondary.main' : alpha('#000', 0.05),
-                            bgcolor: activeEntryId === entry.id ? 'background.paper' : alpha('#000', 0.02)
-                          }}>
-                            <Typography variant="h6" sx={{ fontWeight: 800, color: entry.value ? 'text.primary' : 'text.disabled' }}>
-                              {entry.value || '0.0'}
-                            </Typography>
-                            <Typography variant="caption" sx={{ ml: 0.5, color: 'text.disabled', fontWeight: 800 }}>CM</Typography>
+                          <Box sx={{ minWidth: 120 }}>
+                            <NumberField
+                              fullWidth
+                              size="small"
+                              value={entry.value}
+                              onChange={(val) => {
+                                setMeasurementEntries(prev => prev.map(p => 
+                                  p.id === entry.id ? { ...p, value: val === "" ? "" : val.toString() } : p
+                                ));
+                              }}
+                              onFocus={() => setActiveEntryId(entry.id)}
+                              onEnter={() => handleEntryAutoAdvance(entry.id)}
+                              inputRef={(el: any) => entryRefs.current[entry.id] = el}
+                              InputProps={{
+                                sx: { 
+                                  fontWeight: 800, 
+                                  borderRadius: '12px',
+                                  bgcolor: activeEntryId === entry.id ? 'background.paper' : alpha('#000', 0.02)
+                                },
+                                endAdornment: <Typography variant="caption" sx={{ ml: 0.5, color: 'text.disabled', fontWeight: 800 }}>CM</Typography>
+                              }}
+                            />
                           </Box>
                         </Box>
                       ))}

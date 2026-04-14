@@ -4,7 +4,7 @@ import { Timeline, TimelineItem } from '../../../components/timeline/Timeline.ts
 interface MeasurementVersion {
   id: string;
   actor: string;
-  version: number;
+  versionNumber: number;
   timestamp: string;
   changes: string;
 }
@@ -22,7 +22,7 @@ export function MeasurementHistory({ orderId }: { orderId: string }) {
           <TimelineItem 
             key={v.id}
             actor={v.actor}
-            action={`Recorded Version ${v.version}: ${v.changes}`}
+            action={`Recorded Version ${v.versionNumber}: ${v.changes}`}
             timestamp={v.timestamp}
           />
         ))}

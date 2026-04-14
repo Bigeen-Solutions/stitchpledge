@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Divider,
   CircularProgress,
   alpha
 } from '@mui/material';
@@ -32,6 +33,7 @@ import { truncateId, safeFormatDistanceToNow, safeLocaleDate } from '../utils/fo
 import { OrderEntryItem } from '../features/orders/components/OrderEntryItem';
 import { Timeline, TimelineItem } from '../components/timeline/Timeline';
 import { MobileHeader } from '../components/layout/MobileHeader';
+import { NumberField } from '../components/inputs/NumberField';
 
 import './styles/client-profile.css';
 
@@ -48,6 +50,8 @@ export function ClientProfilePage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formValues, setFormValues] = useState<Record<string, number>>({});
+  const [newFieldName, setNewFieldName] = useState('');
+  const inputRefs = useRef<Record<string, any>>({});
 
   // Initialize form values when modal opens or profile changes
   useEffect(() => {
@@ -60,6 +64,27 @@ export function ClientProfilePage() {
       setFormValues(defaults);
     }
   }, [profile, isModalOpen]);
+
+  const handleAddCustomField = () => {
+    if (newFieldName.trim() && !formValues[newFieldName.trim()]) {
+      setFormValues({
+        ...formValues,
+        [newFieldName.trim()]: 0
+      });
+      setNewFieldName('');
+    }
+  };
+
+  const handleAutoAdvance = (currentKey: string) => {
+    const keys = Object.keys(formValues);
+    const currentIndex = keys.indexOf(currentKey);
+    if (currentIndex < keys.length - 1) {
+      const nextKey = keys[currentIndex + 1];
+      inputRefs.current[nextKey]?.focus();
+    } else {
+      // If it's the last one, we might want to focus the "Add Custom" field or just stay put
+    }
+  };
 
   if (isLoading) {
     return (
@@ -332,7 +357,7 @@ export function ClientProfilePage() {
         }}
       >
         <DialogTitle sx={{ fontWeight: 800 }}>
-          {latestMeasurement ? `Record New Measurement Version (v${latestMeasurement.versionNumber + 1})` : 'Initialize Measurements'}
+          {latestMeasurement ? `Record New Measurement Version (v${(latestMeasurement.versionNumber || 0) + 1})` : 'Initialize Measurements'}
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
@@ -342,20 +367,13 @@ export function ClientProfilePage() {
           <Grid container spacing={2}>
             {Object.keys(formValues).map((key) => (
               <Grid size={{ xs: 12, sm: 4 }} key={key}>
-                <TextField
+                <NumberField
                   fullWidth
                   label={key}
                   value={formValues[key]}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/[^0-9.]/g, '');
-                    if ((val.match(/\./g) || []).length <= 1) {
-                      setFormValues({ ...formValues, [key]: val === "" ? 0 : val as any });
-                    }
-                  }}
-                  inputProps={{
-                    inputMode: 'decimal',
-                    pattern: '[0-9]*\\.?[0-9]*',
-                  }}
+                  onChange={(val) => setFormValues({ ...formValues, [key]: val === "" ? 0 : val })}
+                  onEnter={() => handleAutoAdvance(key)}
+                  inputRef={(el: any) => inputRefs.current[key] = el}
                   InputProps={{
                     endAdornment: <Typography variant="caption" sx={{ opacity: 0.5 }}>cm</Typography>
                   }}
@@ -365,7 +383,28 @@ export function ClientProfilePage() {
               </Grid>
             ))}
             
-            {/* Add ability to add new fields could go here, but for now we stick to existing/defaults */}
+            <Grid size={{ xs: 12 }}>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', mb: 1 }}>ADD CUSTOM PRECISION POINT</Typography>
+              <Stack direction="row" spacing={1}>
+                <TextField 
+                  size="small" 
+                  placeholder="e.g. Wrist, Bicep..." 
+                  value={newFieldName}
+                  onChange={(e) => setNewFieldName(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <Button 
+                  variant="outlined" 
+                  color="secondary" 
+                  onClick={handleAddCustomField}
+                  disabled={!newFieldName.trim()}
+                  sx={{ borderRadius: '8px' }}
+                >
+                  Add Label
+                </Button>
+              </Stack>
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
