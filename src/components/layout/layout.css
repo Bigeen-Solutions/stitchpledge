@@ -58,7 +58,7 @@ html, body {
 }
 
 .content-container {
-  padding: var(--space-xl) var(--space-lg);
+  padding: calc(64px + var(--space-xl)) var(--space-lg) var(--space-xl);
   flex-grow: 1;
   max-width: 100vw;
 }
