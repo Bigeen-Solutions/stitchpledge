@@ -37,9 +37,7 @@ import { NumberField } from '../components/inputs/NumberField';
 
 import './styles/client-profile.css';
 
-const DEFAULT_MEASUREMENT_KEYS = [
-  'Neck', 'Chest', 'Waist', 'Hips', 'Shoulder', 'Sleeve', 'Inseam', 'Outseam'
-];
+
 
 export function ClientProfilePage() {
   const navigate = useNavigate();
@@ -58,10 +56,7 @@ export function ClientProfilePage() {
     if (profile?.latestMeasurement) {
       setFormValues(profile.latestMeasurement.measurements);
     } else {
-      // Default empty values for common fields
-      const defaults: Record<string, number> = {};
-      DEFAULT_MEASUREMENT_KEYS.forEach(key => defaults[key] = 0);
-      setFormValues(defaults);
+      setFormValues({});
     }
   }, [profile, isModalOpen]);
 
