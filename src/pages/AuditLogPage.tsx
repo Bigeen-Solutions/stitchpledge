@@ -2,18 +2,25 @@ import React from 'react';
 import {
   Box,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
+  Card,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Avatar,
   Chip,
   Breadcrumbs,
   Link,
   CircularProgress,
+  Stack,
+  alpha
 } from '@mui/material';
+import {
+  AddShoppingCart as AddShoppingCartIcon,
+  CheckCircleOutline as CheckCircleOutlineIcon,
+  LocalShipping as LocalShippingIcon,
+  InfoOutlined as InfoOutlinedIcon
+} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../infrastructure/http/axios.client';
@@ -30,21 +37,21 @@ const AuditLogPage: React.FC = () => {
     },
   });
 
-  const getEventChip = (type: string) => {
+  const getEventAvatarProps = (type: string) => {
     switch (type) {
       case 'ORDER_CREATED':
-        return <Chip label="ORDER CREATED" size="small" sx={{ bgcolor: '#e3f2fd', color: '#0d47a1', fontWeight: 700, borderRadius: '4px' }} />;
+        return { icon: <AddShoppingCartIcon fontSize="small" />, bgcolor: alpha('#0d47a1', 0.1), color: '#0d47a1', label: 'ORDER CREATED' };
       case 'STAGE_COMPLETED':
-        return <Chip label="STAGE COMPLETED" size="small" sx={{ bgcolor: '#e8f5e9', color: '#1b5e20', fontWeight: 700, borderRadius: '4px' }} />;
+        return { icon: <CheckCircleOutlineIcon fontSize="small" />, bgcolor: alpha('#1b5e20', 0.1), color: '#1b5e20', label: 'STAGE COMPLETED' };
       case 'MATERIAL_RECEIVED':
-        return <Chip label="MATERIAL RECEIVED" size="small" sx={{ bgcolor: '#fff3e0', color: '#e65100', fontWeight: 700, borderRadius: '4px' }} />;
+        return { icon: <LocalShippingIcon fontSize="small" />, bgcolor: alpha('#e65100', 0.1), color: '#e65100', label: 'MATERIAL RECEIVED' };
       default:
-        return <Chip label={type} size="small" sx={{ borderRadius: '4px' }} />;
+        return { icon: <InfoOutlinedIcon fontSize="small" />, bgcolor: alpha('#000', 0.05), color: 'text.secondary', label: type || 'SYSTEM EVENT' };
     }
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1200, mx: 'auto' }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1200, mx: 'auto', paddingBottom: '90px' }}>
       <MobileHeader 
         title="System Audit Log" 
         subtitle="Chronological record of transactions"
@@ -79,64 +86,75 @@ const AuditLogPage: React.FC = () => {
         </Box>
       </Box>
 
-      <TableContainer 
-        component={Paper} 
-        className="sf-glass"
-        sx={{ 
-          borderRadius: '16px', 
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-          overflow: 'hidden',
-          bgcolor: 'rgba(255, 255, 255, 0.4)'
-        }}
-      >
-        <Table>
-          <TableHead sx={{ bgcolor: 'rgba(249, 250, 251, 0.8)' }}>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 800, color: '#6b7280', fontSize: '11px', letterSpacing: '0.05em' }}>TIMESTAMP</TableCell>
-              <TableCell sx={{ fontWeight: 800, color: '#6b7280', fontSize: '11px', letterSpacing: '0.05em' }}>EVENT TYPE</TableCell>
-              <TableCell sx={{ fontWeight: 800, color: '#6b7280', fontSize: '11px', letterSpacing: '0.05em' }}>DETAIL</TableCell>
-              <TableCell sx={{ fontWeight: 800, color: '#6b7280', fontSize: '11px', letterSpacing: '0.05em' }}>REFERENCE</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ py: 12 }}>
-                  <CircularProgress size={28} thickness={5} sx={{ color: '#1e5c3a' }} />
-                </TableCell>
-              </TableRow>
-            ) : !events || events.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ py: 12 }}>
-                  <Typography variant="body2" sx={{ color: '#9ca3af', fontStyle: 'italic' }}>No events recorded in the current telemetry window.</Typography>
-                </TableCell>
-              </TableRow>
-            ) : (
-              events.map((event, index) => (
-                <TableRow 
-                  key={`${event.id || 'evt'}-${index}`} 
-                  hover
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <TableCell sx={{ color: '#6b7280', fontSize: '13px', fontWeight: 500 }}>
-                    {event.createdAt ? new Date(event.createdAt).toLocaleString() : 'Unknown Date'}
-                  </TableCell>
-                  <TableCell>
-                    {getEventChip(event.event_type)}
-                  </TableCell>
-                  <TableCell sx={{ color: '#1a2340', fontWeight: 600, fontSize: '14px' }}>
-                    {event.detail}
-                  </TableCell>
-                  <TableCell sx={{ fontFamily: 'monospace', color: '#6b7280', fontSize: '13px' }}>
-                    {event.id?.split('-')[0].toUpperCase() || 'SYS'}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 8 }}>
+          <CircularProgress sx={{ color: 'primary.main' }} />
+        </Box>
+      ) : !events || events.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 8, px: 2 }}>
+          <Avatar sx={{ mx: 'auto', mb: 2, bgcolor: alpha('#000', 0.05), color: 'text.disabled', width: 64, height: 64 }}>
+            <InfoOutlinedIcon sx={{ fontSize: 32 }} />
+          </Avatar>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            No events recorded in the current telemetry window.
+          </Typography>
+        </Box>
+      ) : (
+        <Card sx={{ borderRadius: '24px', boxShadow: '0 8px 32px rgba(0,0,0,0.04)', border: '1px solid', borderColor: 'divider' }}>
+          <List sx={{ p: 0 }}>
+            {events.map((event, index) => {
+              const eventProps = getEventAvatarProps(event.event_type);
+              return (
+                <Box key={`${event.id || 'evt'}-${index}`}>
+                  <ListItem 
+                    sx={{ 
+                      p: { xs: 2.5, sm: 3 },
+                      display: 'flex',
+                      flexDirection: { xs: 'column', md: 'row' },
+                      alignItems: { xs: 'flex-start', md: 'center' },
+                      gap: 2
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', flex: 1, gap: 2, alignItems: 'flex-start' }}>
+                      <ListItemIcon sx={{ minWidth: 'auto', mt: 0.5 }}>
+                        <Avatar sx={{ bgcolor: eventProps.bgcolor, color: eventProps.color, width: 40, height: 40 }}>
+                          {eventProps.icon}
+                        </Avatar>
+                      </ListItemIcon>
+                      <ListItemText
+                        disableTypography
+                        primary={
+                          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1a2340', mb: 0.5, lineHeight: 1.3 }}>
+                            {event.detail}
+                          </Typography>
+                        }
+                        secondary={
+                          <Stack direction="row" alignItems="center" spacing={1.5} flexWrap="wrap" useFlexGap>
+                            <Chip 
+                              label={eventProps.label} 
+                              size="small" 
+                              sx={{ bgcolor: eventProps.bgcolor, color: eventProps.color, fontWeight: 800, borderRadius: '6px', fontSize: '10px' }} 
+                            />
+                            <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, fontFamily: 'monospace' }}>
+                              REF: {event.id?.split('-')[0].toUpperCase() || 'SYS'}
+                            </Typography>
+                          </Stack>
+                        }
+                      />
+                    </Box>
+                    <Box sx={{ mt: { xs: 1, md: 0 }, ml: { xs: 7, md: 0 }, textAlign: { xs: 'left', md: 'right' } }}>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                        {event.createdAt ? new Date(event.createdAt).toLocaleString() : 'Unknown Date'}
+                      </Typography>
+                    </Box>
+                  </ListItem>
+                  {index < events.length - 1 && <Box sx={{ height: '1px', bgcolor: 'divider', ml: { xs: 9, md: 3 }, mr: { md: 3 } }} />}
+                </Box>
+              )
+            })}
+          </List>
+        </Card>
+      )}
     </Box>
   );
 };
