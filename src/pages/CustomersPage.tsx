@@ -1,10 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomers } from '../features/customers/hooks/useCustomers';
-import { WorkshopTable } from '../components/ui/WorkshopTable';
-import { WorkshopTableSkeleton } from '../components/ui/WorkshopTableSkeleton';
 import { ErrorState } from '../components/feedback/ErrorState';
-import { CircularProgress, Typography } from '@mui/material';
+import { 
+  CircularProgress, Typography, Box, List, ListItemAvatar, 
+  Avatar, ListItemText, Card, InputAdornment, TextField, IconButton, 
+  Stack, Chip, alpha, ListItemButton
+} from '@mui/material';
+import { 
+  Search as SearchIcon, 
+  Close as CloseIcon, 
+  ChevronRight, 
+  Add as AddIcon
+} from '@mui/icons-material';
 import { usePullToRefresh } from '../hooks/usePullToRefresh.ts';
 
 export function CustomersPage() {
@@ -47,7 +55,7 @@ export function CustomersPage() {
   const totalPages = data ? Math.ceil(data.total / limit) : 0;
 
   return (
-    <div className="customers-page container" style={{ position: 'relative' }}>
+    <div className="customers-page container" style={{ position: 'relative', paddingBottom: '90px' }}>
       {/* Pull to Refresh Indicator */}
       <div 
         style={{ 
@@ -78,136 +86,166 @@ export function CustomersPage() {
             variant="h3" 
             className="mobile-page-title md:text-h1"
             sx={{ 
-              fontSize: { xs: '1.25rem', md: 'clamp(1.5rem, 4vw, 2.5rem)' },
+              fontSize: { xs: '1.75rem', md: 'clamp(1.5rem, 4vw, 2.5rem)' },
               fontWeight: 800,
-              lineHeight: 1.2 
+              lineHeight: 1.2,
+              letterSpacing: '-0.02em'
             }}
           >
-            Client CRM
+            Clients
           </Typography>
-          <p className="text-black text-sm md:text-base">Manage your customer relationships and order history</p>
         </div>
-        <button className="btn btn-primary" onClick={() => alert('New Client feature coming soon!')}>
-          + New Client
-        </button>
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <button className="btn btn-primary" onClick={() => alert('New Client coming soon!')}>
+            + New Client
+          </button>
+        </Box>
       </header>
 
-      <div className="sf-glass p-lg mb-lg flex justify-between items-center" style={{ borderRadius: 'var(--radius-card)' }}>
-        <div className="search-container flex-1 mr-lg">
-          <input
-            type="text"
-            placeholder="Search by name, email, or phone..."
-            className="sf-input"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: '100%', maxWidth: '400px' }}
-          />
-        </div>
-        <div className="text-sm font-medium text-black">
-          {data ? `Showing ${data.items.length} of ${data.total} clients` : 'Loading...'}
+      {/* Global Search Bar */}
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          placeholder="Search clients..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ color: 'text.secondary' }} />
+              </InputAdornment>
+            ),
+            endAdornment: searchTerm ? (
+              <InputAdornment position="end">
+                <IconButton size="small" onClick={() => setSearchTerm('')}>
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ) : null,
+            sx: {
+              borderRadius: '20px',
+              bgcolor: 'background.paper',
+              '& fieldset': { borderColor: 'divider' },
+              '&:hover fieldset': { borderColor: 'primary.light' },
+              '&.Mui-focused fieldset': { borderColor: 'primary.main', borderWidth: '2px' }
+            }
+          }}
+        />
+        <Typography variant="caption" sx={{ display: 'block', mt: 1, ml: 1, color: 'text.disabled' }}>
+          {data && !isLoading ? `Found ${data.total} clients` : '\u00A0'}
+        </Typography>
+      </Box>
+
+      {/* App-like List Rendering */}
+      <Card sx={{ borderRadius: '24px', boxShadow: '0 8px 32px rgba(0,0,0,0.04)', border: '1px solid', borderColor: 'divider' }}>
+        {isLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 6 }}>
+            <CircularProgress sx={{ color: 'primary.main' }} />
+          </Box>
+        ) : data?.items.length === 0 ? (
+          <Box sx={{ textAlign: 'center', py: 8, px: 2 }}>
+            <Avatar sx={{ mx: 'auto', mb: 2, bgcolor: alpha('#1e5c3a', 0.1), color: 'primary.main', width: 64, height: 64 }}>
+              <SearchIcon sx={{ fontSize: 32 }} />
+            </Avatar>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>No clients found</Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
+              We couldn't find any clients matching "{debouncedSearch}"
+            </Typography>
+            <button className="btn btn-secondary" onClick={() => setSearchTerm('')}>Clear Search</button>
+          </Box>
+        ) : (
+          <List sx={{ p: 0 }}>
+            {data?.items.map((customer, index) => (
+              <Box key={customer.id}>
+                <ListItemButton 
+                  onClick={() => navigate(`/customers/${customer.id}`)}
+                  sx={{ 
+                    p: { xs: 2, sm: 3 },
+                    transition: 'background-color 0.2s',
+                    '&:hover': { bgcolor: alpha('#1e5c3a', 0.02) }
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Avatar sx={{ bgcolor: alpha('#1e5c3a', 0.1), color: 'primary.main', fontWeight: 800, width: { xs: 44, sm: 48 }, height: { xs: 44, sm: 48 } }}>
+                      {customer.name.charAt(0).toUpperCase()}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    disableTypography
+                    primary={
+                      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                          {customer.name}
+                        </Typography>
+                        {customer.totalOrders > 0 && (
+                          <Chip 
+                            label={`${customer.totalOrders} order${customer.totalOrders !== 1 ? 's' : ''}`}
+                            size="small"
+                            sx={{ height: 20, fontSize: '0.7rem', fontWeight: 700, bgcolor: alpha('#1e5c3a', 0.1), color: 'primary.main' }}
+                          />
+                        )}
+                      </Stack>
+                    }
+                    secondary={
+                      <Stack spacing={0.25} sx={{ mt: 0.5 }}>
+                        {customer.phone && (
+                          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
+                            {customer.phone}
+                          </Typography>
+                        )}
+                        {!customer.phone && customer.email && (
+                          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
+                            {customer.email}
+                          </Typography>
+                        )}
+                        <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                          ID: {customer.id.split('-')[0].toUpperCase()}
+                        </Typography>
+                      </Stack>
+                    }
+                  />
+                  <ChevronRight sx={{ color: 'text.disabled' }} />
+                </ListItemButton>
+                {index < data.items.length - 1 && <Box sx={{ height: '1px', bgcolor: 'divider', ml: { xs: 9, sm: 10 } }} />}
+              </Box>
+            ))}
+          </List>
+        )}
+      </Card>
+
+      {/* Modern Pagination */}
+      {!isLoading && totalPages > 1 && (
+        <Stack direction="row" justifyContent="center" spacing={1} sx={{ mt: 4 }}>
+          <button 
+            className="btn btn-secondary btn-sm" 
+            disabled={page === 1}
+            onClick={() => setPage(p => p - 1)}
+            style={{ borderRadius: '12px' }}
+          >
+            Prev
+          </button>
+          <Box sx={{ display: 'flex', alignItems: 'center', px: 2 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              {page} <span style={{ color: 'var(--color-text-disabled)', fontWeight: 400 }}>/ {totalPages}</span>
+            </Typography>
+          </Box>
+          <button 
+            className="btn btn-secondary btn-sm"
+            disabled={page === totalPages}
+            onClick={() => setPage(p => p + 1)}
+            style={{ borderRadius: '12px' }}
+          >
+            Next
+          </button>
+        </Stack>
+      )}
+
+      {/* Floating Action Button - Mobile Only */}
+      <div className="fab-container desktop-hide">
+        <div className="fab-main" onClick={() => alert('New Client coming soon!')}>
+          <AddIcon />
         </div>
       </div>
-
-      <section className="sf-card" style={{ padding: 'var(--space-lg)' }}>
-        {isLoading ? (
-          <WorkshopTableSkeleton headers={['Name', 'Contact Info', 'Total Orders', 'Last Active', 'Actions']} />
-        ) : data?.items.length === 0 ? (
-          <div className="text-center p-xxl">
-            <p className="text-lg text-black mb-md">No clients found matching "{debouncedSearch}"</p>
-            <button className="btn btn-secondary" onClick={() => setSearchTerm('')}>Clear Search</button>
-          </div>
-        ) : (
-          <>
-            <WorkshopTable headers={['Name', 'Contact Info', 'Total Orders', 'Last Active', 'Actions']}>
-              {data?.items.map((customer, index) => (
-                <tr key={`${customer.id}-${index}`}>
-                  <td>
-                    <div className="font-bold text-black">{customer.name}</div>
-                    <div className="text-xs text-black opacity-60">ID: {customer.id.split('-')[0]}</div>
-                  </td>
-                  <td>
-                    <div className="text-sm text-black">{customer.email || 'No Email'}</div>
-                    <div className="text-xs text-black opacity-70">{customer.phone || 'No Phone'}</div>
-                  </td>
-                  <td>
-                    <div className="badge badge-secondary">{customer.totalOrders} Orders</div>
-                  </td>
-                  <td className="text-black">
-                    {customer.lastOrderDate 
-                      ? new Date(customer.lastOrderDate).toLocaleDateString() 
-                      : 'Never'}
-                  </td>
-                  <td>
-                    <button 
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => navigate(`/customers/${customer.id}`)}
-                    >
-                      View Profile
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </WorkshopTable>
-
-            {/* Pagination Implementation */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-md mt-lg">
-                <button 
-                  className="btn btn-secondary btn-sm" 
-                  disabled={page === 1}
-                  onClick={() => setPage(p => p - 1)}
-                >
-                  Previous
-                </button>
-                
-                <div className="flex gap-xs items-center">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                    <button
-                      key={p}
-                      className={`btn btn-sm ${page === p ? 'btn-primary' : 'btn-secondary'}`}
-                      onClick={() => setPage(p)}
-                      style={{ minWidth: '32px', padding: '0' }}
-                    >
-                      {p}
-                    </button>
-                  ))}
-                </div>
-
-                <button 
-                  className="btn btn-secondary btn-sm"
-                  disabled={page === totalPages}
-                  onClick={() => setPage(p => p + 1)}
-                >
-                  Next
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </section>
-
-      <style>{`
-        .sf-input {
-          padding: var(--space-sm) var(--space-md);
-          border: 1px solid var(--color-border);
-          border-radius: var(--radius-pill);
-          font-family: inherit;
-          font-size: 0.875rem;
-          transition: border-color 0.2s;
-        }
-        .sf-input:focus {
-          outline: none;
-          border-color: var(--color-primary);
-        }
-        .badge-secondary {
-          background: rgba(30, 92, 58, 0.1);
-          color: var(--color-primary);
-          padding: 2px 8px;
-          border-radius: var(--radius-pill);
-          font-size: 0.75rem;
-          font-weight: 700;
-        }
-      `}</style>
     </div>
   );
 }

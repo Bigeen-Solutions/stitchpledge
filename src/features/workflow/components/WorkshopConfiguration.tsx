@@ -286,11 +286,12 @@ export function WorkshopConfiguration() {
                           </Box>
                         </ListItemIcon>
                         <ListItemText 
+                          disableTypography
                           primary={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{stage.name}</Typography>}
                           secondary={
                             <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
                               <TimerIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                              <Typography variant="caption">Est. Duration: {stage.estimated_duration_hours || 0} hours</Typography>
+                              <Typography variant="caption" color="text.secondary">Est. Duration: {stage.estimated_duration_hours || 0} hours</Typography>
                             </Stack>
                           }
                         />
