@@ -28,7 +28,8 @@ import {
   Straighten as TrousersIcon,
   Delete as DeleteIcon,
   EmojiEvents as EventIcon,
-  TipsAndUpdates as IntelIcon
+  TipsAndUpdates as IntelIcon,
+  Category as CategoryIcon
 } from "@mui/icons-material";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -146,12 +147,10 @@ export function NewOrderPage() {
   }, [searchParams, queryClient, selectedCustomer]);
 
   // 2. Intelligence Gate: Check compatibility when template is selected
-  const handleTemplateSelection = async (templateId: string) => {
+  const handleTemplateSelection = async (template: any) => {
+    const templateId = template.id;
     
     // Add to items
-    const template = templates?.find(t => t.id === templateId);
-    if (!template) return;
-
     setOrderItems([...orderItems, {
       templateId: template.id,
       estimatedTotalDurationHours: 24,
@@ -603,35 +602,50 @@ export function NewOrderPage() {
                     Select Garment Types
                   </Typography>
                   <Grid container spacing={2}>
-                    {templates?.map((template) => (
-                      <Grid size={{ xs: 6, sm: 4 }} key={template.id}>
-                        <Card
-                          onClick={() => handleTemplateSelection(template.id)}
-                          sx={{
-                            bgcolor: 'background.default',
-                            border: '1px solid',
-                            borderColor: 'divider',
-                            borderRadius: '16px',
-                            p: 2,
-                            textAlign: 'center',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              bgcolor: alpha('#1e5c3a', 0.04),
-                              transform: 'translateY(-4px)',
-                              borderColor: 'secondary.main',
-                              boxShadow: `0 0 20px ${alpha('#c49a1a', 0.2)}`
-                            },
-                            '&:active': { transform: 'scale(0.95)' }
-                          }}
-                        >
-                          <Box sx={{ color: 'secondary.main', mb: 1.5 }}>
-                            {getGarmentIconLarge(template.name)}
-                          </Box>
-                          <Typography variant="subtitle2" sx={{ color: 'text.primary', fontWeight: 600 }}>{template.name}</Typography>
-                        </Card>
-                      </Grid>
-                    ))}
+                    {templates?.map((template) => {
+                      const isGeneral = !template.companyId;
+                      const displayName = isGeneral ? "General / Other" : template.name;
+                      const subtitle = isGeneral ? "For garments without a specific production template." : "";
+                      
+                      return (
+                        <Grid size={{ xs: 6, sm: 4 }} key={template.id}>
+                          <Card
+                            onClick={() => handleTemplateSelection(template)}
+                            sx={{
+                              bgcolor: 'background.default',
+                              border: '1px solid',
+                              borderColor: 'divider',
+                              borderRadius: '16px',
+                              p: 2,
+                              textAlign: 'center',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              minHeight: 140,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'center',
+                              '&:hover': {
+                                bgcolor: alpha('#1e5c3a', 0.04),
+                                transform: 'translateY(-4px)',
+                                borderColor: 'secondary.main',
+                                boxShadow: `0 0 20px ${alpha('#c49a1a', 0.2)}`
+                              },
+                              '&:active': { transform: 'scale(0.95)' }
+                            }}
+                          >
+                            <Box sx={{ color: 'secondary.main', mb: isGeneral ? 0.5 : 1.5 }}>
+                              {isGeneral ? <CategoryIcon sx={{ fontSize: 40 }} /> : getGarmentIconLarge(template.name)}
+                            </Box>
+                            <Typography variant="subtitle2" sx={{ color: 'text.primary', fontWeight: 700, lineHeight: 1.2 }}>{displayName}</Typography>
+                            {subtitle && (
+                              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '10px', mt: 0.5, lineHeight: 1.1 }}>
+                                {subtitle}
+                              </Typography>
+                            )}
+                          </Card>
+                        </Grid>
+                      );
+                    })}
                     {(!templates || templates.length === 0) && (
                       <Grid size={{ xs: 12 }}>
                         <Typography variant="body2" sx={{ color: 'text.disabled', p: 4, textAlign: 'center', border: '1px dashed', borderColor: 'divider', borderRadius: '12px' }}>

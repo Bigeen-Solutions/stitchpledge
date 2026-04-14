@@ -81,6 +81,7 @@ export const customersApi = {
   updateMeasurements: async (id: string, measurements: Record<string, number>): Promise<MeasurementSummary> => {
     const response = await apiClient.post<MeasurementSummary>(`/customers/${id}/measurements`, {
       measurements,
+      status: 'complete',
     });
     return response.data;
   },
