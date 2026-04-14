@@ -36,7 +36,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
   
-  const [loginMethod, setLoginMethod] = useState<'phone' | 'email'>('phone');
+  const [loginMethod, setLoginMethod] = useState<'phone' | 'email'>('email');
   const [loading, setLoading] = useState(false);
   const [showCard, setShowCard] = useState(false);
   
@@ -228,6 +228,7 @@ export function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  inputProps={{ minLength: 6 }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       height: '52px',
