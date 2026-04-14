@@ -137,6 +137,7 @@ export function NewOrderPage() {
     takenAt: string;
   } | null>(null);
   const [isPreloadingProfile, setIsPreloadingProfile] = useState(false);
+  const [newMeasurementLabel, setNewMeasurementLabel] = useState("");
 
   const activeMeasurementField = measurementEntries.find(e => e.id === activeEntryId)?.label || "";
   const entryRefs = useRef<Record<string, any>>({});
@@ -240,6 +241,30 @@ export function NewOrderPage() {
       const next = [...prev];
       let changed = false;
 
+      // Seed from customer profile if available and not already in ledger
+      const customerMeasurements = selectedCustomer?.latestMeasurement?.measurements || {};
+      
+      // First, ensure all existing customer measurements are in the list if they are not already
+      Object.entries(customerMeasurements).forEach(([label, value]) => {
+        if (!existingLabels.has(label)) {
+          next.push({
+            id: Math.random().toString(36).substr(2, 9),
+            label: label,
+            value: value.toString(),
+            isTemplateField: false
+          });
+          existingLabels.add(label);
+          changed = true;
+        } else {
+          // If it exists, update the value IF it's empty (intelligent seeding)
+          const idx = next.findIndex(e => e.label === label);
+          if (idx !== -1 && next[idx].value === "") {
+            next[idx].value = value.toString();
+            changed = true;
+          }
+        }
+      });
+
       dynamicMeasurementFields.forEach(field => {
         if (!existingLabels.has(field)) {
           next.push({
@@ -252,21 +277,29 @@ export function NewOrderPage() {
         }
       });
 
-      // Infinite Entry Logic: If the last entry has a value, add a new empty one
-      const lastEntry = next[next.length - 1];
-      if (!lastEntry || lastEntry.value.trim() !== "") {
-        next.push({
-          id: Math.random().toString(36).substr(2, 9),
-          label: "",
-          value: "",
-          isTemplateField: false
-        });
-        changed = true;
-      }
-
       return changed ? next : prev;
     });
-  }, [dynamicMeasurementFields, measurementEntries]);
+  }, [dynamicMeasurementFields, selectedCustomer]);
+
+  const handleAddCustomEntry = () => {
+    if (newMeasurementLabel.trim()) {
+      const label = newMeasurementLabel.trim();
+      if (!measurementEntries.some(e => e.label === label)) {
+        setMeasurementEntries(prev => [
+          ...prev,
+          {
+            id: Math.random().toString(36).substr(2, 9),
+            label,
+            value: "",
+            isTemplateField: false
+          }
+        ]);
+        setNewMeasurementLabel("");
+      } else {
+        showToast("Already Exists", "This measurement field is already in the ledger.", "error");
+      }
+    }
+  };
 
   const handleCreateOrder = async () => {
     try {
@@ -284,18 +317,24 @@ export function NewOrderPage() {
       let finalMeasurementVersionId = autoSelectedMeasurement?.measurementId;
       
       if (!finalMeasurementVersionId) {
-        showToast("Recording immutable measurements...", "Saving measurement snapshot.", "success");
+        // Validation: Verify at least one measurement is recorded
         const numericMeasurements: Record<string, number> = {};
         measurementEntries.forEach(entry => {
-          if (entry.label.trim() && entry.value.trim()) {
-            numericMeasurements[entry.label.trim()] = parseFloat(entry.value) || 0;
+          const val = parseFloat(entry.value);
+          if (entry.label.trim() && !isNaN(val) && val > 0) {
+            numericMeasurements[entry.label.trim()] = val;
           }
         });
 
+        if (Object.keys(numericMeasurements).length === 0) {
+          throw new Error("Validation Failed: At least one measurement metric is required to commit order.");
+        }
+
+        showToast("Recording immutable measurements...", "Saving measurement snapshot.", "success");
         const mv = await createMeasurement.mutateAsync({
           customerId: finalCustomerId,
           measurements: numericMeasurements,
-          status: 'complete' // Explicitly completing on submission
+          status: 'complete'
         });
         
         if (!mv?.id) throw new Error("Critical: Measurement version ID not returned by system.");
@@ -1380,6 +1419,28 @@ export function NewOrderPage() {
                       )}
                     </Stack>
                   </Card>
+
+                  <Box sx={{ mt: 3, p: 2, bgcolor: alpha('#000', 0.02), borderRadius: '16px', border: '1px dashed', borderColor: 'divider' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.disabled', mb: 1, display: 'block' }}>ADD CUSTOM PRECISION POINT</Typography>
+                    <Stack direction="row" spacing={1}>
+                      <TextField
+                        size="small"
+                        placeholder="e.g. Wrist, Bicep..."
+                        value={newMeasurementLabel}
+                        onChange={(e) => setNewMeasurementLabel(e.target.value)}
+                        sx={{ bgcolor: 'white', borderRadius: '8px', flex: 1 }}
+                      />
+                      <Button 
+                        variant="contained" 
+                        color="secondary" 
+                        onClick={handleAddCustomEntry}
+                        disabled={!newMeasurementLabel.trim()}
+                        sx={{ borderRadius: '8px', fontWeight: 700 }}
+                      >
+                        Add
+                      </Button>
+                    </Stack>
+                  </Box>
                 </Grid>
 
                 {/* Right Side: Virtual Numpad */}

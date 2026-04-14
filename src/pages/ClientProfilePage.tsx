@@ -104,12 +104,19 @@ export function ClientProfilePage() {
   const { customer, latestMeasurement, orderHistory } = profile;
 
   const handleUpdateSubmit = async () => {
+    // Validation: Ensure at least one measurement is entered
+    const hasMeasurements = Object.values(formValues).some(v => v > 0);
+    if (!hasMeasurements) {
+      showToast("Validation Error", "Please enter at least one measurement before committing.", "error");
+      return;
+    }
+
     try {
       await updateMutation.mutateAsync(formValues);
-      showToast("Measurement Recorded", "A new immutable version has been saved to the ledger.", "success");
       setIsModalOpen(false);
-    } catch (err: any) {
-      showToast("Record Failed", err.message || "Could not save measurements.", "error");
+      showToast("Success", "Measurements updated successfully.", "success");
+    } catch (error) {
+      console.error("Failed to update measurements", error);
     }
   };
 
