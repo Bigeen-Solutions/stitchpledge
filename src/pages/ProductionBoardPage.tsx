@@ -29,8 +29,8 @@ import {
   TableRow,
   TextField,
   Typography,
-  Paper,
   Tooltip,
+  alpha
 } from '@mui/material';
 import FactoryIcon from '@mui/icons-material/Factory';
 import SearchIcon from '@mui/icons-material/Search';
@@ -38,7 +38,6 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
-import ShareIcon from '@mui/icons-material/Share';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import ScheduleIcon from '@mui/icons-material/Schedule';
@@ -102,34 +101,42 @@ interface KPICardProps {
   title: string;
   value: string | number;
   icon: React.ReactNode;
-  accentColor: string;
+  gradient: string;
 }
 
-function KPICard({ title, value, icon, accentColor }: KPICardProps) {
+function KPICard({ title, value, icon, gradient }: KPICardProps) {
   return (
     <Card
       elevation={0}
-      className="sf-glass"
       sx={{
-        border: '1px solid',
-        borderColor: 'divider',
-        borderLeft: `4px solid ${accentColor}`,
-        borderRadius: 3,
+        background: gradient,
+        borderRadius: '24px',
         height: '100%',
+        position: 'relative',
+        overflow: 'hidden',
+        color: 'white',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+        transition: 'transform 0.3s ease',
+        '&:hover': { transform: 'translateY(-5px)' }
       }}
     >
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography variant="overline" color="text.secondary" fontWeight={700}>
-            {title}
-          </Typography>
-          <Typography variant="h4" fontWeight={800}>
-            {value}
-          </Typography>
-        </Box>
-        <Box sx={{ color: accentColor, opacity: 0.8 }}>
-          {icon}
-        </Box>
+      <Box sx={{
+        position: 'absolute',
+        top: -10,
+        right: -10,
+        opacity: 0.1,
+        transform: 'rotate(15deg)',
+        '& svg': { fontSize: 100 }
+      }}>
+        {icon}
+      </Box>
+      <Box sx={{ p: 3, position: 'relative', zIndex: 1 }}>
+        <Typography variant="overline" sx={{ opacity: 0.8, fontWeight: 800, letterSpacing: 1.2 }}>
+          {title}
+        </Typography>
+        <Typography variant="h3" sx={{ fontWeight: 800, mt: 1 }}>
+          {value}
+        </Typography>
       </Box>
     </Card>
   );
@@ -143,9 +150,9 @@ interface QuickUpdateModalProps {
 
 function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
   const { data: workflow, isLoading: isWorkflowLoading } = useGarmentWorkflow(task?.garmentId || '');
-  const { data: staff, isLoading: isStaffLoading, isError: isStaffError } = useStaffList({ 
+  const { data: staff, isLoading: isStaffLoading, isError: isStaffError } = useStaffList({
     storeId: task?.storeId,
-    enabled: !!task && !!task.storeId 
+    enabled: !!task && !!task.storeId
   });
   const updateMutation = useUpdateGarmentStage(task?.garmentId || '');
 
@@ -153,14 +160,6 @@ function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
   const [selectedTailorId, setSelectedTailorId] = useState<string | null>(null);
 
   // Sync initial state when task changes or workflow data arrives
-  useState(() => {
-    if (task) {
-      setSelectedStageId(task.stageId);
-      setSelectedTailorId(task.assignedTailorId || null);
-    }
-  });
-
-  // Re-sync when task or workflow data changes
   useMemo(() => {
     if (task) {
       setSelectedStageId(task.stageId);
@@ -190,8 +189,14 @@ function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
       maxWidth="xs"
       fullWidth
       PaperProps={{
-        className: 'sf-glass',
-        sx: { borderRadius: 4, backgroundImage: 'none', bgcolor: 'rgba(255, 255, 255, 0.9)' },
+        sx: {
+          borderRadius: 4,
+          backgroundImage: 'none',
+          bgcolor: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid',
+          borderColor: 'rgba(255, 255, 255, 0.3)'
+        },
       }}
     >
       <DialogTitle sx={{ pb: 1, pt: 3 }}>
@@ -277,8 +282,8 @@ function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, py: 3, gap: 1 }}>
-        <Button 
-          onClick={onClose} 
+        <Button
+          onClick={onClose}
           sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 600 }}
         >
           Cancel
@@ -287,9 +292,9 @@ function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
           variant="contained"
           onClick={handleSave}
           disabled={updateMutation.isPending || isWorkflowLoading}
-          sx={{ 
-            bgcolor: 'primary.main', 
-            borderRadius: 2, 
+          sx={{
+            bgcolor: 'primary.main',
+            borderRadius: 2,
             px: 3,
             textTransform: 'none',
             fontWeight: 700,
@@ -363,6 +368,118 @@ function ExecutionDialog({ task, onClose }: ExecutionDialogProps) {
   );
 }
 
+// ─── Task Mobile Card ───────────────────────────────────────────
+
+interface TaskMobileCardProps {
+  task: ActiveFloorTask;
+  onQuickUpdate: () => void;
+  navigate: (path: string) => void;
+}
+
+function TaskMobileCard({ task, onQuickUpdate, navigate }: TaskMobileCardProps) {
+  const atRisk = isAtRisk(task.deadline, task.status);
+  const statusStyle = getStatusStyles(task.stageName);
+
+  return (
+    <Card
+      sx={{
+        p: 2.5,
+        borderRadius: '20px',
+        mb: 2,
+        bgcolor: 'background.paper',
+        border: '1px solid',
+        borderColor: atRisk ? 'error.light' : 'divider',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+        '&:active': { transform: 'scale(0.98)', bgcolor: alpha('#1e5c3a', 0.04) }
+      }}
+    >
+      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+        <Avatar
+          src={task.fabric_image_base64}
+          variant="rounded"
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: '12px',
+            bgcolor: stringToColor(task.garmentName || 'G'),
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+          }}
+        >
+          {task.garmentName?.charAt(0)}
+        </Avatar>
+        <Box sx={{ flex: 1 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+            <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.disabled' }}>
+              #{task.orderNumber}
+            </Typography>
+            <Chip
+              label={task.stageName}
+              size="small"
+              sx={{
+                height: 20,
+                fontSize: 10,
+                fontWeight: 800,
+                color: statusStyle.color,
+                bgcolor: statusStyle.bgColor,
+                borderRadius: '6px'
+              }}
+            />
+          </Stack>
+          <Typography variant="subtitle1" sx={{ fontWeight: 800, lineHeight: 1.2, mb: 0.5 }}>
+            {task.customerName}
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+            {task.garmentName}
+          </Typography>
+        </Box>
+      </Stack>
+
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Avatar sx={{ width: 24, height: 24, fontSize: 10, bgcolor: 'primary.main', fontWeight: 700 }}>
+            {task.tailorEmail?.[0].toUpperCase() || '?'}
+          </Avatar>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+            {task.tailorEmail ? task.tailorEmail.split('@')[0] : 'Unassigned'}
+          </Typography>
+        </Stack>
+        <Typography variant="caption" sx={{
+          color: atRisk ? 'error.main' : 'text.disabled',
+          fontWeight: 700,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5
+        }}>
+          <ScheduleIcon sx={{ fontSize: 14 }} />
+          {task.deadline ? format(new Date(task.deadline), 'MMM d') : '--'}
+        </Typography>
+      </Box>
+
+      <Stack direction="row" spacing={1.5}>
+        <Button
+          fullWidth
+          variant="outlined"
+          size="small"
+          onClick={() => navigate(`/orders/${task.orderId}`)}
+          sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700, borderColor: 'divider' }}
+        >
+          View Details
+        </Button>
+        <Button
+          fullWidth
+          variant="contained"
+          color="secondary"
+          size="small"
+          onClick={onQuickUpdate}
+          sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700 }}
+        >
+          Update
+        </Button>
+      </Stack>
+    </Card>
+  );
+}
+
 // ─── Main Page ─────────────────────────────────────────────────
 
 export function ProductionBoardPage() {
@@ -370,7 +487,7 @@ export function ProductionBoardPage() {
   const { data: tasks = [], isLoading, isError } = useActiveTasks();
   const [selectedTask, setSelectedTask] = useState<ActiveFloorTask | null>(null);
   const [quickUpdateTask, setQuickUpdateTask] = useState<ActiveFloorTask | null>(null);
-  
+
   // Local Filtering & Pagination State
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState('All');
@@ -389,13 +506,12 @@ export function ProductionBoardPage() {
       return d.toDateString() === today.toDateString();
     }).length;
     const fittings = tasks.filter(t => t.stageName === 'Fitting').length;
-    const completed = 12; // Placeholder
 
     return [
-      { title: 'Total Active Orders', value: active, color: '#1a237e', icon: <QueryStatsIcon fontSize="large" /> },
-      { title: 'Due Today', value: dueToday, color: '#d32f2f', icon: <ScheduleIcon fontSize="large" /> },
-      { title: 'Fittings Scheduled', value: fittings, color: '#fbc02d', icon: <EventIcon fontSize="large" /> },
-      { title: 'Completed this Week', value: completed, color: '#388e3c', icon: <CheckCircleIcon fontSize="large" /> },
+      { title: 'In Production', value: active, icon: <QueryStatsIcon />, gradient: 'linear-gradient(135deg, #7da8cdff 0%, #48889fff 100%)' },
+      { title: 'Due Today', value: dueToday, icon: <ScheduleIcon />, gradient: 'linear-gradient(135deg, #e97078ff 0%, #de3b87ff 100%)' },
+      { title: 'Fittings', value: fittings, icon: <EventIcon />, gradient: 'linear-gradient(135deg, #ed9140ff 0%, #f0df8cff 100%)' },
+      { title: 'Success rate', value: '98%', icon: <CheckCircleIcon />, gradient: 'linear-gradient(135deg, #27892dff 0%, #75ea7bff 100%)' },
     ];
   }, [tasks]);
 
@@ -405,7 +521,13 @@ export function ProductionBoardPage() {
   }, [tasks]);
 
   const uniqueTailors = useMemo(() => {
-    return Array.from(new Set(tasks.map(t => t.assignedTailorId).filter(Boolean))) as string[];
+    const tailorMap = new Map();
+    tasks.forEach(t => {
+      if (t.assignedTailorId && t.tailorEmail) {
+        tailorMap.set(t.assignedTailorId, t.tailorEmail.split('@')[0]);
+      }
+    });
+    return Array.from(tailorMap.entries());
   }, [tasks]);
 
   const lifecycleStatuses = ['PENDING', 'ACTIVE', 'COMPLETED', 'BLOCKED'];
@@ -414,17 +536,19 @@ export function ProductionBoardPage() {
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
       const orderId = task.orderId || '';
+      const orderNumber = String(task.orderNumber || '');
       const customerName = task.customerName || '';
       const searchStr = search.toLowerCase();
-      
-      const matchesSearch = 
-        orderId.toLowerCase().includes(searchStr) || 
+
+      const matchesSearch =
+        orderId.toLowerCase().includes(searchStr) ||
+        orderNumber.includes(searchStr) ||
         customerName.toLowerCase().includes(searchStr);
-      
+
       const matchesStage = stageFilter === 'All' || task.stageName === stageFilter;
       const matchesLifecycle = lifecycleStatusFilter === 'All' || task.status === lifecycleStatusFilter;
       const matchesTailor = tailorFilter === 'All' || task.assignedTailorId === tailorFilter;
-      
+
       return matchesSearch && matchesStage && matchesLifecycle && matchesTailor;
     });
   }, [tasks, search, stageFilter, lifecycleStatusFilter, tailorFilter]);
@@ -442,99 +566,115 @@ export function ProductionBoardPage() {
 
   if (isLoading) {
     return (
-      <Box sx={{ p: 3 }}>
-        <Skeleton variant="rectangular" height={100} sx={{ mb: 4, borderRadius: 3 }} />
-        <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 3 }} />
+      <Box sx={{ p: 4 }}>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {[1,2,3,4].map(i => (
+            <Grid size={{ xs: 6, md: 3 }} key={i}>
+              <Skeleton variant="rectangular" height={140} sx={{ borderRadius: '24px' }} />
+            </Grid>
+          ))}
+        </Grid>
+        <Skeleton variant="rectangular" height={400} sx={{ borderRadius: '24px' }} />
       </Box>
     );
   }
 
   if (isError) {
-    return <Alert severity="error">Failed to load Production Ledger. Please retry.</Alert>;
+    return <Alert severity="error" sx={{ m: 4, borderRadius: '12px' }}>Failed to load Production Ledger. Please retry.</Alert>;
   }
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1600, mx: 'auto' }}>
-      
-      {/* 1. Page Header */}
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
-        <Box>
-          <Typography variant="h4" fontWeight={800} color="primary.main">
-            Production Ledger
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            High-density operational control center
-          </Typography>
-        </Box>
-        <Stack direction="row" spacing={2} alignItems="center">
-          <TextField
-            placeholder="Search Order ID/Client..."
-            size="small"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ width: { xs: 200, md: 300 }, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-          />
-          <IconButton sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
-            <NotificationsNoneIcon />
-          </IconButton>
-          <Avatar sx={{ width: 40, height: 40, bgcolor: 'primary.main', fontWeight: 700 }}>
-            AD
-          </Avatar>
+    <Box sx={{ p: { xs: 2.5, md: 4, lg: 6 }, maxWidth: 1600, mx: 'auto', pb: 12 }}>
+
+      {/* 1. Page Header (Sticky Control strip) */}
+      <Box sx={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+        bgcolor: alpha('#f8f9fa', 0.9),
+        backdropFilter: 'blur(20px)',
+        mx: { xs: -2.5, md: -4, lg: -6 },
+        px: { xs: 2.5, md: 4, lg: 6 },
+        pt: 2,
+        pb: 3,
+        mb: 4,
+        borderBottom: '1px solid',
+        borderColor: 'divider'
+      }}>
+        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'center' }} spacing={3}>
+          <Box>
+            <Typography variant="h3" sx={{ fontWeight: 900, color: 'text.primary', letterSpacing: '-0.04em' }}>
+              Production Store
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+              Atelier workflow & real-time telemetry
+            </Typography>
+          </Box>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <TextField
+              placeholder="Search ID, Client..."
+              size="small"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                width: { xs: '100%', md: 320 },
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '16px',
+                  bgcolor: 'background.paper',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                }
+              }}
+            />
+            <IconButton sx={{ bgcolor: 'white', border: '1px solid', borderColor: 'divider', borderRadius: '14px', width: 44, height: 44 }}>
+              <NotificationsNoneIcon sx={{ color: 'text.secondary' }} />
+            </IconButton>
+          </Stack>
         </Stack>
-      </Stack>
+      </Box>
 
       {/* 2. KPI Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={3} sx={{ mb: 6 }}>
         {kpis.map((kpi, idx) => (
-          <Grid size={{ xs: 12, sm: 6, md: 3 }} key={idx}>
-            <KPICard title={kpi.title} value={kpi.value} accentColor={kpi.color} icon={kpi.icon} />
+          <Grid size={{ xs: 6, lg: 3 }} key={idx}>
+            <KPICard title={kpi.title} value={kpi.value} gradient={kpi.gradient} icon={kpi.icon} />
           </Grid>
         ))}
       </Grid>
 
-      {/* 3. Filter Bar */}
-      <Stack 
-        direction={{ xs: 'column', sm: 'row' }} 
-        spacing={2} 
-        alignItems="center" 
-        className="sf-glass"
-        sx={{ 
-          mb: 3, 
-          p: 2, 
-          borderRadius: 3, 
-          border: '1px solid', 
-          borderColor: 'divider',
-        }}
-      >
-        <Typography variant="body2" fontWeight={700} color="text.secondary" sx={{ mr: 1 }}>Filters:</Typography>
-        
-        {/* Stage Filter */}
-        <Select 
-          value={stageFilter} 
+      {/* 3. Operational Filters */}
+      <Box sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        gap: 2,
+        mb: 4,
+        overflowX: 'auto',
+        pb: 1,
+        '&::-webkit-scrollbar': { display: 'none' }
+      }}>
+        <Select
+          value={stageFilter}
           onChange={(e) => setStageFilter(e.target.value)}
           size="small"
-          sx={{ minWidth: 160, borderRadius: 3, bgcolor: 'background.paper' }}
-          displayEmpty
+          sx={{ minWidth: { xs: '100%', md: 180 }, borderRadius: '12px', bgcolor: 'white' }}
         >
-          <MenuItem value="All">All Workflow Stages</MenuItem>
+          <MenuItem value="All">All Stages</MenuItem>
           {uniqueStages.map((stage) => (
             <MenuItem key={stage} value={stage}>{stage}</MenuItem>
           ))}
         </Select>
 
-        {/* Lifecycle Status Filter */}
-        <Select 
-          value={lifecycleStatusFilter} 
+        <Select
+          value={lifecycleStatusFilter}
           onChange={(e) => setLifecycleStatusFilter(e.target.value)}
           size="small"
-          sx={{ minWidth: 160, borderRadius: 3, bgcolor: 'background.paper' }}
+          sx={{ minWidth: { xs: '100%', md: 160 }, borderRadius: '12px', bgcolor: 'white' }}
         >
           <MenuItem value="All">All Statuses</MenuItem>
           {lifecycleStatuses.map((status) => (
@@ -543,189 +683,200 @@ export function ProductionBoardPage() {
             </MenuItem>
           ))}
         </Select>
-        
-        {/* Tailor Filter */}
-        <Select 
-          value={tailorFilter} 
+
+        <Select
+          value={tailorFilter}
           onChange={(e) => setTailorFilter(e.target.value)}
           size="small"
-          sx={{ minWidth: 150, borderRadius: 3, bgcolor: 'background.paper' }}
+          sx={{ minWidth: { xs: '100%', md: 160 }, borderRadius: '12px', bgcolor: 'white' }}
         >
           <MenuItem value="All">All Tailors</MenuItem>
-          {uniqueTailors.map((id: string) => (
-            <MenuItem key={id} value={id}>Tailor #{id.slice(0, 4)}</MenuItem>
+          {uniqueTailors.map(([id, email]) => (
+            <MenuItem key={id} value={id}>{email}</MenuItem>
           ))}
         </Select>
 
-        <Select value="Month" size="small" sx={{ minWidth: 150, borderRadius: 3 }}>
-          <MenuItem value="Month">Last 30 Days</MenuItem>
-          <MenuItem value="Week">Last 7 Days</MenuItem>
-        </Select>
+        <Button
+          variant="contained"
+          startIcon={<FileDownloadIcon />}
+          sx={{
+            bgcolor: 'secondary.main',
+            color: 'white',
+            borderRadius: '12px',
+            px: 3,
+            fontWeight: 800,
+            boxShadow: '0 4px 15px rgba(196, 154, 26, 0.2)',
+            ml: { md: 'auto' }
+          }}
+        >
+          Export Ledger
+        </Button>
+      </Box>
 
-        <Box sx={{ ml: 'auto !important' }}>
-          <Button 
-            variant="contained" 
-            startIcon={<FileDownloadIcon />}
-            sx={{ 
-              bgcolor: '#fbc02d', 
-              color: '#000', 
-              '&:hover': { bgcolor: '#f9a825' }, 
-              fontWeight: 700,
-              borderRadius: 3,
-              px: 3
-            }}
-          >
-            Export Ledger
-          </Button>
-        </Box>
-      </Stack>
+      {/* 4. Production Data Display (Liquid Desktop vs Mobile Cards) */}
+      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+        {paginatedTasks.length === 0 ? (
+          <Box sx={{ p: 6, textAlign: 'center', bgcolor: 'white', borderRadius: '24px', border: '1px dashed', borderColor: 'divider' }}>
+            <Typography variant="body1" sx={{ color: 'text.disabled', fontWeight: 600 }}>No production tasks matching criteria.</Typography>
+          </Box>
+        ) : (
+          paginatedTasks.map(task => (
+            <TaskMobileCard
+              key={task.stageInstanceId}
+              task={task}
+              onQuickUpdate={() => setQuickUpdateTask(task)}
+              navigate={navigate}
+            />
+          ))
+        )}
+      </Box>
 
-      {/* 4. Production Data Table */}
-      <TableContainer 
-        component={Paper} 
-        elevation={0} 
-        sx={{ 
-          border: '1px solid', 
-          borderColor: 'divider', 
-          borderRadius: 3,
-          overflowX: 'auto'
-        }}
-      >
-        <Table size="medium">
-          <TableHead sx={{ bgcolor: 'background.default' }}>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 700 }}>Order #</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Client Name</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Garment Type</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Fabric</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Start Date</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Due Date</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Tailor</TableCell>
-              <TableCell sx={{ fontWeight: 700, textAlign: 'right' }}>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedTasks.map((task) => {
-              const statusStyle = getStatusStyles(task.stageName);
-              const atRisk = isAtRisk(task.deadline, task.status);
-              
-              return (
-                <TableRow key={task.stageInstanceId}>
-                  <TableCell sx={{ fontWeight: 700 }}>
-                    <Link 
-                      to={`/orders/${task.orderId}`} 
-                      style={{ 
-                        textDecoration: 'none', 
-                        color: 'inherit',
-                        borderBottom: '1px dashed',
-                        borderColor: 'rgba(0,0,0,0.2)'
-                      }}
-                    >
-                      {task.orderNumber}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{task.customerName}</TableCell>
-                  <TableCell>{task.garmentName}</TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={task.stageName} 
-                      size="small" 
-                      sx={{ 
-                        fontWeight: 700, 
-                        color: statusStyle.color, 
-                        bgcolor: statusStyle.bgColor,
-                        borderRadius: 2
-                      }} 
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={1.5} alignItems="center">
-                      <Avatar 
-                        src={task.fabric_image_base64} 
-                        alt={task.garmentName}
-                        sx={{ 
-                          width: 32, 
-                          height: 32, 
-                          fontSize: '0.8rem',
-                          bgcolor: task.garmentName ? stringToColor(task.garmentName) : 'grey.300',
-                          borderRadius: 2
-                        }}
+      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+        <TableContainer
+          sx={{
+            bgcolor: 'white',
+            borderRadius: '24px',
+            border: '1px solid',
+            borderColor: 'divider',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.03)',
+            overflow: 'hidden'
+          }}
+        >
+          <Table>
+            <TableHead sx={{ bgcolor: alpha('#f3f4f6', 0.5) }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 800, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase' }}>IDENTIFIER</TableCell>
+                <TableCell sx={{ fontWeight: 800, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase' }}>CLIENT & GARMENT</TableCell>
+                <TableCell sx={{ fontWeight: 800, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase' }}>CURRENT STAGE</TableCell>
+                <TableCell sx={{ fontWeight: 800, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase' }}>SCHEDULE</TableCell>
+                <TableCell sx={{ fontWeight: 800, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase' }}>ASSIGNMENT</TableCell>
+                <TableCell sx={{ fontWeight: 800, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'right' }}>ACTIONS</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedTasks.map((task) => {
+                const statusStyle = getStatusStyles(task.stageName);
+                const atRisk = isAtRisk(task.deadline, task.status);
+
+                return (
+                  <TableRow
+                    key={task.stageInstanceId}
+                    hover
+                    sx={{
+                      '&:hover': { bgcolor: alpha('#1e5c3a', 0.02) },
+                      transition: 'background-color 0.2s ease'
+                    }}
+                  >
+                    <TableCell>
+                      <Link
+                        to={`/orders/${task.orderId}`}
+                        style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}
                       >
-                        {task.garmentName?.charAt(0) || '?'}
-                      </Avatar>
-                      <Typography variant="body2">{task.fabricName || '--'}</Typography>
-                    </Stack>
-                  </TableCell>
-                  <TableCell>{formatTableDate(task.startDate)}</TableCell>
-                  <TableCell sx={{ color: atRisk ? 'error.main' : 'text.primary', fontWeight: atRisk ? 700 : 400 }}>
-                    {formatTableDate(task.deadline)}
-                  </TableCell>
-                  <TableCell>
-                    {task.tailorEmail ? (
-                      <Chip 
-                        label={task.tailorEmail.split('@')[0]} 
-                        size="small" 
-                        variant="outlined" 
-                        sx={{ 
-                          borderRadius: 2,
-                          fontWeight: 600,
-                          textTransform: 'capitalize'
-                        }} 
+                        <Box sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          bgcolor: atRisk ? 'error.main' : 'success.main'
+                        }} />
+                        <Typography variant="body2" sx={{ fontWeight: 900, color: 'text.primary' }}>
+                          #{task.orderNumber}
+                        </Typography>
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Avatar
+                          src={task.fabric_image_base64}
+                          variant="rounded"
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '10px',
+                            bgcolor: stringToColor(task.garmentName || 'G'),
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.05)'
+                          }}
+                        >
+                          {task.garmentName?.charAt(0)}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 800, lineHeight: 1.2 }}>{task.customerName}</Typography>
+                          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>{task.garmentName}</Typography>
+                        </Box>
+                      </Stack>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={task.stageName}
+                        size="small"
+                        sx={{
+                          fontWeight: 800,
+                          color: statusStyle.color,
+                          bgcolor: statusStyle.bgColor,
+                          borderRadius: '8px',
+                          px: 0.5
+                        }}
                       />
-                    ) : (
-                      <Typography variant="caption" color="text.secondary">Unassigned</Typography>
-                    )}
-                  </TableCell>
-                  <TableCell align="right">
-                    <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-                      <Tooltip title="View Order Command Center">
-                        <IconButton size="small" onClick={() => navigate(`/orders/${task.orderId}`)}>
-                          <VisibilityIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Quick Update (Status & Tailor)">
-                        <IconButton size="small" onClick={() => setQuickUpdateTask(task)}>
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Share Link">
-                        <IconButton size="small">
-                          <ShareIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Stack>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-        
-        {/* Pagination */}
-        <TablePagination
-          rowsPerPageOptions={[10, 25, 50]}
-          component="div"
-          count={filteredTasks.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          sx={{ borderTop: '1px solid', borderColor: 'divider' }}
-        />
-      </TableContainer>
+                    </TableCell>
+                    <TableCell>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: atRisk ? 'error.main' : 'text.primary' }}>
+                          {formatTableDate(task.deadline)}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                          Started {formatTableDate(task.startDate)}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {task.tailorEmail ? (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Avatar sx={{ width: 24, height: 24, fontSize: 10, bgcolor: 'primary.main', fontWeight: 700 }}>
+                            {task.tailorEmail[0].toUpperCase()}
+                          </Avatar>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{task.tailorEmail.split('@')[0]}</Typography>
+                        </Stack>
+                      ) : (
+                        <Typography variant="caption" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>Awaiting Assignment</Typography>
+                      )}
+                    </TableCell>
+                    <TableCell align="right">
+                      <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        <Tooltip title="Command Center">
+                          <IconButton size="small" onClick={() => navigate(`/orders/${task.orderId}`)} sx={{ bgcolor: alpha('#000', 0.02) }}>
+                            <VisibilityIcon fontSize="small" sx={{ color: 'text.secondary' }} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Quick Update">
+                          <IconButton size="small" onClick={() => setQuickUpdateTask(task)} sx={{ bgcolor: alpha('#c49a1a', 0.05), color: 'secondary.main' }}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
 
-      {/* Execution Dialog */}
-      <ExecutionDialog
-        task={selectedTask}
-        onClose={() => setSelectedTask(null)}
-      />
+          <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid', borderColor: 'divider' }}>
+            <TablePagination
+              rowsPerPageOptions={[10, 25, 50]}
+              component="div"
+              count={filteredTasks.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{ border: 'none' }}
+            />
+          </Box>
+        </TableContainer>
+      </Box>
 
-      {/* Quick Update Modal */}
-      <QuickUpdateModal
-        task={quickUpdateTask}
-        onClose={() => setQuickUpdateTask(null)}
-      />
+      {/* Modals & Dialogs */}
+      <ExecutionDialog task={selectedTask} onClose={() => setSelectedTask(null)} />
+      <QuickUpdateModal task={quickUpdateTask} onClose={() => setQuickUpdateTask(null)} />
     </Box>
   );
 }
