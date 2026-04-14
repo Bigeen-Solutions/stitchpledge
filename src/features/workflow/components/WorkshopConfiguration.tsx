@@ -199,7 +199,7 @@ export function WorkshopConfiguration() {
                   }}
                 >
                   <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
-                    {(selectedTemplate?.requiredMeasurements || []).map((m: string) => (
+                    {(Array.isArray(selectedTemplate?.requiredMeasurements) ? selectedTemplate.requiredMeasurements : []).map((m: string) => (
                       <Chip 
                         key={m} 
                         label={m} 
@@ -214,7 +214,7 @@ export function WorkshopConfiguration() {
                         }} 
                       />
                     ))}
-                    {(selectedTemplate?.requiredMeasurements || []).length === 0 && (
+                    {(Array.isArray(selectedTemplate?.requiredMeasurements) ? selectedTemplate.requiredMeasurements : []).length === 0 && (
                       <Typography variant="caption" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>
                         No required measurements defined.
                       </Typography>

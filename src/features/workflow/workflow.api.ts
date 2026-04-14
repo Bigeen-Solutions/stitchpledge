@@ -66,7 +66,7 @@ export interface ActiveFloorTask {
 
 export const workflowApi = {
   getGarmentWorkflow: async (garmentId: string) => {
-    const { data } = await apiClient.get<GarmentWorkflowResponse>(`/garments/${garmentId}/workflow`);
+    const { data } = await apiClient.get<GarmentWorkflowResponse>(`/workflows/garments/${garmentId}/workflow`);
     return data;
   },
   
@@ -76,22 +76,22 @@ export const workflowApi = {
   },
 
   getTemplates: async () => {
-    const { data } = await apiClient.get<WorkflowTemplate[]>('/workflow-templates');
+    const { data } = await apiClient.get<WorkflowTemplate[]>('/workflows/templates');
     return data;
   },
 
   createTemplate: async (name: string, description?: string) => {
-    const { data } = await apiClient.post<WorkflowTemplate>('/workflow-templates', { name, description });
+    const { data } = await apiClient.post<WorkflowTemplate>('/workflows/templates', { name, description });
     return data;
   },
 
   getTemplateStages: async (templateId: string) => {
-    const { data } = await apiClient.get<WorkflowNode[]>(`/workflow-templates/${templateId}/stages`);
+    const { data } = await apiClient.get<WorkflowNode[]>(`/workflows/templates/${templateId}/stages`);
     return data;
   },
 
   addTemplateStage: async (templateId: string, name: string, estimatedDuration: number) => {
-    const { data } = await apiClient.post(`/workflow-templates/${templateId}/stages`, {
+    const { data } = await apiClient.post(`/workflows/templates/${templateId}/stages`, {
       name,
       estimated_duration_hours: estimatedDuration
     });
