@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCustomers } from '../features/customers/hooks/useCustomers';
+import { useCustomers, useCreateCustomer } from '../features/customers/hooks/useCustomers';
 import { ErrorState } from '../components/feedback/ErrorState';
+import { useToastStore } from '../components/feedback/Toast';
 import { 
   CircularProgress, Typography, Box, List, ListItemAvatar, 
   Avatar, ListItemText, Card, InputAdornment, TextField, IconButton, 
-  Stack, Chip, alpha, ListItemButton
+  Stack, Chip, alpha, ListItemButton, Dialog, DialogTitle, DialogContent, DialogActions, Button
 } from '@mui/material';
 import { 
   Search as SearchIcon, 
@@ -21,6 +22,29 @@ export function CustomersPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const limit = 10;
+
+  const showToast = useToastStore((state) => state.showToast);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newCustomerForm, setNewCustomerForm] = useState({ name: '', phone: '', email: '' });
+  
+  const createMutation = useCreateCustomer();
+
+  const handleCreateCustomer = async () => {
+    if (!newCustomerForm.name.trim()) {
+      showToast("Validation Error", "Client name is required.", "error");
+      return;
+    }
+    
+    try {
+      const newCustomer = await createMutation.mutateAsync(newCustomerForm);
+      showToast("Client Created", `${newCustomerForm.name} has been added to the system.`, "success");
+      setIsAddModalOpen(false);
+      setNewCustomerForm({ name: '', phone: '', email: '' });
+      navigate(`/customers/${newCustomer.id}`);
+    } catch (err: any) {
+      showToast("Creation Failed", err.message || "Failed to create customer.", "error");
+    }
+  };
 
   // Debounce logic
   useEffect(() => {
@@ -96,7 +120,7 @@ export function CustomersPage() {
           </Typography>
         </div>
         <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-          <button className="btn btn-primary" onClick={() => alert('New Client coming soon!')}>
+          <button className="btn btn-primary" onClick={() => setIsAddModalOpen(true)}>
             + New Client
           </button>
         </Box>
@@ -242,10 +266,63 @@ export function CustomersPage() {
 
       {/* Floating Action Button - Mobile Only */}
       <div className="fab-container desktop-hide">
-        <div className="fab-main" onClick={() => alert('New Client coming soon!')}>
+        <div className="fab-main" onClick={() => setIsAddModalOpen(true)}>
           <AddIcon />
         </div>
       </div>
+
+      {/* NEW CLIENT MODAL */}
+      <Dialog 
+        open={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: '24px', p: 2 }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800 }}>Add New Client</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+            Enter the client's contact details. You can add measurements to their profile afterwards.
+          </Typography>
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            <TextField
+              label="Full Name"
+              required
+              fullWidth
+              value={newCustomerForm.name}
+              onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
+            />
+            <TextField
+              label="Phone Number"
+              fullWidth
+              type="tel"
+              value={newCustomerForm.phone}
+              onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
+            />
+            <TextField
+              label="Email Address"
+              fullWidth
+              type="email"
+              value={newCustomerForm.email}
+              onChange={(e) => setNewCustomerForm({ ...newCustomerForm, email: e.target.value })}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setIsAddModalOpen(false)} sx={{ color: 'text.secondary' }}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleCreateCustomer}
+            disabled={createMutation.isPending || !newCustomerForm.name.trim()}
+            sx={{ borderRadius: '12px', px: 4, fontWeight: 700 }}
+          >
+            {createMutation.isPending ? 'Saving...' : 'Create Profile'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
