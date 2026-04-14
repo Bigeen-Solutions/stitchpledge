@@ -45,9 +45,8 @@ const navItems = [
   { label: 'Production', icon: ScissorsIcon, path: '/production', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
   { label: 'Customers', icon: Users, path: '/customers', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Inventory', icon: ClipboardList, path: '/inventory', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
-  { label: 'Measurements', icon: Ruler, path: '/customers', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'], isBeta: true },
   { label: 'Payments', icon: CreditCard, path: '/payments', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'], isBeta: true },
-  { label: 'Staff / Tailors', icon: UserCog, path: '/staff', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
+  { label: 'Staff Management', icon: UserCog, path: '/staff', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Reports', icon: BarChart2, path: '/reports', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
 ];
 
@@ -62,7 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
     if (isMobile) onClose();
   };
 
-  const filteredNavItems = navItems.filter(item => 
+  const filteredNavItems = navItems.filter(item =>
     !item.roles || (user?.role && item.roles.includes(user.role))
   );
 
@@ -105,19 +104,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
                 <ListItemText
                   primary={
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <Typography sx={{ 
-                        fontSize: '13px', 
+                      <Typography sx={{
+                        fontSize: '13px',
                         fontWeight: isActive ? 600 : 400,
                         color: isActive ? 'white' : alpha('#ffffff', 0.6),
                       }}>
                         {item.label}
                       </Typography>
                       {(item as any).isBeta && (
-                        <Box sx={{ 
-                          px: 0.6, 
-                          py: 0.1, 
-                          borderRadius: '4px', 
-                          bgcolor: alpha('#c49a1a', 0.15), 
+                        <Box sx={{
+                          px: 0.6,
+                          py: 0.1,
+                          borderRadius: '4px',
+                          bgcolor: alpha('#c49a1a', 0.15),
                           color: 'var(--color-warning)',
                           fontSize: '8px',
                           fontWeight: 900,
@@ -150,18 +149,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
                   '&:hover': { bgcolor: alpha('#ffffff', 0.07) },
                 }}
               >
-                <ListItemIcon sx={{ 
-                  minWidth: 40, 
-                  color: location.pathname === '/settings' ? 'white' : alpha('#ffffff', 0.6) 
+                <ListItemIcon sx={{
+                  minWidth: 40,
+                  color: location.pathname === '/settings' ? 'white' : alpha('#ffffff', 0.6)
                 }}>
                   <Settings sx={{ fontSize: 20 }} />
                 </ListItemIcon>
                 <ListItemText
                   primary="Settings"
-                  primaryTypographyProps={{ 
-                    fontSize: '14px', 
+                  primaryTypographyProps={{
+                    fontSize: '14px',
                     fontWeight: location.pathname === '/settings' ? 600 : 400,
-                    color: location.pathname === '/settings' ? 'white' : alpha('#ffffff', 0.6) 
+                    color: location.pathname === '/settings' ? 'white' : alpha('#ffffff', 0.6)
                   }}
                 />
               </ListItemButton>

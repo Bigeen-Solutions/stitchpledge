@@ -337,7 +337,7 @@ export const AdminDashboard: React.FC = () => {
               label="COMPLETED"
               value={stats.completedOrders}
               icon={Check}
-              trend={{ value: 'Daily', type: 'neutral' }}
+              trend={{ value: 'System', type: 'neutral' }}
               delay="200ms"
               variant="amber"
             />
