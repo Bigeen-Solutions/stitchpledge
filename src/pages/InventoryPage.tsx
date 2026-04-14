@@ -136,8 +136,8 @@ export function InventoryPage() {
       ) : (
         <section className="sf-card sf-glass" style={{ padding: 'var(--space-lg)' }}>
           <WorkshopTable headers={['Material Name', 'SKU', 'Total Ledger', 'Reserved', 'Available', 'Actions']}>
-            {inventory?.map((item) => (
-              <tr key={item.materialId}>
+            {inventory?.map((item, index) => (
+              <tr key={`${item.materialId}-${index}`}>
                 <td>
                   <Stack direction="row" spacing={2} alignItems="center">
                     {item.imageUrl ? (

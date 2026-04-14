@@ -115,7 +115,7 @@ const AuditLogPage: React.FC = () => {
             ) : (
               events.map((event, index) => (
                 <TableRow 
-                  key={event.id || index} 
+                  key={`${event.id || 'evt'}-${index}`} 
                   hover
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >

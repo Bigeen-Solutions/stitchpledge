@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
-import { CircularProgress, Box, Typography } from '@mui/material';
+import { CircularProgress, Typography } from '@mui/material';
 import { CapacityBanner } from '../features/orders/components/CapacityBanner.tsx';
 import { OrdersList } from '../features/orders/components/OrdersList.tsx';
 import { UrgentGarments } from '../features/orders/components/UrgentGarments.tsx';

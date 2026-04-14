@@ -198,9 +198,9 @@ export function OrderDetailPage() {
             <Card className="sf-card" sx={{ p: 3, borderRadius: 3 }}>
               <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Garment Inventory</Typography>
               <Stack spacing={1} sx={{ mb: 3 }}>
-                {garments?.map((garment) => (
+                {garments?.map((garment, index) => (
                   <Button
-                    key={garment.id}
+                    key={`${garment.id}-${index}`}
                     fullWidth
                     onClick={() => setSelectedGarmentId(garment.id)}
                     sx={{

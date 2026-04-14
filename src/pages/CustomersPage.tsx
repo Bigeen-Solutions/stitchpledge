@@ -4,7 +4,7 @@ import { useCustomers } from '../features/customers/hooks/useCustomers';
 import { WorkshopTable } from '../components/ui/WorkshopTable';
 import { WorkshopTableSkeleton } from '../components/ui/WorkshopTableSkeleton';
 import { ErrorState } from '../components/feedback/ErrorState';
-import { CircularProgress, Typography, Box } from '@mui/material';
+import { CircularProgress, Typography } from '@mui/material';
 import { usePullToRefresh } from '../hooks/usePullToRefresh.ts';
 
 export function CustomersPage() {
@@ -119,8 +119,8 @@ export function CustomersPage() {
         ) : (
           <>
             <WorkshopTable headers={['Name', 'Contact Info', 'Total Orders', 'Last Active', 'Actions']}>
-              {data?.items.map((customer) => (
-                <tr key={customer.id}>
+              {data?.items.map((customer, index) => (
+                <tr key={`${customer.id}-${index}`}>
                   <td>
                     <div className="font-bold text-black">{customer.name}</div>
                     <div className="text-xs text-black opacity-60">ID: {customer.id.split('-')[0]}</div>

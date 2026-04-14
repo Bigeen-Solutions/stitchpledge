@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Stack, alpha } from '@mui/material';
+import { Box, Typography, Stack } from '@mui/material';
 import { RiskBadge, type RiskLevel } from '../../../components/ui/RiskBadge.tsx';
 import { truncateId, safeFormatDistanceToNow } from '../../../utils/format.ts';
 

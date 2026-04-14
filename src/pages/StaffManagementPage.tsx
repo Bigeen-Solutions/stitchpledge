@@ -74,8 +74,8 @@ export function StaffManagementPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {staff?.map((member) => (
-                    <tr key={member.id}>
+                  {staff?.map((member, index) => (
+                    <tr key={`${member.id}-${index}`}>
                       <td>
                         <div className="flex items-center gap-xs">
                           <div

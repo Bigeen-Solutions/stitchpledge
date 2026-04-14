@@ -30,7 +30,7 @@ interface MoreDrawerProps {
 
 export const MoreDrawer: React.FC<MoreDrawerProps> = ({ open, onClose, onOpen }) => {
   const navigate = useNavigate();
-  const { logout, user } = useAuthStore();
+  const { clearAuth, user } = useAuthStore();
 
   const menuItems = [
     { label: 'Reports', icon: BarChartIcon, path: '/reports', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
@@ -49,7 +49,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({ open, onClose, onOpen })
   };
 
   const handleLogout = () => {
-    logout();
+    clearAuth();
     onClose();
     navigate('/login');
   };

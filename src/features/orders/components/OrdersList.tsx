@@ -63,9 +63,9 @@ export function OrdersList() {
               No orders found matching the selected filter.
             </Typography>
           ) : (
-            filteredItems?.map(order => (
+            filteredItems?.map((order, index) => (
               <OrderEntryItem 
-                key={order.id} 
+                key={`${order.id}-${index}`} 
                 order={order} 
                 onClick={() => navigate(`/orders/${order.id}`)}
               />

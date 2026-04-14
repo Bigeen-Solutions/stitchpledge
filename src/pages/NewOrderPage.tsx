@@ -16,7 +16,6 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-  IconButton,
   alpha,
   Dialog
 } from "@mui/material";
@@ -26,9 +25,6 @@ import {
   BusinessCenter as SuitIcon,
   Checkroom as ShirtIcon,
   Straighten as TrousersIcon,
-  ArrowForward as ArrowForwardIcon,
-  ArrowBack as ArrowBackIcon,
-  Delete as DeleteIcon,
   EmojiEvents as EventIcon,
   TipsAndUpdates as IntelIcon
 } from "@mui/icons-material";
@@ -567,7 +563,7 @@ export function NewOrderPage() {
                   pb: { xs: 'calc(16px + env(safe-area-inset-bottom, 16px))', md: 0 }
                 }}
               >
-                <Button onClick={() => setStep("SELECT_STORE")} sx={{ color: 'text.primary' }}>Back</Button>
+                <Button onClick={() => setStep("CLIENT_SELECTION")} sx={{ color: 'text.primary' }}>Back</Button>
                 <Button
                   variant="contained"
                   disabled={!selectedCustomer && !newCustomer.name}

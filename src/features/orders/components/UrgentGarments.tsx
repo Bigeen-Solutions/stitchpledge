@@ -25,8 +25,8 @@ export function UrgentGarments() {
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
         gap: 'var(--space-md)' 
       }}>
-        {urgentGarments.map(garment => (
-          <div key={garment.garmentId} className="sf-card urgent-card" style={{
+        {urgentGarments.map((garment, index) => (
+          <div key={`${garment.garmentId}-${index}`} className="sf-card urgent-card" style={{
             borderLeft: `4px solid var(--risk-${garment.riskLevel.toLowerCase()})`,
             padding: 'var(--space-md)',
             position: 'relative',
