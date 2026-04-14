@@ -12,7 +12,7 @@ export function UrgentGarments() {
 
   return (
     <section className="mb-lg">
-      <div className="flex justify-between items-center mb-md">
+      <div className="urgent-header flex justify-between items-center mb-md">
         <h2 className="text-h2" style={{ color: 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
           <span className="pulse-dot"></span>
           High-Risk Production Focus
@@ -40,7 +40,7 @@ export function UrgentGarments() {
               <RiskBadge level={garment.riskLevel} />
             </div>
             
-            <div className="mt-md flex justify-between items-end">
+            <div className="urgent-card-footer mt-md flex justify-between items-end">
               <div>
                 <p className="text-sm text-secondary">{garment.customerName}</p>
                 <div className="deadline-dominant" style={{ fontSize: '1.25rem', marginTop: 'var(--space-xs)' }}>
@@ -48,7 +48,7 @@ export function UrgentGarments() {
                 </div>
               </div>
               <button 
-                className="text-button" 
+                className="text-button urgent-start-btn" 
                 style={{ fontWeight: 700 }}
                 onClick={() => navigate(`/orders/${garment.orderId}`, { state: { targetGarmentId: garment.garmentId } })}
               >
@@ -95,6 +95,26 @@ export function UrgentGarments() {
         .urgent-card:hover {
           transform: translateY(-2px);
           box-shadow: var(--shadow-md);
+        }
+
+        @media (max-width: 768px) {
+          .urgent-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: var(--space-sm);
+          }
+          .urgent-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .urgent-card-footer {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: var(--space-sm);
+          }
+          .urgent-start-btn {
+            font-size: 0.75rem !important;
+            align-self: flex-start;
+          }
         }
       `}</style>
     </section>

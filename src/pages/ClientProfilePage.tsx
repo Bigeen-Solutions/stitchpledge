@@ -32,6 +32,8 @@ import { truncateId, safeFormatDistanceToNow, safeLocaleDate } from '../utils/fo
 import { OrderEntryItem } from '../features/orders/components/OrderEntryItem';
 import { Timeline, TimelineItem } from '../components/timeline/Timeline';
 
+import './styles/client-profile.css';
+
 const DEFAULT_MEASUREMENT_KEYS = [
   'Neck', 'Chest', 'Waist', 'Hips', 'Shoulder', 'Sleeve', 'Inseam', 'Outseam'
 ];
@@ -97,29 +99,29 @@ export function ClientProfilePage() {
           component={Link} 
           to="/customers" 
           startIcon={<ArrowBackIcon />}
-          sx={{ color: 'text.secondary', textTransform: 'none' }}
+          sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 600 }}
         >
           Back to Clients
         </Button>
       </Stack>
 
-      <header style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <Box component="header" className="client-profile-header">
         <Box>
-          <Typography variant="h3" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>
+          <Typography variant="h3" sx={{ fontWeight: 800, color: 'text.primary', mb: 1, wordBreak: 'break-word', letterSpacing: '-1px' }}>
             {customer.name}
           </Typography>
-          <Stack direction="row" spacing={2} sx={{ color: 'text.secondary' }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }} sx={{ color: 'text.secondary' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <EmailIcon sx={{ fontSize: 16 }} />
-              <Typography variant="body2">{customer.email || 'No email'}</Typography>
+              <Typography variant="body2" sx={{ wordBreak: 'break-all', fontWeight: 500 }}>{customer.email || 'No email'}</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <PhoneIcon sx={{ fontSize: 16 }} />
-              <Typography variant="body2">{customer.phone || 'No phone'}</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>{customer.phone || 'No phone'}</Typography>
             </Box>
           </Stack>
         </Box>
-        <Stack direction="row" spacing={2}>
+        <Stack direction="row" spacing={2} className="client-profile-actions">
           <Button 
             variant="contained" 
             color="primary"
@@ -139,35 +141,35 @@ export function ClientProfilePage() {
             Record New Measurement
           </Button>
         </Stack>
-      </header>
+      </Box>
 
       <Grid container spacing={4}>
         {/* LEFT PANEL: Info Card */}
         <Grid size={{ xs: 12, md: 4 }}>
-          <Card className="sf-card" sx={{ p: 4, height: '100%', borderRadius: '24px' }}>
+          <Card className="sf-card client-info-card">
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
               <PersonIcon color="secondary" /> Client Context
             </Typography>
             <Stack spacing={3}>
               <Box>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase' }}>Secure System Identifier</Typography>
-                <Typography variant="body1" sx={{ fontFamily: 'monospace', bgcolor: alpha('#1e5c3a', 0.05), p: 1, borderRadius: '8px', mt: 0.5, color: 'primary.dark', fontWeight: 700 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>Secure System Identifier</Typography>
+                <Box className="system-id-box">
                   {truncateId(customer.id).toUpperCase()}
-                </Typography>
+                </Box>
               </Box>
               <Box>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase' }}>Account Created</Typography>
-                <Typography variant="body1">{new Date(customer.createdAt).toLocaleDateString()}</Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>Account Created</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>{new Date(customer.createdAt).toLocaleDateString()}</Typography>
               </Box>
               <Box>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase' }}>Measurement Status</Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>Measurement Status</Typography>
                 <Box sx={{ mt: 1 }}>
                   {latestMeasurement ? (
-                    <Box component="span" sx={{ px: 1.5, py: 0.5, bgcolor: alpha('#1e5c3a', 0.1), color: 'primary.main', borderRadius: 'pill', fontSize: '0.75rem', fontWeight: 700 }}>
+                    <Box component="span" sx={{ px: 1.5, py: 0.5, bgcolor: alpha('#1e5c3a', 0.1), color: 'primary.main', borderRadius: 'pill', fontSize: '0.75rem', fontWeight: 800 }}>
                       VERSION {latestMeasurement.versionNumber} ACTIVE
                     </Box>
                   ) : (
-                    <Box component="span" sx={{ px: 1.5, py: 0.5, bgcolor: alpha('#7f1d1d', 0.1), color: '#d32f2f', borderRadius: 'pill', fontSize: '0.75rem', fontWeight: 700 }}>
+                    <Box component="span" sx={{ px: 1.5, py: 0.5, bgcolor: alpha('#7f1d1d', 0.1), color: '#d32f2f', borderRadius: 'pill', fontSize: '0.75rem', fontWeight: 800 }}>
                       NO MEASUREMENTS ON FILE
                     </Box>
                   )}
@@ -179,7 +181,7 @@ export function ClientProfilePage() {
 
         {/* CENTER PANEL: Measurements Grid */}
         <Grid size={{ xs: 12, md: 8 }}>
-          <Card className="sf-glass" sx={{ p: 4, borderRadius: '24px', position: 'relative', overflow: 'hidden' }}>
+          <Card className="sf-glass measurement-grid-card">
             <Box sx={{ position: 'absolute', top: -20, right: -20, opacity: 0.05 }}>
               <MeasurementsIcon sx={{ fontSize: 150 }} />
             </Box>
@@ -197,8 +199,8 @@ export function ClientProfilePage() {
               <Grid container spacing={3}>
                 {Object.entries(latestMeasurement.measurements).map(([key, value]) => (
                   <Grid size={{ xs: 6, sm: 4, lg: 3 }} key={key}>
-                    <Box sx={{ p: 2, bgcolor: alpha('#fff', 0.5), borderRadius: '12px', border: '1px solid', borderColor: alpha('#000', 0.05) }}>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block' }}>{key}</Typography>
+                    <Box className="measurement-point">
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block', textTransform: 'uppercase', fontSize: '10px' }}>{key}</Typography>
                       <Typography variant="h5" sx={{ fontWeight: 800 }}>{value}<small style={{ fontSize: '0.6em', opacity: 0.5, marginLeft: 2 }}>cm</small></Typography>
                     </Box>
                   </Grid>
@@ -207,7 +209,7 @@ export function ClientProfilePage() {
             )}
             
             {latestMeasurement && (
-              <Typography variant="caption" sx={{ display: 'block', mt: 4, textAlign: 'right', color: 'text.secondary' }}>
+              <Typography variant="caption" sx={{ display: 'block', mt: 4, textAlign: 'right', color: 'text.secondary', fontWeight: 500 }}>
                 Last updated: {safeLocaleDate(latestMeasurement.createdAt)}
               </Typography>
             )}

@@ -7,9 +7,14 @@ import { OrderEntryItem } from './OrderEntryItem.tsx';
 import { useNavigate } from 'react-router-dom';
 import { Box, Stack, Typography } from '@mui/material';
 
+import '../styles/orders.css';
+
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+
 export function OrdersList() {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
+  const [filter, setFilter] = useState('ALL');
   const [editingOrder, setEditingOrder] = useState<any>(null);
 
   const { data: orders, isLoading, isError, error, refetch } = useOrders(page, 10);
@@ -17,9 +22,9 @@ export function OrdersList() {
   if (isLoading) {
     return (
       <div className="orders-ledger">
-        <div className="flex justify-between items-center mb-md px-md">
-          <h2 className="text-h2">Active Order Overview</h2>
-          <div className="text-sm text-black">Synchronizing Order Ledger...</div>
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-md px-md gap-xs md:gap-0">
+          <h2 className="text-h2 ledger-title">Active Order Overview</h2>
+          <div className="text-xs md:text-sm text-black">Synchronizing Order Ledger...</div>
         </div>
         <WorkshopTableSkeleton headers={['Order #', 'Customer', 'Garment', 'Deadline', 'Risk State']} />
       </div>
@@ -36,21 +41,29 @@ export function OrdersList() {
     );
   }
 
+  const filteredItems = orders?.items?.filter(order => {
+    if (filter === 'ALL') return true;
+    if (filter === 'AT_RISK') return order.riskLevel === 'AT_RISK';
+    if (filter === 'OVERDUE') return order.riskLevel === 'OVERDUE';
+    if (filter === 'COMPLETED') return order.status === 'COMPLETED';
+    return true;
+  });
+
   return (
     <div className="orders-ledger">
-      <div className="flex justify-between items-center mb-md px-md">
-        <h2 className="text-h2">Production Ledger</h2>
-        <div className="text-sm text-black">High-fidelity projection of workshop workload</div>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-md px-md gap-xs md:gap-0">
+        <h2 className="text-h2 ledger-title">Production Ledger</h2>
+        <div className="text-xs md:text-sm text-black">High-fidelity projection of workshop workload</div>
       </div>
       
-      <Box sx={{ px: 2, mb: 4 }}>
+      <Box sx={{ mb: 4 }}>
         <Stack spacing={0}>
-          {orders?.items?.length === 0 ? (
+          {filteredItems?.length === 0 ? (
             <Typography variant="body2" sx={{ color: 'text.secondary', p: 4, textAlign: 'center' }}>
-              No orders found in the ledger.
+              No orders found matching the selected filter.
             </Typography>
           ) : (
-            orders?.items?.map(order => (
+            filteredItems?.map(order => (
               <OrderEntryItem 
                 key={order.id} 
                 order={order} 
@@ -61,24 +74,48 @@ export function OrdersList() {
         </Stack>
       </Box>
 
-      <div className="flex justify-between items-center" style={{ marginTop: 'var(--space-md)', padding: '0 var(--space-md)' }}>
+      <div className="pagination-footer flex justify-between items-center">
         <button 
-          className="btn btn-secondary text-sm" 
+          className="btn btn-secondary pagination-btn responsive-btn" 
           disabled={page === 1}
           onClick={() => setPage(p => p - 1)}
         >
-          &larr; Previous
+          <span className="btn-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <ChevronLeft sx={{ fontSize: 18 }} /> Previous
+          </span>
+          <span className="btn-icon">
+            <ChevronLeft sx={{ fontSize: 24 }} />
+          </span>
         </button>
-        <span className="text-sm font-medium text-muted">
-          Page {page} of {orders?.totalPages || 1}
+        <span className="text-sm font-bold text-muted pagination-text">
+          PAGE {page} / {orders?.totalPages || 1}
         </span>
         <button 
-          className="btn btn-secondary text-sm"
+          className="btn btn-secondary pagination-btn responsive-btn"
           disabled={!orders?.totalPages || page === orders.totalPages}
           onClick={() => setPage(p => p + 1)}
         >
-          Next &rarr;
+          <span className="btn-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            Next <ChevronRight sx={{ fontSize: 18 }} />
+          </span>
+          <span className="btn-icon">
+            <ChevronRight sx={{ fontSize: 24 }} />
+          </span>
         </button>
+      </div>
+
+      <div className="mobile-filter-container">
+        <div className="filter-scroll">
+          {['ALL', 'AT_RISK', 'OVERDUE', 'COMPLETED'].map((f) => (
+            <div 
+              key={f} 
+              className={`mobile-filter-chip ${filter === f ? 'active' : ''}`}
+              onClick={() => setFilter(f)}
+            >
+              {f.replace('_', ' ')}
+            </div>
+          ))}
+        </div>
       </div>
 
       {editingOrder && (
@@ -88,25 +125,6 @@ export function OrdersList() {
           order={editingOrder} 
         />
       )}
-
-      <style>{`
-        .ledger-row {
-          transition: background-color 0.2s ease;
-        }
-        .ledger-row.risk-overdue {
-          background-color: rgba(220, 38, 38, 0.02);
-        }
-        .ledger-row.risk-atrisk {
-          background-color: rgba(245, 158, 11, 0.02);
-        }
-        .ledger-row:hover {
-          background-color: var(--color-bg) !important;
-        }
-        .deadline-dominant {
-          font-family: 'Outfit', sans-serif;
-          letter-spacing: -0.02em;
-        }
-      `}</style>
     </div>
   );
 }

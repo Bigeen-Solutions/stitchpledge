@@ -4,9 +4,11 @@
 @import './design-system/tokens.css';
 @import './design-system/typography.css';
 @import './design-system/layout.css';
+@import './components/layout/layout.css';
 
 /* Component Styles */
 @import './design-system/components/button.css';
+@import './design-system/components/responsive.css';
 @import './design-system/components/card.css';
 @import './design-system/components/badge.css';
 @import './design-system/components/timeline.css';

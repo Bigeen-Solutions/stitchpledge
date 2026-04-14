@@ -1,0 +1,33 @@
+/* src/design-system/components/responsive.css */
+
+.responsive-btn .btn-icon {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  /* Very aggressive selector to beat MUI internal nesting */
+  .responsive-btn span.btn-label,
+  .responsive-btn .btn-label,
+  .responsive-btn [class*="btn-label"] {
+    display: none !important;
+  }
+  
+  .responsive-btn span.btn-icon,
+  .responsive-btn .btn-icon,
+  .responsive-btn [class*="btn-icon"] {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Make icon buttons touch-friendly on mobile */
+  .responsive-btn {
+    min-width: 44px !important;
+    width: 44px !important;
+    height: 44px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+}

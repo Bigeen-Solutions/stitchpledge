@@ -54,34 +54,40 @@ export const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isSidebarOpen }) 
 
   return (
     <AppBar
-      position="sticky"
+      position="fixed"
       elevation={0}
+      className="top-bar"
       sx={{
-        bgcolor: '#fafaf8',
-        borderBottom: '1px solid #e5e4e0',
-        color: '#1a2340',
         zIndex: (theme) => theme.zIndex.drawer + 1,
+        width: { 
+          xs: '100%', 
+          sm: isSidebarOpen ? 'calc(100% - 240px)' : '100%' 
+        },
+        ml: { 
+          xs: 0, 
+          sm: isSidebarOpen ? '240px' : 0 
+        },
       }}
     >
-      <Toolbar sx={{ height: 64, px: { xs: 1, md: 3 } }}>
+      <Toolbar className="top-bar-toolbar">
         {!isSidebarOpen && (
           <IconButton
             onClick={toggleSidebar}
             edge="start"
-            sx={{ mr: 2, color: '#1a2340' }}
+            sx={{ mr: 2, color: 'var(--color-text-primary)' }}
           >
             <MenuIcon sx={{ fontSize: 24 }} />
           </IconButton>
         )}
 
-        <Typography variant="h6" sx={{ fontWeight: 600, flexGrow: 1 }}>
+        <Typography variant="h6" sx={{ fontWeight: 800, flexGrow: 1, letterSpacing: '-0.5px' }}>
           Dashboard
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 } }}>
           {isAdmin && (
             <Chip
-              icon={<Calendar sx={{ fontSize: 16, color: '#c49a1a !important' }} />}
+              icon={<Calendar sx={{ fontSize: 16, color: 'var(--color-warning) !important' }} />}
               label={new Date().toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 month: 'long', 
@@ -90,49 +96,51 @@ export const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isSidebarOpen }) 
               })}
               variant="outlined"
               sx={{
-                display: { xs: 'none', sm: 'flex' },
-                borderColor: '#c49a1a',
-                color: '#1a2340',
-                fontWeight: 500,
+                display: { xs: 'none', lg: 'flex' },
+                borderColor: 'var(--color-warning)',
+                color: 'var(--color-text-primary)',
+                fontWeight: 600,
                 height: 36,
                 borderRadius: '8px',
               }}
             />
           )}
 
-          <IconButton size="small" sx={{ color: '#6b7280' }}>
+          <IconButton size="small" sx={{ color: 'var(--color-text-secondary)' }}>
             <Badge variant="dot" color="error">
               <Bell sx={{ fontSize: 20 }} />
             </Badge>
           </IconButton>
 
-          <IconButton size="small" sx={{ color: '#6b7280', display: { xs: 'none', sm: 'flex' } }}>
+          <IconButton size="small" sx={{ color: 'var(--color-text-secondary)', display: { xs: 'none', sm: 'flex' } }}>
             <HelpCircle sx={{ fontSize: 20 }} />
           </IconButton>
 
           {isAdmin && (
             <Button
               variant="contained"
-              startIcon={<Download sx={{ fontSize: 18 }} />}
+              className="btn btn-primary responsive-btn"
+              onClick={() => { /* Export logic */ }}
               sx={{
-                display: { xs: 'none', md: 'flex' },
-                bgcolor: '#1e5c3a',
                 height: 36,
-                borderRadius: '8px',
                 textTransform: 'none',
-                fontWeight: 600,
                 boxShadow: 'none',
-                '&:hover': { bgcolor: '#256b45', boxShadow: 'none' },
+                '&:hover': { boxShadow: 'none' },
               }}
             >
-              Export Report
+              <span className="btn-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Download sx={{ fontSize: 18 }} /> Export Report
+              </span>
+              <span className="btn-icon">
+                <Download sx={{ fontSize: 22 }} />
+              </span>
             </Button>
           )}
 
           <IconButton onClick={handleProfileClick} sx={{ p: 0.5 }}>
             <Avatar
               src={user?.avatarUrl}
-              sx={{ width: 36, height: 36, bgcolor: '#1e5c3a' }}
+              sx={{ width: 36, height: 36, bgcolor: 'var(--color-primary)' }}
             >
               {user?.fullName?.charAt(0)}
             </Avatar>

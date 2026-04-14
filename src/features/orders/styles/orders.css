@@ -1,0 +1,190 @@
+/* src/features/orders/styles/orders.css */
+
+.ledger-title {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.order-entry-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-card);
+  margin-bottom: var(--space-md);
+  overflow: hidden;
+}
+
+.order-entry-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  box-shadow: 0 8px 30px rgba(30, 92, 58, 0.12);
+  background: white;
+}
+
+/* Desktop: Row Layout */
+@media (min-width: 769px) {
+  .order-entry-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+  }
+  
+  .desktop-hide { display: none; }
+}
+
+/* Mobile: Card Stack Layout */
+@media (max-width: 768px) {
+  .order-entry-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .card-top {
+    padding: var(--space-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+
+  .card-body {
+    padding: var(--space-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-footer {
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(0,0,0,0.02);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .mobile-hide { display: none; }
+
+  .orders-ledger {
+    padding-bottom: 120px !important;
+    transition: padding 0.3s ease;
+  }
+
+  .pagination-footer {
+    padding: 0 var(--space-sm) !important;
+  }
+
+  .pagination-btn {
+    padding: var(--space-sm) var(--space-md) !important;
+    min-width: 48px;
+    min-height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .btn-label {
+    display: none;
+  }
+
+  .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pagination-text {
+    font-size: 0.75rem;
+  }
+}
+
+.btn-icon {
+  display: none;
+}
+
+/* Floating Action Button (FAB) */
+.fab-container {
+  position: fixed;
+  bottom: calc(var(--space-xl) + 60px); /* Height for bottom filter bar */
+  right: var(--space-lg);
+  z-index: var(--z-overlay);
+}
+
+.fab-main {
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  background-color: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(30, 92, 58, 0.4);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.fab-main:active {
+  transform: scale(0.9);
+}
+
+/* Sticky Filter Bar (Mobile Only) */
+.mobile-filter-container {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-filter-container {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-header);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--color-border);
+    padding: var(--space-sm) 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .filter-scroll {
+    display: flex;
+    overflow-x: auto;
+    padding: 0 var(--space-md);
+    gap: var(--space-sm);
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .filter-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-filter-chip {
+    flex-shrink: 0;
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius-pill);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-filter-chip.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(30, 92, 58, 0.2);
+  }
+}

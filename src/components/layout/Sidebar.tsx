@@ -67,14 +67,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
   );
 
   const drawerContent = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#163d28', color: 'white' }}>
+    <Box className="sidebar-container">
       {/* Header */}
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <Box className="sidebar-header">
         <IconButton onClick={toggleSidebar} sx={{ color: 'white' }}>
           <MenuIcon sx={{ fontSize: 24 }} />
         </IconButton>
         <Stack direction="row" spacing={1} alignItems="center">
-          <ScissorsIcon sx={{ color: '#c49a1a', fontSize: 24 }} />
+          <ScissorsIcon sx={{ color: 'var(--color-warning)', fontSize: 24 }} />
           <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: -0.5 }}>
             StitchFlow
           </Typography>
@@ -93,7 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
                   py: 1.2,
                   px: 2,
                   bgcolor: isActive ? alpha('#1e5c3a', 0.15) : 'transparent',
-                  borderLeft: isActive ? '3px solid #1e5c3a' : '3px solid transparent',
+                  borderLeft: isActive ? '3px solid var(--color-primary)' : '3px solid transparent',
                   '&:hover': {
                     bgcolor: alpha('#ffffff', 0.07),
                   },
@@ -118,7 +118,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
                           py: 0.1, 
                           borderRadius: '4px', 
                           bgcolor: alpha('#c49a1a', 0.15), 
-                          color: '#c49a1a',
+                          color: 'var(--color-warning)',
                           fontSize: '8px',
                           fontWeight: 900,
                           lineHeight: 1,
@@ -170,16 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
         )}
 
         {/* User Card */}
-        <Box
-          sx={{
-            p: 2,
-            borderTop: `1px solid ${alpha('#ffffff', 0.1)}`,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.5,
-            bgcolor: alpha('#000000', 0.1),
-          }}
-        >
+        <Box className="sidebar-user-card">
           <Avatar
             src={user?.avatarUrl}
             sx={{ width: 40, height: 40, border: `1px solid ${alpha('#ffffff', 0.2)}` }}

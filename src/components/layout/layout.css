@@ -1,0 +1,77 @@
+/* src/components/layout/layout.css */
+
+.top-bar {
+  background: rgba(250, 250, 248, 0.8) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+  transition: width 0.3s ease, margin 0.3s ease !important;
+}
+
+.top-bar-toolbar {
+  min-height: 64px;
+  padding: 0 var(--space-lg);
+}
+
+@media (max-width: 768px) {
+  .top-bar-toolbar {
+    min-height: 56px;
+    padding: 0 var(--space-sm);
+  }
+}
+
+.app-shell-root {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+}
+
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition: width 0.3s ease, margin 0.3s ease;
+}
+
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.content-container {
+  padding: var(--space-xl) var(--space-lg);
+  flex-grow: 1;
+  max-width: 100vw;
+}
+
+@media (max-width: 768px) {
+  .content-container {
+    padding: 72px var(--space-md) var(--space-md);
+  }
+}
+
+.sidebar-container {
+  background-color: #163d28; /* Specific brand color for sidebar */
+  color: white;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.sidebar-user-card {
+  padding: var(--space-md);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  background-color: rgba(0, 0, 0, 0.1);
+}

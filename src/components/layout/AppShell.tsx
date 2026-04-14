@@ -17,20 +17,13 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f4f0' }}>
+    <Box className="app-shell-root">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} toggleSidebar={toggleSidebar} />
 
       <Box
         component="main"
+        className="main-content"
         sx={{
-          flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          minWidth: 0,
-          transition: theme.transitions.create(['margin', 'width'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-          }),
           ...(sidebarOpen && !isMobile && {
             width: `calc(100% - 240px)`,
             transition: theme.transitions.create(['margin', 'width'], {
@@ -41,7 +34,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         }}
       >
         <TopBar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-        <Box sx={{ p: { xs: 2, md: 3 }, flexGrow: 1 }}>
+        <Box className="content-container">
           {children}
         </Box>
       </Box>

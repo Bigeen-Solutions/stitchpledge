@@ -1,0 +1,56 @@
+/* src/pages/styles/client-profile.css */
+
+.client-profile-header {
+  margin-bottom: var(--space-xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-lg);
+}
+
+@media (max-width: 768px) {
+  .client-profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .client-profile-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .client-profile-actions button {
+    width: 100% !important;
+  }
+}
+
+.client-info-card {
+  padding: var(--space-xl);
+  height: 100%;
+  border-radius: 24px;
+}
+
+.measurement-grid-card {
+  padding: var(--space-xl);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.measurement-point {
+  padding: var(--space-md);
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.system-id-box {
+  font-family: monospace;
+  background-color: rgba(30, 92, 58, 0.05);
+  padding: var(--space-sm);
+  border-radius: 8px;
+  margin-top: var(--space-xs);
+  color: var(--color-primary);
+  font-weight: 700;
+}
