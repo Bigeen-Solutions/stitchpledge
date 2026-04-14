@@ -39,7 +39,10 @@ import {
   TipsAndUpdates as IntelIcon,
   Category as CategoryIcon,
   Person as PersonIcon,
-  ChevronRight as ChevronRightIcon
+  ChevronRight as ChevronRightIcon,
+  Email as EmailIcon,
+  Phone as PhoneIcon,
+  AccessTimeFilled as TimeIcon
 } from "@mui/icons-material";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -498,11 +501,20 @@ export function NewOrderPage() {
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
               <Box sx={{ mb: 4 }}>
                 <Typography 
-                  variant="h5" 
-                  className="mobile-page-title"
-                  sx={{ mb: 1, color: 'text.primary', display: { xs: 'block', md: 'none' } }}
+                  variant="h3" 
+                  className="mobile-page-title md:text-h2"
+                  sx={{ 
+                    fontSize: { xs: '1.75rem', md: 'clamp(1.5rem, 4vw, 2.25rem)' },
+                    fontWeight: 800,
+                    lineHeight: 1.2,
+                    letterSpacing: '-0.02em',
+                    mb: 1
+                  }}
                 >
-                  Step 1. Identify Boutique
+                  Identify Boutique
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', display: { xs: 'block', md: 'none' } }}>
+                  Contact details for production enrollment
                 </Typography>
                 <Typography 
                   variant="h5" 
@@ -511,52 +523,61 @@ export function NewOrderPage() {
                   1. Identifying Primary Boutique
                 </Typography>
               </Box>
-              <Stack spacing={3}>
-                <TextField
-                  fullWidth
-                  label="Full Name"
-                  value={newCustomer.name}
-                  onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      height: 60,
-                      bgcolor: 'background.default',
-                      '& fieldset': { borderColor: 'divider' },
-                    },
-                    '& .MuiInputLabel-root': { color: 'text.secondary' }
-                  }}
-                />
-                <TextField
-                  fullWidth
-                  label="Email Address"
-                  type="email"
-                  value={newCustomer.email}
-                  onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      height: 60,
-                      bgcolor: 'background.default',
-                      '& fieldset': { borderColor: 'divider' },
-                    },
-                    '& .MuiInputLabel-root': { color: 'text.secondary' }
-                  }}
-                />
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  type="tel"
-                  value={newCustomer.phone}
-                  onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      height: 60,
-                      bgcolor: 'background.default',
-                      '& fieldset': { borderColor: 'divider' },
-                    },
-                    '& .MuiInputLabel-root': { color: 'text.secondary' }
-                  }}
-                />
-              </Stack>
+
+              <Card sx={{ 
+                borderRadius: '24px', 
+                boxShadow: '0 8px 32px rgba(0,0,0,0.04)', 
+                border: '1px solid', 
+                borderColor: 'divider',
+                overflow: 'hidden'
+              }}>
+                <Stack divider={<Divider />}>
+                  <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Avatar sx={{ bgcolor: alpha('#c49a1a', 0.1), color: 'secondary.main' }}>
+                      <PersonIcon />
+                    </Avatar>
+                    <TextField
+                      fullWidth
+                      variant="standard"
+                      label="Full Name"
+                      value={newCustomer.name}
+                      onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                      InputProps={{ disableUnderline: true, sx: { fontSize: '1rem', fontWeight: 600 } }}
+                      sx={{ '& .MuiInputLabel-root': { fontSize: '0.875rem' } }}
+                    />
+                  </Box>
+                  <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Avatar sx={{ bgcolor: alpha('#c49a1a', 0.1), color: 'secondary.main' }}>
+                      <EmailIcon />
+                    </Avatar>
+                    <TextField
+                      fullWidth
+                      variant="standard"
+                      label="Email Address"
+                      type="email"
+                      value={newCustomer.email}
+                      onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                      InputProps={{ disableUnderline: true, sx: { fontSize: '1rem', fontWeight: 600 } }}
+                      sx={{ '& .MuiInputLabel-root': { fontSize: '0.875rem' } }}
+                    />
+                  </Box>
+                  <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Avatar sx={{ bgcolor: alpha('#c49a1a', 0.1), color: 'secondary.main' }}>
+                      <PhoneIcon />
+                    </Avatar>
+                    <TextField
+                      fullWidth
+                      variant="standard"
+                      label="Phone Number"
+                      type="tel"
+                      value={newCustomer.phone}
+                      onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                      InputProps={{ disableUnderline: true, sx: { fontSize: '1rem', fontWeight: 600 } }}
+                      sx={{ '& .MuiInputLabel-root': { fontSize: '0.875rem' } }}
+                    />
+                  </Box>
+                </Stack>
+              </Card>
 
               <Divider sx={{ my: 4 }} />
 
@@ -983,11 +1004,20 @@ export function NewOrderPage() {
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
               <Box sx={{ mb: 4 }}>
                 <Typography 
-                  variant="h5" 
-                  className="mobile-page-title"
-                  sx={{ mb: 1, color: 'text.primary', display: { xs: 'block', md: 'none' } }}
+                  variant="h3" 
+                  className="mobile-page-title md:text-h2"
+                  sx={{ 
+                    fontSize: { xs: '1.75rem', md: 'clamp(1.5rem, 4vw, 2.25rem)' },
+                    fontWeight: 800,
+                    lineHeight: 1.2,
+                    letterSpacing: '-0.02em',
+                    mb: 1
+                  }}
                 >
-                  Step 3. Material Config
+                  Material Config
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', display: { xs: 'block', md: 'none' } }}>
+                  The evidence: Fabric and composition
                 </Typography>
                 <Typography 
                   variant="h5" 
@@ -1000,33 +1030,38 @@ export function NewOrderPage() {
               <Grid container spacing={4}>
                 {/* Image Upload */}
                 <Grid size={{ xs: 12, md: 5 }}>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 2, display: 'block' }}>
-                    Fabric Evidence
+                  <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
+                    FABRIC EVIDENCE
                   </Typography>
-                  <Box
+                  <Card
                     sx={{
                       width: '100%',
-                      height: 200,
+                      height: 240,
                       border: '2px dashed',
                       borderColor: 'divider',
-                      borderRadius: '16px',
+                      borderRadius: '24px',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      bgcolor: 'background.default',
+                      bgcolor: 'background.paper',
                       cursor: 'pointer',
                       position: 'relative',
                       overflow: 'hidden',
-                      '&:hover': { borderColor: 'secondary.main', bgcolor: alpha('#c49a1a', 0.05) }
+                      boxShadow: 'none',
+                      transition: 'all 0.3s ease',
+                      '&:hover': { borderColor: 'secondary.main', bgcolor: alpha('#c49a1a', 0.05), transform: 'scale(1.01)' }
                     }}
                     onClick={() => document.getElementById('fabric-upload')?.click()}
                   >
                     {!fabricDetails.fabricImageBase64 ? (
-                      <>
-                        <AddIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>Upload Fabric Image</Typography>
-                      </>
+                      <Stack spacing={1} alignItems="center">
+                        <Avatar sx={{ bgcolor: alpha('#c49a1a', 0.1), color: 'secondary.main', width: 64, height: 64, mb: 1 }}>
+                          <AddIcon sx={{ fontSize: 32 }} />
+                        </Avatar>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Upload Fabric Image</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.disabled' }}>JPEG, PNG up to 10MB</Typography>
+                      </Stack>
                     ) : (
                       <img 
                         src={fabricDetails.fabricImageBase64} 
@@ -1050,12 +1085,13 @@ export function NewOrderPage() {
                         }
                       }}
                     />
-                  </Box>
+                  </Card>
                   {fabricDetails.fabricImageBase64 && (
                     <Button 
-                      size="small" 
+                      fullWidth
+                      variant="text"
                       onClick={() => setFabricDetails({ ...fabricDetails, fabricImageBase64: "" })}
-                      sx={{ mt: 1, textTransform: 'none', color: 'error.main' }}
+                      sx={{ mt: 1, textTransform: 'none', color: 'error.main', fontWeight: 700 }}
                     >
                       Remove Photo
                     </Button>
@@ -1064,110 +1100,114 @@ export function NewOrderPage() {
 
                 {/* Fabric Type & Swatch */}
                 <Grid size={{ xs: 12, md: 7 }}>
-                  {/* EMPTY VAULT GUARDRAIL */}
-                  {inventory !== undefined && inventory.length === 0 && (
-                    <Box sx={{ 
-                      p: 2.5, 
-                      bgcolor: alpha('#f59e0b', 0.1), 
-                      border: '1px solid', 
-                      borderColor: alpha('#f59e0b', 0.5), 
-                      borderRadius: '12px',
-                      mb: 4,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 2
-                    }}>
-                      <Box sx={{ color: '#f59e0b', fontSize: 24, fontWeight: 700 }}>⚠️</Box>
-                      <Typography variant="body2" sx={{ color: '#92400e', fontWeight: 600 }}>
-                        No materials found in the Vault. Please configure materials in the Settings Hub before creating an order.
-                      </Typography>
-                    </Box>
-                  )}
+                  <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
+                    SPECIFICATIONS
+                  </Typography>
 
-                  <Stack direction="row" spacing={2}>
-                    <FormControl sx={{ flex: 1 }}>
-                      <InputLabel>Required Material (Stock)</InputLabel>
-                      <Select
-                        value={selectedMaterialId}
-                        label="Required Material (Stock)"
-                        onChange={(e) => setSelectedMaterialId(e.target.value)}
-                        sx={{ borderRadius: '12px', bgcolor: alpha('#c49a1a', 0.02) }}
-                        error={inventory !== undefined && inventory.length === 0}
-                      >
-                        <MenuItem value=""><em>-- Select Material --</em></MenuItem>
-                        {inventory?.map((m: any) => {
-                          const isOutOfStock = m.quantityAvailable <= 0;
-                          return (
-                            <MenuItem 
-                              key={m.materialId} 
-                              value={m.materialId}
-                              disabled={isOutOfStock}
-                            >
-                              {m.name} ({m.quantityAvailable} {m.unit} available)
-                            </MenuItem>
-                          );
-                        })}
-                      </Select>
-                    </FormControl>
+                  <Card sx={{ 
+                    borderRadius: '24px', 
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.04)', 
+                    border: '1px solid', 
+                    borderColor: 'divider',
+                    mb: 3,
+                    p: 3
+                  }}>
+                    <Stack spacing={3}>
+                      {/* EMPTY VAULT GUARDRAIL */}
+                      {inventory !== undefined && inventory.length === 0 && (
+                        <Box sx={{ 
+                          p: 2, 
+                          bgcolor: alpha('#f59e0b', 0.1), 
+                          border: '1px solid', 
+                          borderColor: alpha('#f59e0b', 0.5), 
+                          borderRadius: '16px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 2
+                        }}>
+                          <Typography variant="body2" sx={{ color: '#92400e', fontWeight: 600 }}>
+                            ⚠️ No materials found in Vault. Please configure in Settings.
+                          </Typography>
+                        </Box>
+                      )}
 
-                    <TextField
-                      sx={{ width: 150, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-                      label="Qty / Yardage"
-                      value={materialQuantity}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/[^0-9.]/g, '');
-                        if ((val.match(/\./g) || []).length <= 1) {
-                          setMaterialQuantity(val === "" ? "" : val as any);
-                        }
-                      }}
-                      inputProps={{
-                        inputMode: 'decimal',
-                        pattern: '[0-9]*\\.?[0-9]*',
-                      }}
-                      disabled={!selectedMaterialId}
-                    />
-                  </Stack>
+                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                        <FormControl fullWidth>
+                          <InputLabel>Material Base</InputLabel>
+                          <Select
+                            value={selectedMaterialId}
+                            label="Material Base"
+                            onChange={(e) => setSelectedMaterialId(e.target.value)}
+                            sx={{ borderRadius: '12px', bgcolor: 'background.default' }}
+                            error={inventory !== undefined && inventory.length === 0}
+                          >
+                            <MenuItem value=""><em>-- Select Material --</em></MenuItem>
+                            {inventory?.map((m: any) => (
+                              <MenuItem key={m.materialId} value={m.materialId} disabled={m.quantityAvailable <= 0}>
+                                {m.name} ({m.quantityAvailable} {m.unit} left)
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
 
-                  <Box>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
-                      Color Swatch
-                    </Typography>
-                    <Stack direction="row" spacing={1.5} flexWrap="wrap">
-                      {['#0F172A', '#475569', '#1E293B', '#FFFFFF', '#0EA5E9', '#7F1D1D', '#064E3B', '#C49A1A'].map(color => (
-                        <Box
-                          key={color}
-                          onClick={() => setFabricDetails({ ...fabricDetails, colorSwatch: color })}
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: '50%',
-                            bgcolor: color,
-                            cursor: 'pointer',
-                            border: '2px solid',
-                            borderColor: fabricDetails.colorSwatch === color ? 'secondary.main' : (color === '#FFFFFF' ? 'divider' : 'transparent'),
-                            boxShadow: fabricDetails.colorSwatch === color ? `0 0 10px ${alpha('#c49a1a', 0.5)}` : 'none',
-                            transition: 'transform 0.2s',
-                            outline: fabricDetails.colorSwatch === color ? `2px solid ${alpha('#c49a1a', 0.3)}` : 'none',
-                            outlineOffset: 3,
-                            '&:hover': { transform: 'scale(1.1)' }
+                        <TextField
+                          sx={{ width: { xs: '100%', sm: 150 }, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                          label="Qty / Yardage"
+                          value={materialQuantity}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9.]/g, '');
+                            if ((val.match(/\./g) || []).length <= 1) setMaterialQuantity(val === "" ? "" : val as any);
                           }}
+                          inputProps={{ inputMode: 'decimal', pattern: '[0-9]*\\.?[0-9]*' }}
+                          disabled={!selectedMaterialId}
                         />
-                      ))}
-                    </Stack>
-                  </Box>
+                      </Stack>
 
-                  <TextField
-                    fullWidth
-                    label="Design Notes"
-                    multiline
-                    rows={3}
-                    value={fabricDetails.designNotes}
-                    onChange={(e) => setFabricDetails({ ...fabricDetails, designNotes: e.target.value })}
-                    placeholder="Special lining, unique buttons, or specific stitching requests..."
-                    sx={{
-                      '& .MuiOutlinedInput-root': { borderRadius: '12px' }
-                    }}
-                  />
+                      <Box>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
+                          Color Swatch
+                        </Typography>
+                        <Stack direction="row" spacing={1.5} flexWrap="wrap">
+                          {['#0F172A', '#475569', '#1E293B', '#FFFFFF', '#0EA5E9', '#7F1D1D', '#064E3B', '#C49A1A'].map(color => (
+                            <Box
+                              key={color}
+                              onClick={() => setFabricDetails({ ...fabricDetails, colorSwatch: color })}
+                              sx={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: '12px',
+                                bgcolor: color,
+                                cursor: 'pointer',
+                                position: 'relative',
+                                border: '2px solid',
+                                borderColor: fabricDetails.colorSwatch === color ? 'secondary.main' : (color === '#FFFFFF' ? 'divider' : 'transparent'),
+                                transition: 'all 0.2s',
+                                '&:hover': { transform: 'scale(1.1)' },
+                                '&::after': fabricDetails.colorSwatch === color ? {
+                                  content: '""',
+                                  position: 'absolute',
+                                  inset: -4,
+                                  borderRadius: '14px',
+                                  border: `2px solid ${alpha('#c49a1a', 0.5)}`
+                                } : {}
+                              }}
+                            />
+                          ))}
+                        </Stack>
+                      </Box>
+
+                      <TextField
+                        fullWidth
+                        label="Design Notes"
+                        multiline
+                        rows={4}
+                        value={fabricDetails.designNotes}
+                        onChange={(e) => setFabricDetails({ ...fabricDetails, designNotes: e.target.value })}
+                        placeholder="Special lining, unique buttons, or specific stitching requests..."
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '16px', bgcolor: 'background.default' } }}
+                      />
+                    </Stack>
+                  </Card>
                 </Grid>
               </Grid>
 
@@ -1238,11 +1278,20 @@ export function NewOrderPage() {
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
               <Box sx={{ mb: 4 }}>
                 <Typography 
-                  variant="h5" 
-                  className="mobile-page-title"
-                  sx={{ mb: 1, color: 'text.primary', display: { xs: 'block', md: 'none' } }}
+                   variant="h3" 
+                   className="mobile-page-title md:text-h2"
+                   sx={{ 
+                     fontSize: { xs: '1.75rem', md: 'clamp(1.5rem, 4vw, 2.25rem)' },
+                     fontWeight: 800,
+                     lineHeight: 1.2,
+                     letterSpacing: '-0.02em',
+                     mb: 1
+                   }}
                 >
-                  Step 4. Measurements
+                  Measurements
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', display: { xs: 'block', md: 'none' } }}>
+                  Recording primary metrics in centimeters
                 </Typography>
                 <Typography 
                   variant="h5" 
@@ -1252,78 +1301,87 @@ export function NewOrderPage() {
                 </Typography>
               </Box>
               
-              <Grid container spacing={4}>
+              <Grid container spacing={3}>
                 {/* Left Side: Measurement Inputs */}
                 <Grid size={{ xs: 12, md: 7 }}>
-                  <Stack spacing={2}>
-                    {measurementEntries.map(entry => (
-                      <Grid container spacing={1} key={entry.id} alignItems="center">
-                        <Grid size={{ xs: 6 }}>
-                          <TextField
-                            fullWidth
-                            label="Measurement Label"
-                            value={entry.label}
-                            disabled={entry.isTemplateField}
-                            placeholder={entry.isTemplateField ? "" : "e.g. Neck, Bicep"}
-                            onChange={(e) => {
-                              setMeasurementEntries(prev => prev.map(p => 
-                                p.id === entry.id ? { ...p, label: e.target.value } : p
-                              ));
-                            }}
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: '12px',
-                                bgcolor: entry.isTemplateField ? alpha('#000', 0.02) : 'background.default'
-                              }
-                            }}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 6 }}>
-                          <TextField
-                            fullWidth
-                            label="Value (cm)"
-                            value={entry.value}
-                            onFocus={() => setActiveEntryId(entry.id)}
-                            InputProps={{ readOnly: true }}
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                height: 56,
-                                bgcolor: activeEntryId === entry.id ? alpha('#c49a1a', 0.05) : 'background.default',
-                                borderColor: activeEntryId === entry.id ? 'secondary.main' : 'divider',
-                                borderWidth: activeEntryId === entry.id ? 2 : 1,
-                                borderRadius: '12px',
-                                cursor: 'pointer',
-                                '& fieldset': { borderColor: activeEntryId === entry.id ? 'secondary.main' : 'divider' },
-                              },
-                              '& .MuiInputLabel-root': { color: activeEntryId === entry.id ? 'secondary.main' : 'text.secondary' }
-                            }}
-                          />
-                        </Grid>
-                      </Grid>
-                    ))}
-                    {measurementEntries.length === 0 && (
-                      <Typography variant="body2" sx={{ color: 'text.disabled', p: 4, textAlign: 'center' }}>
-                        No measurements required. Click the last field to add custom notes.
-                      </Typography>
-                    )}
-                  </Stack>
+                  <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
+                    LIVE LEDGER
+                  </Typography>
+                  <Card sx={{ 
+                    borderRadius: '24px', 
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.04)', 
+                    border: '1px solid', 
+                    borderColor: 'divider',
+                    overflow: 'hidden'
+                  }}>
+                    <Stack divider={<Divider />}>
+                      {measurementEntries.map(entry => (
+                        <Box 
+                          key={entry.id} 
+                          onClick={() => setActiveEntryId(entry.id)}
+                          sx={{ 
+                            p: 2.5, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between',
+                            bgcolor: activeEntryId === entry.id ? alpha('#c49a1a', 0.04) : 'transparent',
+                            transition: 'background-color 0.2s ease',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: activeEntryId === entry.id ? 'secondary.main' : 'text.primary' }}>
+                              {entry.label}
+                            </Typography>
+                            {entry.isTemplateField && (
+                              <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>TEMPLATE METRIC</Typography>
+                            )}
+                          </Box>
+                          <Box sx={{ 
+                            minWidth: 100, 
+                            height: 48, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            borderRadius: '12px',
+                            border: '2px solid',
+                            borderColor: activeEntryId === entry.id ? 'secondary.main' : alpha('#000', 0.05),
+                            bgcolor: activeEntryId === entry.id ? 'background.paper' : alpha('#000', 0.02)
+                          }}>
+                            <Typography variant="h6" sx={{ fontWeight: 800, color: entry.value ? 'text.primary' : 'text.disabled' }}>
+                              {entry.value || '0.0'}
+                            </Typography>
+                            <Typography variant="caption" sx={{ ml: 0.5, color: 'text.disabled', fontWeight: 800 }}>CM</Typography>
+                          </Box>
+                        </Box>
+                      ))}
+                      {measurementEntries.length === 0 && (
+                        <Box sx={{ p: 6, textAlign: 'center' }}>
+                          <Typography variant="body2" sx={{ color: 'text.disabled' }}>No metrics required for this template.</Typography>
+                        </Box>
+                      )}
+                    </Stack>
+                  </Card>
                 </Grid>
 
                 {/* Right Side: Virtual Numpad */}
                 <Grid size={{ xs: 12, md: 5 }}>
+                  <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
+                    QUICK INPUT
+                  </Typography>
                   <Card sx={{ 
-                    p: 2, 
-                    bgcolor: 'background.default', 
-                    borderRadius: '20px', 
+                    p: 2.5, 
+                    bgcolor: 'background.paper', 
+                    borderRadius: '24px', 
                     border: '1px solid', 
                     borderColor: 'divider',
-                    boxShadow: 'none'
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.06)'
                   }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 2, display: 'block', textAlign: 'center' }}>
-                      {activeMeasurementField ? `Input: ${activeMeasurementField}` : 'Select a field to enter value'}
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, mb: 3, display: 'block', textAlign: 'center', textTransform: 'uppercase' }}>
+                      {activeMeasurementField ? `ENTER ${activeMeasurementField}` : 'SELECT A METRIC'}
                     </Typography>
                     
-                    <Grid container spacing={1}>
+                    <Grid container spacing={1.5}>
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, '.', 0, 'BACK'].map((val) => (
                         <Grid size={{ xs: 4 }} key={val}>
                           <Button
@@ -1332,23 +1390,17 @@ export function NewOrderPage() {
                             onMouseDown={(e) => {
                               e.preventDefault();
                               if (!activeEntryId) return;
-                              
                               const targetEntry = measurementEntries.find(e => e.id === activeEntryId);
                               if (!targetEntry) return;
-
                               const currentVal = targetEntry.value;
                               let nextVal = currentVal;
 
                               if (val === 'BACK') {
                                 nextVal = currentVal.slice(0, -1);
                               } else if (val === '.') {
-                                if (!currentVal.includes('.')) {
-                                  nextVal = currentVal + '.';
-                                }
+                                if (!currentVal.includes('.')) nextVal = currentVal + '.';
                               } else {
-                                if (currentVal.length < 5) {
-                                  nextVal = currentVal + val;
-                                }
+                                if (currentVal.length < 5) nextVal = currentVal + val;
                               }
 
                               setMeasurementEntries(prev => prev.map(p => 
@@ -1356,18 +1408,19 @@ export function NewOrderPage() {
                               ));
                             }}
                             sx={{
-                              height: 70,
-                              borderRadius: '12px',
-                              fontSize: val === 'BACK' ? 14 : 24,
-                              fontWeight: 700,
+                              height: { xs: 64, md: 80 },
+                              borderRadius: '16px',
+                              fontSize: val === 'BACK' ? 14 : 26,
+                              fontWeight: 800,
                               color: 'text.primary',
                               borderColor: 'divider',
-                              bgcolor: 'background.paper',
+                              bgcolor: alpha('#f8fafc', 0.5),
+                              transition: 'all 0.1s ease',
                               '&:hover': { bgcolor: alpha('#c49a1a', 0.1), borderColor: 'secondary.main' },
-                              '&:active': { transform: 'scale(0.95)' }
+                              '&:active': { transform: 'scale(0.92)', bgcolor: alpha('#c49a1a', 0.2) }
                             }}
                           >
-                            {val === 'BACK' ? <DeleteIcon /> : val}
+                            {val === 'BACK' ? <DeleteIcon sx={{ fontSize: 28 }} /> : val}
                           </Button>
                         </Grid>
                       ))}
@@ -1406,17 +1459,24 @@ export function NewOrderPage() {
               </Stack>
             </Box>
           )}
-
-          {/* STEP: SUMMARY */}
           {step === "SUMMARY" && (
             <Box className="animate-in zoom-in-95 duration-300">
               <Box sx={{ mb: 4 }}>
                 <Typography 
-                  variant="h5" 
-                  className="mobile-page-title"
-                  sx={{ mb: 1, color: 'text.primary', display: { xs: 'block', md: 'none' } }}
+                   variant="h3" 
+                   className="mobile-page-title md:text-h2"
+                   sx={{ 
+                     fontSize: { xs: '1.75rem', md: 'clamp(1.5rem, 4vw, 2.25rem)' },
+                     fontWeight: 800,
+                     lineHeight: 1.2,
+                     letterSpacing: '-0.02em',
+                     mb: 1
+                   }}
                 >
-                  Step 5. Confirmation
+                  Formalize Order
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', display: { xs: 'block', md: 'none' } }}>
+                  Final review before production commitment
                 </Typography>
                 <Typography 
                   variant="h5" 
@@ -1426,58 +1486,87 @@ export function NewOrderPage() {
                 </Typography>
               </Box>
 
-              <Stack spacing={3}>
-                <Box sx={{ p: 4, bgcolor: alpha('#1e5c3a', 0.04), border: '1px solid', borderColor: 'divider', borderRadius: '20px' }}>
-                  <Grid container spacing={3}>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 700 }}>Customer Identity</Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary' }}>{selectedCustomer?.name || newCustomer.name}</Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{selectedCustomer?.email || newCustomer.email || 'No email provided'}</Typography>
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 700 }}>Production Deadline</Typography>
-                      <Typography variant="h6" sx={{ color: 'secondary.main', fontWeight: 700 }}>{eventDate?.toLocaleDateString()}</Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>Assignment: {stores?.find(s => s.id === selectedStoreId)?.name || user?.storeId || 'Unassigned'}</Typography>
-                    </Grid>
-                  </Grid>
-                </Box>
+              <Stack spacing={2.5}>
+                {/* Information Tiles */}
+                <Card sx={{ borderRadius: '24px', border: '1px solid', borderColor: 'divider', boxShadow: '0 8px 32px rgba(0,0,0,0.04)', px: 1 }}>
+                  <List>
+                    <ListItem sx={{ py: 2 }}>
+                      <ListItemAvatar>
+                        <Avatar sx={{ bgcolor: alpha('#c49a1a', 0.1), color: 'secondary.main' }}><PersonIcon /></Avatar>
+                      </ListItemAvatar>
+                      <ListItemText 
+                        primary={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{selectedCustomer?.name || newCustomer.name}</Typography>}
+                        secondary={selectedCustomer?.email || newCustomer.email || 'No email provided'}
+                      />
+                    </ListItem>
+                    <Divider variant="inset" component="li" />
+                    <ListItem sx={{ py: 2 }}>
+                      <ListItemAvatar>
+                        <Avatar sx={{ bgcolor: alpha('#c49a1a', 0.1), color: 'secondary.main' }}><TimeIcon /></Avatar>
+                      </ListItemAvatar>
+                      <ListItemText 
+                        primary={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{eventDate?.toLocaleDateString()}</Typography>}
+                        secondary={`Production Deadline • ${stores?.find(s => s.id === selectedStoreId)?.name || 'Unassigned Store'}`}
+                      />
+                    </ListItem>
+                  </List>
+                </Card>
 
-                <Box sx={{ p: 3, bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', borderRadius: '16px' }}>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 700, mb: 1, display: 'block' }}>Fabric & Design Evidence</Typography>
+                {/* Evidence Tile */}
+                <Card sx={{ borderRadius: '24px', border: '1px solid', borderColor: 'divider', boxShadow: 'none', p: 2.5 }}>
+                  <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 2, display: 'block', letterSpacing: 1.5 }}>EVIDENCE & NOTES</Typography>
                   <Stack direction="row" spacing={3} alignItems="center">
-                    {fabricDetails.fabricImageBase64 ? (
-                      <Box sx={{ width: 60, height: 60, borderRadius: '12px', overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-                        <img src={fabricDetails.fabricImageBase64} alt="Fabric" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </Box>
-                    ) : (
-                      <Box sx={{ width: 60, height: 60, borderRadius: '12px', bgcolor: 'background.paper', border: '1px dashed', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                         <ShirtIcon sx={{ color: 'text.disabled', fontSize: 24 }} />
-                      </Box>
-                    )}
-                    <Box>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Box sx={{ width: 16, height: 16, borderRadius: '50%', bgcolor: fabricDetails.colorSwatch, border: '1px solid', borderColor: 'divider' }} />
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                          {inventory?.find(m => m.materialId === selectedMaterialId)?.name || "No Material Selected"}
-                        </Typography>
-                      </Stack>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5, maxWidth: 300 }}>
-                        {fabricDetails.designNotes || "No specific design notes."}
+                    <Box sx={{ position: 'relative' }}>
+                      {fabricDetails.fabricImageBase64 ? (
+                        <Avatar variant="rounded" src={fabricDetails.fabricImageBase64} sx={{ width: 80, height: 80, borderRadius: '16px', border: '1px solid', borderColor: 'divider' }} />
+                      ) : (
+                        <Avatar variant="rounded" sx={{ width: 80, height: 80, borderRadius: '16px', bgcolor: 'background.default', border: '1px dashed', borderColor: 'divider' }}>
+                           <ShirtIcon sx={{ color: 'text.disabled', fontSize: 32 }} />
+                        </Avatar>
+                      )}
+                      <Box sx={{ 
+                        position: 'absolute', 
+                        bottom: -4, 
+                        right: -4, 
+                        width: 24, 
+                        height: 24, 
+                        borderRadius: '50%', 
+                        bgcolor: fabricDetails.colorSwatch, 
+                        border: '2px solid white',
+                        boxShadow: '0 0 10px rgba(0,0,0,0.1)'
+                      }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                        {inventory?.find(m => m.materialId === selectedMaterialId)?.name || "External Material"}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5, fontStyle: fabricDetails.designNotes ? 'normal' : 'italic' }}>
+                        {fabricDetails.designNotes || "No specific design notes provided."}
                       </Typography>
                     </Box>
                   </Stack>
-                </Box>
+                </Card>
 
+                {/* Line Items Tile */}
                 <Box>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 700, mb: 1, display: 'block' }}>Line Items ({orderItems.length})</Typography>
-                  <Stack spacing={1}>
-                    {orderItems.map((g, i) => (
-                      <Box key={i} sx={{ px: 3, py: 2, bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>{templates?.find(t => t.id === g.templateId)?.name}</Typography>
-                        <Typography variant="caption" sx={{ bgcolor: alpha('#c49a1a', 0.2), color: 'secondary.main', px: 1.5, py: 0.5, borderRadius: '99px', fontWeight: 700 }}>PENDING START</Typography>
-                      </Box>
-                    ))}
-                  </Stack>
+                  <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1, ml: 1, display: 'block', letterSpacing: 1.5 }}>
+                    LINE ITEMS ({orderItems.length})
+                  </Typography>
+                  <Card sx={{ borderRadius: '24px', border: '1px solid', borderColor: 'divider', boxShadow: 'none', overflow: 'hidden' }}>
+                    <Stack divider={<Divider />}>
+                      {orderItems.map((g, i) => (
+                        <Box key={i} sx={{ px: 2.5, py: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Stack direction="row" spacing={2} alignItems="center">
+                             <Avatar sx={{ width: 32, height: 32, bgcolor: alpha('#c49a1a', 0.1), color: 'secondary.main', fontSize: 16 }}>
+                                {getGarmentIcon(templates?.find(t => t.id === g.templateId)?.name || '')}
+                             </Avatar>
+                             <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{templates?.find(t => t.id === g.templateId)?.name}</Typography>
+                          </Stack>
+                          <Typography variant="caption" sx={{ bgcolor: alpha('#1e5c3a', 0.1), color: 'primary.main', px: 1.5, py: 0.5, borderRadius: '99px', fontWeight: 800 }}>READY</Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Card>
                 </Box>
 
                 <Stack 
@@ -1490,25 +1579,25 @@ export function NewOrderPage() {
                     left: 0,
                     right: 0,
                     bgcolor: 'background.paper',
-                    p: { xs: 2, md: 0 },
+                    p: { xs: 2.5, md: 0 },
                     borderTop: { xs: '1px solid', md: 'none' },
                     borderColor: 'divider',
                     zIndex: 10,
                     pb: { xs: 'calc(16px + env(safe-area-inset-bottom, 16px))', md: 0 }
                   }}
                 >
-                  <Button onClick={() => setStep("MEASUREMENTS")} sx={{ color: 'text.primary' }}>Back</Button>
+                  <Button onClick={() => setStep("MEASUREMENTS")} sx={{ color: 'text.secondary', fontWeight: 700 }}>Back</Button>
                   <Button
                     variant="contained"
                     fullWidth
                     onClick={handleCreateOrder}
                     sx={{
-                      height: 64,
+                      height: 60,
                       bgcolor: 'primary.main',
                       borderRadius: '16px',
-                      fontWeight: 700,
-                      fontSize: 18,
-                      boxShadow: `0 0 30px ${alpha('#1e5c3a', 0.2)}`,
+                      fontWeight: 800,
+                      fontSize: 16,
+                      boxShadow: `0 8px 30px ${alpha('#1e5c3a', 0.2)}`,
                       '&:hover': { bgcolor: '#256b45' }
                     }}
                   >
