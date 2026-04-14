@@ -30,14 +30,13 @@ import {
   ArrowBack as ArrowBackIcon,
   Delete as DeleteIcon,
   EmojiEvents as EventIcon,
-  TipsAndUpdates as IntelIcon,
-  Lightbulb as IdeaIcon
+  TipsAndUpdates as IntelIcon
 } from "@mui/icons-material";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
-import { useCustomerSearch, useCreateCustomer, useCreateMeasurement, useCustomerIntake } from "../features/customers/hooks/useCustomerIntake";
-import { useCustomerProfile } from "../features/customers/hooks/useCustomerProfile";
+import { useCustomerSearch, useCreateCustomer, useCreateMeasurement } from "../features/customers/hooks/useCustomerIntake";
+import { customersApi } from "../features/customers/customers.api";
 import { useWorkflowTemplates } from "../features/workflow/hooks/useWorkflowTemplates";
 import { useAuthStore } from "../features/auth/auth.store";
 import { useStores, useStaffList } from "../features/auth/hooks/useStaff";
@@ -116,7 +115,6 @@ export function NewOrderPage() {
   const [successOrder, setSuccessOrder] = useState<{ id: string } | null>(null);
   
   // Measurement Intelligence State
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [autoSelectedMeasurement, setAutoSelectedMeasurement] = useState<{
     measurementId: string;
     takenAt: string;
@@ -151,7 +149,6 @@ export function NewOrderPage() {
 
   // 2. Intelligence Gate: Check compatibility when template is selected
   const handleTemplateSelection = async (templateId: string) => {
-    setSelectedTemplateId(templateId);
     
     // Add to items
     const template = templates?.find(t => t.id === templateId);
@@ -323,19 +320,6 @@ export function NewOrderPage() {
     }
   };
 
-  const addGarmentById = (templateId: string) => {
-    const template = templates?.find(t => t.id === templateId);
-    if (template) {
-      setOrderItems([...orderItems, {
-        templateId: template.id,
-        estimatedTotalDurationHours: 24,
-        assignedTailorId: role === 'TAILOR' ? user?.userId : null
-      }]);
-      showToast("Item Added", `${template.name} added to order items.`, "success");
-    } else {
-      showToast("Template Not Found", "The selected workflow template could not be found.", "error");
-    }
-  };
 
   const steps: Step[] = ["CLIENT_SELECTION", "CLIENT_DETAILS", "GARMENTS_TIMELINE", "FABRIC_DETAILS", "MEASUREMENTS", "SUMMARY"];
 
@@ -956,7 +940,7 @@ export function NewOrderPage() {
                   size="small" 
                   onClick={() => {
                     setAutoSelectedMeasurement(null);
-                    showToast("Intelligence Cleared", "System will now capture fresh measurements.", "info");
+                    showToast("Intelligence Cleared", "System will now capture fresh measurements.", "success");
                   }}
                   sx={{ textTransform: 'none', fontWeight: 700 }}
                 >

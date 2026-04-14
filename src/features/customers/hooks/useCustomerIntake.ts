@@ -25,8 +25,8 @@ export function useCreateCustomer() {
 export function useCreateMeasurement() {
   const { handleError } = useDomainError();
   return useMutation({
-    mutationFn: (data: { customerId: string; measurements: Record<string, number> }) =>
-      measurementApi.recordMeasurement(data.customerId, data.measurements),
+    mutationFn: (data: { customerId: string; measurements: Record<string, number>; status?: 'draft' | 'complete' }) =>
+      measurementApi.recordMeasurement(data.customerId, data.measurements, data.status),
     onError: (err: any) => handleError(err),
   });
 }

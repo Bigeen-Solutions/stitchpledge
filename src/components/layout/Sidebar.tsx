@@ -45,7 +45,7 @@ const navItems = [
   { label: 'Production', icon: ScissorsIcon, path: '/production', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
   { label: 'Customers', icon: Users, path: '/customers', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Inventory', icon: ClipboardList, path: '/inventory', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
-  { label: 'Measurements', icon: Ruler, path: '/measurements', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'], isBeta: true },
+  { label: 'Measurements', icon: Ruler, path: '/customers', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'], isBeta: true },
   { label: 'Payments', icon: CreditCard, path: '/payments', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'], isBeta: true },
   { label: 'Staff / Tailors', icon: UserCog, path: '/staff', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Reports', icon: BarChart2, path: '/reports', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
@@ -86,7 +86,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
         {filteredNavItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
-            <ListItem key={item.path} disablePadding>
+            <ListItem key={item.label} disablePadding>
               <ListItemButton
                 onClick={() => handleNavigation(item.path)}
                 sx={{
