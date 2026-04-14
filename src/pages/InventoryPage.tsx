@@ -10,7 +10,14 @@ import {
   TextField, 
   Stack,
   alpha,
-  MenuItem
+  MenuItem,
+  List,
+  ListItem,
+  ListItemAvatar,
+  Avatar,
+  ListItemText,
+  Card,
+  CircularProgress
 } from '@mui/material';
 import { 
   Add as AddIcon,
@@ -18,8 +25,6 @@ import {
   LocalShipping as ShippingIcon
 } from '@mui/icons-material';
 import { useInventory, useReceiveShipment, useRegisterMaterial } from '../features/inventory/useInventory';
-import { WorkshopTable } from '../components/ui/WorkshopTable';
-import { WorkshopTableSkeleton } from '../components/ui/WorkshopTableSkeleton';
 import { ErrorState } from '../components/feedback/ErrorState';
 
 export function InventoryPage() {
@@ -96,23 +101,27 @@ export function InventoryPage() {
   }
 
   return (
-    <Box className="container">
-      <header style={{ marginBottom: 40 }}>
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
-          justifyContent="space-between" 
-          alignItems={{ xs: 'stretch', sm: 'flex-start' }}
-          spacing={3}
-        >
-          <Box>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
-              <InventoryIcon color="primary" sx={{ fontSize: 32 }} />
-              <Typography variant="h4" sx={{ fontWeight: 800 }}>The Material Vault</Typography>
-            </Stack>
-            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-              Physical stock ledger and real-time inventory positions. Immutable and event-driven.
-            </Typography>
-          </Box>
+    <Box className="container" sx={{ paddingBottom: '90px' }}>
+      <header className="mb-lg flex justify-between items-end">
+        <Box>
+          <Typography 
+            variant="h3" 
+            className="mobile-page-title md:text-h1"
+            sx={{ 
+              fontSize: { xs: '1.75rem', md: 'clamp(1.5rem, 4vw, 2.5rem)' },
+              fontWeight: 800,
+              lineHeight: 1.2,
+              letterSpacing: '-0.02em',
+              mb: 1
+            }}
+          >
+            Material Vault
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            Physical stock ledger and real-time inventory.
+          </Typography>
+        </Box>
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
           <Button 
             variant="contained" 
             startIcon={<AddIcon />}
@@ -122,96 +131,128 @@ export function InventoryPage() {
               fontWeight: 700, 
               bgcolor: '#1e5c3a',
               px: 3,
-              py: { xs: 1.5, sm: 1 },
+              py: 1.5,
               '&:hover': { bgcolor: '#277a4d' }
             }}
           >
-            Register New Material
+            Register Material
           </Button>
-        </Stack>
+        </Box>
       </header>
 
       {isLoading ? (
-        <WorkshopTableSkeleton headers={['Material Name', 'SKU', 'Total Ledger', 'Reserved', 'Available', 'Actions']} />
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 8 }}>
+          <CircularProgress sx={{ color: 'primary.main' }} />
+        </Box>
+      ) : inventory?.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 8, px: 2 }}>
+          <Avatar sx={{ mx: 'auto', mb: 2, bgcolor: alpha('#1e5c3a', 0.1), color: 'primary.main', width: 64, height: 64 }}>
+            <InventoryIcon sx={{ fontSize: 32 }} />
+          </Avatar>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>Empty Vault</Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
+            There are no materials registered in the inventory yet.
+          </Typography>
+        </Box>
       ) : (
-        <section className="sf-card sf-glass" style={{ padding: 'var(--space-lg)' }}>
-          <WorkshopTable headers={['Material Name', 'SKU', 'Total Ledger', 'Reserved', 'Available', 'Actions']}>
+        <Card sx={{ borderRadius: '24px', boxShadow: '0 8px 32px rgba(0,0,0,0.04)', border: '1px solid', borderColor: 'divider' }}>
+          <List sx={{ p: 0 }}>
             {inventory?.map((item, index) => (
-              <tr key={`${item.materialId}-${index}`}>
-                <td>
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    {item.imageUrl ? (
-                      <Box 
-                        component="img" 
-                        src={item.imageUrl} 
-                        sx={{ 
-                          width: 48, 
-                          height: 48, 
-                          borderRadius: '8px', 
-                          objectFit: 'cover', 
-                          border: '1px solid',
-                          borderColor: 'divider'
-                        }} 
-                      />
-                    ) : (
-                      <Box sx={{ 
-                        width: 48, 
-                        height: 48, 
-                        borderRadius: '8px', 
-                        bgcolor: alpha('#000', 0.05), 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center' 
-                      }}>
-                        <InventoryIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
-                      </Box>
-                    )}
-                    <Box>
-                      <Typography variant="body1" sx={{ fontWeight: 700 }}>{item.name}</Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>Unit: {item.unit}</Typography>
-                    </Box>
-                  </Stack>
-                </td>
-                <td>
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>{item.sku || 'N/A'}</Typography>
-                </td>
-                <td>
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>{item.totalLedger}</Typography>
-                </td>
-                <td>
-                  <Typography variant="body1" sx={{ color: item.activeReservations > 0 ? 'secondary.main' : 'text.disabled' }}>
-                    {item.activeReservations}
-                  </Typography>
-                </td>
-                <td>
-                  <Box sx={{ 
-                    display: 'inline-block', 
-                    px: 1.5, 
-                    py: 0.5, 
-                    borderRadius: '8px',
-                    bgcolor: item.quantityAvailable > 0 ? alpha('#1e5c3a', 0.1) : alpha('#d32f2f', 0.1),
-                    color: item.quantityAvailable > 0 ? 'primary.main' : 'error.main',
-                    fontWeight: 800
-                  }}>
-                    {item.quantityAvailable} {item.unit}
+              <Box key={`${item.materialId}-${index}`}>
+                <ListItem 
+                  sx={{ 
+                    p: { xs: 2.5, sm: 3 },
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    alignItems: { xs: 'stretch', md: 'center' },
+                    gap: { xs: 2.5, md: 3 }
+                  }}
+                >
+                  {/* Avatar & Identifiers */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, gap: 2 }}>
+                    <ListItemAvatar>
+                      {item.imageUrl ? (
+                        <Avatar
+                          src={item.imageUrl}
+                          variant="rounded"
+                          sx={{ width: 64, height: 64, borderRadius: '16px', border: '1px solid', borderColor: 'divider' }}
+                        />
+                      ) : (
+                        <Avatar variant="rounded" sx={{ width: 64, height: 64, borderRadius: '16px', bgcolor: alpha('#1e5c3a', 0.05), color: 'primary.main' }}>
+                          <InventoryIcon />
+                        </Avatar>
+                      )}
+                    </ListItemAvatar>
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography variant="subtitle1" sx={{ fontWeight: 800, lineHeight: 1.2, mb: 0.5 }}>
+                          {item.name}
+                        </Typography>
+                      }
+                      secondary={
+                        <Stack spacing={0.5}>
+                          <Typography variant="body2" sx={{ color: 'text.secondary', fontFamily: 'monospace', fontSize: '0.8rem', fontWeight: 600 }}>
+                            {item.sku || 'NO-SKU'}
+                          </Typography>
+                        </Stack>
+                      }
+                    />
                   </Box>
-                </td>
-                <td>
-                  <Button 
-                    variant="outlined" 
-                    size="small" 
-                    startIcon={<ShippingIcon />}
-                    onClick={() => handleOpenReceive(item)}
-                    sx={{ borderRadius: '8px', fontWeight: 700 }}
-                  >
-                    Receive Shipment
-                  </Button>
-                </td>
-              </tr>
+
+                  {/* Stock Metrics */}
+                  <Box sx={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(3, 1fr)', 
+                    gap: 2, 
+                    bgcolor: { xs: alpha('#000', 0.02), md: 'transparent' }, 
+                    p: { xs: 1.5, md: 0 }, 
+                    borderRadius: '12px' 
+                  }}>
+                    <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+                      <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, lineHeight: 1 }}>TOTAL</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 800 }}>{item.totalLedger}</Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, lineHeight: 1 }}>RESERVED</Typography>
+                      <Typography variant="body1" sx={{ color: item.activeReservations > 0 ? 'secondary.main' : 'text.disabled', fontWeight: 700 }}>
+                        {item.activeReservations}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ textAlign: { xs: 'center', md: 'right' } }}>
+                      <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, lineHeight: 1 }}>AVAILABLE</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 900, color: item.quantityAvailable > 0 ? 'primary.main' : 'error.main' }}>
+                        {item.quantityAvailable} {item.unit}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Actions */}
+                  <Box sx={{ mt: { xs: 1, md: 0 }, minWidth: { md: 180 } }}>
+                    <Button 
+                      variant="outlined" 
+                      fullWidth
+                      startIcon={<ShippingIcon />}
+                      onClick={() => handleOpenReceive(item)}
+                      sx={{ borderRadius: '12px', fontWeight: 800, py: 1.2, borderColor: alpha('#1e5c3a', 0.2), color: '#1e5c3a' }}
+                    >
+                      Receive Stock
+                    </Button>
+                  </Box>
+                </ListItem>
+                {index < inventory.length - 1 && <Box sx={{ height: '1px', bgcolor: 'divider', ml: { xs: 2.5, sm: 3 }, mr: { xs: 2.5, sm: 3 } }} />}
+              </Box>
             ))}
-          </WorkshopTable>
-        </section>
+          </List>
+        </Card>
       )}
+
+      {/* Floating Action Button - Mobile Only */}
+      <div className="fab-container desktop-hide">
+        <div className="fab-main" onClick={() => setIsRegisterOpen(true)}>
+          <AddIcon />
+        </div>
+      </div>
 
       {/* RECEIVE SHIPMENT MODAL */}
       <Dialog 
