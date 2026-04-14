@@ -17,7 +17,8 @@ import {
   MenuItem,
   CircularProgress,
   alpha,
-  Dialog
+  Dialog,
+  IconButton
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -25,6 +26,7 @@ import {
   BusinessCenter as SuitIcon,
   Checkroom as ShirtIcon,
   Straighten as TrousersIcon,
+  Delete as DeleteIcon,
   EmojiEvents as EventIcon,
   TipsAndUpdates as IntelIcon
 } from "@mui/icons-material";
