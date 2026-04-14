@@ -31,6 +31,7 @@ import { useToastStore } from '../components/feedback/Toast';
 import { truncateId, safeFormatDistanceToNow, safeLocaleDate } from '../utils/format';
 import { OrderEntryItem } from '../features/orders/components/OrderEntryItem';
 import { Timeline, TimelineItem } from '../components/timeline/Timeline';
+import { MobileHeader } from '../components/layout/MobileHeader';
 
 import './styles/client-profile.css';
 
@@ -93,8 +94,18 @@ export function ClientProfilePage() {
   };
 
   return (
-    <Box className="container" sx={{ pt: 4, pb: 8 }}>
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 4 }}>
+    <Box className="container" sx={{ pt: { xs: 2, md: 4 }, pb: 8 }}>
+      <MobileHeader 
+        title={customer.name} 
+        subtitle={`ID: ${truncateId(customer.id).toUpperCase()}`}
+      />
+
+      <Stack 
+        direction="row" 
+        spacing={2} 
+        alignItems="center" 
+        sx={{ mb: 4, display: { xs: 'none', md: 'flex' } }}
+      >
         <Button 
           component={Link} 
           to="/customers" 
@@ -105,7 +116,11 @@ export function ClientProfilePage() {
         </Button>
       </Stack>
 
-      <Box component="header" className="client-profile-header">
+      <Box 
+        component="header" 
+        className="client-profile-header"
+        sx={{ display: { xs: 'none', md: 'flex' } }}
+      >
         <Box>
           <Typography variant="h3" sx={{ fontWeight: 800, color: 'text.primary', mb: 1, wordBreak: 'break-word', letterSpacing: '-1px' }}>
             {customer.name}
@@ -126,7 +141,7 @@ export function ClientProfilePage() {
             variant="contained" 
             color="primary"
             startIcon={<OrderIcon />}
-            onClick={() => navigate(`/orders/new?customerId=${customer.id}`)}
+            onClick={() => navigate(`/orders/new?customerId={customer.id}`)}
             sx={{ borderRadius: '12px', px: 3, py: 1.5, fontWeight: 700 }}
           >
             Create New Order
@@ -142,6 +157,32 @@ export function ClientProfilePage() {
           </Button>
         </Stack>
       </Box>
+
+      {/* Mobile Actions - visible only on small screens */}
+      <Stack 
+        direction="row" 
+        spacing={2} 
+        sx={{ mb: 4, display: { xs: 'flex', md: 'none' } }}
+      >
+        <Button 
+          fullWidth
+          variant="contained" 
+          color="primary"
+          onClick={() => navigate(`/orders/new?customerId=${customer.id}`)}
+          sx={{ borderRadius: '12px', py: 1.5, fontWeight: 700 }}
+        >
+          New Order
+        </Button>
+        <Button 
+          fullWidth
+          variant="contained" 
+          color="secondary"
+          onClick={() => setIsModalOpen(true)}
+          sx={{ borderRadius: '12px', py: 1.5, fontWeight: 700 }}
+        >
+          Record
+        </Button>
+      </Stack>
 
       <Grid container spacing={4}>
         {/* LEFT PANEL: Info Card */}

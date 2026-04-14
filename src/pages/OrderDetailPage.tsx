@@ -28,6 +28,7 @@ import { RiskBadge } from '../components/ui/RiskBadge.tsx';
 import { EditOrderModal } from '../features/orders/components/EditOrderModal.tsx';
 
 import { truncateId } from '../utils/format.ts';
+import { MobileHeader } from '../components/layout/MobileHeader.tsx';
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -83,8 +84,24 @@ export function OrderDetailPage() {
 
   return (
     <Box className="order-detail-page" sx={{ p: { xs: 2, md: 4 }, maxWidth: 1400, mx: 'auto' }}>
-      {/* 1. Global Header */}
-      <Card elevation={0} className="sf-glass" sx={{ p: 3, mb: 4, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+      <MobileHeader 
+        title={`#${truncateId(order.id).toUpperCase()}`} 
+        subtitle={`Event: ${new Date(order.eventDate).toLocaleDateString()}`}
+      />
+
+      {/* 1. Global Header - Desktop Only */}
+      <Card 
+        elevation={0} 
+        className="sf-glass" 
+        sx={{ 
+          p: 3, 
+          mb: 4, 
+          borderRadius: 3, 
+          border: '1px solid', 
+          borderColor: 'divider',
+          display: { xs: 'none', md: 'block' }
+        }}
+      >
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Stack direction="row" spacing={3} alignItems="center">
             <Button
@@ -136,6 +153,23 @@ export function OrderDetailPage() {
           </Stack>
         </Stack>
       </Card>
+
+      {/* Mobile Risk Indicator */}
+      <Box sx={{ mb: 3, display: { xs: 'flex', md: 'none' }, justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className={`badge ${riskBadgeClass} py-1 px-3 text-xs font-bold shadow-sm`} style={{ borderRadius: '6px' }}>
+          {projection.riskLevel.replace('_', ' ')}
+        </div>
+        {!isOrderCompleted && isCompanyAdminOrManager && (
+          <Button 
+            size="small" 
+            variant="text" 
+            startIcon={<SettingsIcon />} 
+            onClick={() => setEditModalOpen(true)}
+          >
+            Edit
+          </Button>
+        )}
+      </Box>
 
       <Grid container spacing={4}>
         {/* 2. Left Sidebar (4 Columns) */}

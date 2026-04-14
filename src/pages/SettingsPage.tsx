@@ -6,7 +6,9 @@ import {
   Tabs, 
   Tab, 
   Paper,
-  alpha
+  alpha,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { 
   Settings as SettingsIcon,
@@ -44,6 +46,8 @@ function CustomTabPanel(props: TabPanelProps) {
 }
 
 export const SettingsPage: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [activeTab, setActiveTab] = useState(0);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -55,7 +59,16 @@ export const SettingsPage: React.FC = () => {
       <header style={{ marginBottom: 40 }}>
         <Stack direction="row" spacing={2} alignItems="center">
           <SettingsIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-          <Typography variant="h4" sx={{ fontWeight: 800 }}>Settings Hub</Typography>
+          <Typography 
+            variant="h4" 
+            className="mobile-page-title" 
+            sx={{ 
+              fontSize: { xs: '1.25rem', md: '2.125rem' }, 
+              fontWeight: 800 
+            }}
+          >
+            Settings Hub
+          </Typography>
         </Stack>
         <Typography variant="body1" sx={{ color: 'text.secondary', mt: 1 }}>
           Centralized administration for production workflows and company configuration.
@@ -64,6 +77,7 @@ export const SettingsPage: React.FC = () => {
 
       <Paper className="sf-glass" sx={{ 
         display: 'flex', 
+        flexDirection: isMobile ? 'column' : 'row',
         minHeight: '70vh', 
         borderRadius: '32px', 
         overflow: 'hidden',
@@ -74,40 +88,48 @@ export const SettingsPage: React.FC = () => {
       }}>
         {/* Navigation Pane */}
         <Box sx={{ 
-          width: 280, 
-          borderRight: '1px solid', 
+          width: isMobile ? '100%' : 280, 
+          borderRight: isMobile ? 'none' : '1px solid', 
+          borderBottom: isMobile ? '1px solid' : 'none',
           borderColor: 'divider',
           bgcolor: alpha('#f8fbf9', 0.5),
-          p: 2
+          p: isMobile ? 1 : 2
         }}>
-          <Typography variant="caption" sx={{ 
-            px: 2, 
-            py: 1.5, 
-            display: 'block', 
-            fontWeight: 800, 
-            color: 'text.disabled',
-            textTransform: 'uppercase',
-            letterSpacing: 1.5
-          }}>
-            Administration
-          </Typography>
+          {!isMobile && (
+            <Typography variant="caption" sx={{ 
+              px: 2, 
+              py: 1.5, 
+              display: 'block', 
+              fontWeight: 800, 
+              color: 'text.disabled',
+              textTransform: 'uppercase',
+              letterSpacing: 1.5
+            }}>
+              Administration
+            </Typography>
+          )}
           <Tabs
-            orientation="vertical"
+            orientation={isMobile ? "horizontal" : "vertical"}
+            variant={isMobile ? "scrollable" : "standard"}
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             value={activeTab}
             onChange={handleTabChange}
             sx={{
               '& .MuiTabs-indicator': {
-                width: 4,
-                borderRadius: '0 4px 4px 0',
-                left: 0,
+                width: isMobile ? undefined : 4,
+                height: isMobile ? 4 : undefined,
+                borderRadius: isMobile ? '4px 4px 0 0' : '0 4px 4px 0',
+                left: isMobile ? undefined : 0,
+                bottom: 0,
                 bgcolor: 'primary.main'
               },
               '& .MuiTab-root': {
-                alignItems: 'flex-start',
-                textAlign: 'left',
-                justifyContent: 'flex-start',
-                minHeight: 56,
-                borderRadius: '12px',
+                alignItems: isMobile ? 'center' : 'flex-start',
+                textAlign: isMobile ? 'center' : 'left',
+                justifyContent: isMobile ? 'center' : 'flex-start',
+                minHeight: isMobile ? 48 : 56,
+                borderRadius: isMobile ? '8px' : '12px',
                 px: 2,
                 color: 'text.secondary',
                 transition: 'all 0.2s ease',
@@ -135,7 +157,7 @@ export const SettingsPage: React.FC = () => {
         </Box>
 
         {/* Content Pane */}
-        <Box sx={{ flex: 1, p: 6, bgcolor: 'transparent', overflowY: 'auto' }}>
+        <Box sx={{ flex: 1, p: isMobile ? 3 : 6, bgcolor: 'transparent', overflowY: 'auto' }}>
           <CustomTabPanel value={activeTab} index={0}>
             <WorkshopConfiguration />
           </CustomTabPanel>

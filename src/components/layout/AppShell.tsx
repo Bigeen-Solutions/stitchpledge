@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, useMediaQuery, useTheme } from '@mui/material';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { BottomNav } from './BottomNav';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -34,9 +35,13 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         }}
       >
         <TopBar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-        <Box className="content-container">
+        <Box 
+          className={`content-container ${isMobile ? 'has-bottom-nav' : ''}`}
+          sx={{ flexGrow: 1 }}
+        >
           {children}
         </Box>
+        <BottomNav />
       </Box>
     </Box>
   );

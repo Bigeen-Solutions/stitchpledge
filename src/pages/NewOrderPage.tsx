@@ -485,7 +485,21 @@ export function NewOrderPage() {
           {/* STEP 1: CLIENT DETAILS (NEW CLIENT ONLY) */}
           {step === "CLIENT_DETAILS" && (
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
-              <Typography variant="h5" sx={{ mb: 4, fontWeight: 700, color: 'text.primary' }}>2. The Mint: Personal Details</Typography>
+              <Box sx={{ mb: 4 }}>
+                <Typography 
+                  variant="h5" 
+                  className="mobile-page-title"
+                  sx={{ mb: 1, color: 'text.primary', display: { xs: 'block', md: 'none' } }}
+                >
+                  Step 1. Identify Boutique
+                </Typography>
+                <Typography 
+                  variant="h5" 
+                  sx={{ mb: 4, fontWeight: 700, color: 'text.primary', display: { xs: 'none', md: 'block' } }}
+                >
+                  1. Identifying Primary Boutique
+                </Typography>
+              </Box>
               <Stack spacing={3}>
                 <TextField
                   fullWidth
@@ -531,24 +545,37 @@ export function NewOrderPage() {
                     '& .MuiInputLabel-root': { color: 'text.secondary' }
                   }}
                 />
-                <Stack direction="row" spacing={2} sx={{ pt: 2 }}>
-                  <Button
-                    onClick={() => setStep("CLIENT_SELECTION")}
-                    sx={{ color: 'text.primary', textTransform: 'none' }}
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    size="large"
-                    disabled={!newCustomer.name}
-                    onClick={() => setStep("GARMENTS_TIMELINE")}
-                    sx={{ bgcolor: 'secondary.main', height: 60, borderRadius: '12px', '&:hover': { bgcolor: '#d4aa2a' } }}
-                  >
-                    Proceed to Garment Configuration
-                  </Button>
-                </Stack>
+              </Stack>
+
+              <Divider sx={{ my: 4 }} />
+
+              <Stack 
+                direction="row" 
+                spacing={2} 
+                justifyContent="space-between" 
+                sx={{ 
+                  pt: 8,
+                  position: { xs: 'fixed', md: 'static' },
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  bgcolor: 'background.paper',
+                  p: { xs: 2, md: 0 },
+                  borderTop: { xs: '1px solid', md: 'none' },
+                  borderColor: 'divider',
+                  zIndex: 10,
+                  pb: { xs: 'calc(16px + env(safe-area-inset-bottom, 16px))', md: 0 }
+                }}
+              >
+                <Button onClick={() => setStep("SELECT_STORE")} sx={{ color: 'text.primary' }}>Back</Button>
+                <Button
+                  variant="contained"
+                  disabled={!selectedCustomer && !newCustomer.name}
+                  onClick={() => setStep("GARMENTS_TIMELINE")}
+                  sx={{ bgcolor: 'secondary.main', height: 52, px: 6, borderRadius: '12px', '&:hover': { bgcolor: '#d4aa2a' } }}
+                >
+                  Proceed to Items
+                </Button>
               </Stack>
             </Box>
           )}
@@ -556,7 +583,21 @@ export function NewOrderPage() {
           {/* STEP 2: GARMENT & TIMELINE */}
           {step === "GARMENTS_TIMELINE" && (
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
-              <Typography variant="h5" sx={{ mb: 4, fontWeight: 700, color: 'text.primary' }}>3. Visual Data Entry: Garment & Timeline</Typography>
+              <Box sx={{ mb: 4 }}>
+                <Typography 
+                  variant="h5" 
+                  className="mobile-page-title"
+                  sx={{ mb: 1, color: 'text.primary', display: { xs: 'block', md: 'none' } }}
+                >
+                  Step 2. Production Blueprint
+                </Typography>
+                <Typography 
+                  variant="h5" 
+                  sx={{ mb: 4, fontWeight: 700, color: 'text.primary', display: { xs: 'none', md: 'block' } }}
+                >
+                  2. Defining Production Blueprint
+                </Typography>
+              </Box>
 
               <Grid container spacing={4}>
                 <Grid size={{ xs: 12, md: 7 }}>
@@ -712,11 +753,27 @@ export function NewOrderPage() {
 
               <Divider sx={{ my: 4 }} />
 
-              <Stack direction="row" spacing={2} justifyContent="space-between">
+              <Stack 
+                direction="row" 
+                spacing={2} 
+                justifyContent="space-between" 
+                sx={{ 
+                  pt: 8,
+                  position: { xs: 'fixed', md: 'static' },
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  bgcolor: 'background.paper',
+                  p: { xs: 2, md: 0 },
+                  borderTop: { xs: '1px solid', md: 'none' },
+                  borderColor: 'divider',
+                  zIndex: 10,
+                  pb: { xs: 'calc(16px + env(safe-area-inset-bottom, 16px))', md: 0 }
+                }}
+              >
                 <Button
                   onClick={() => setStep(selectedCustomer ? "CLIENT_SELECTION" : "CLIENT_DETAILS")}
                   sx={{ color: 'text.primary' }}
-                  startIcon={<ArrowBackIcon />}
                 >
                   Back
                 </Button>
@@ -729,11 +786,10 @@ export function NewOrderPage() {
                     height: 52,
                     px: 6,
                     borderRadius: '12px',
-                    '&:hover': { bgcolor: '#d4aa2a', boxShadow: `0 0 20px ${alpha('#c49a1a', 0.4)}` }
+                    '&:hover': { bgcolor: '#d4aa2a' }
                   }}
-                  endIcon={<ArrowForwardIcon />}
                 >
-                  Define Fabric & Design
+                  Configure Material
                 </Button>
               </Stack>
             </Box>
@@ -742,7 +798,21 @@ export function NewOrderPage() {
           {/* STEP 3: FABRIC & DESIGN */}
           {step === "FABRIC_DETAILS" && (
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
-              <Typography variant="h5" sx={{ mb: 4, fontWeight: 700, color: 'text.primary' }}>3. The Evidence: Fabric & Design</Typography>
+              <Box sx={{ mb: 4 }}>
+                <Typography 
+                  variant="h5" 
+                  className="mobile-page-title"
+                  sx={{ mb: 1, color: 'text.primary', display: { xs: 'block', md: 'none' } }}
+                >
+                  Step 3. Material Config
+                </Typography>
+                <Typography 
+                  variant="h5" 
+                  sx={{ mb: 4, fontWeight: 700, color: 'text.primary', display: { xs: 'none', md: 'block' } }}
+                >
+                  3. The Evidence: Fabric & Design
+                </Typography>
+              </Box>
               
               <Grid container spacing={4}>
                 {/* Image Upload */}
@@ -951,7 +1021,24 @@ export function NewOrderPage() {
 
             <Divider sx={{ my: 4 }} />
 
-            <Stack direction="row" spacing={2} justifyContent="space-between">
+            <Stack 
+              direction="row" 
+              spacing={2} 
+              justifyContent="space-between" 
+              sx={{ 
+                pt: 8,
+                position: { xs: 'fixed', md: 'static' },
+                bottom: 0,
+                left: 0,
+                right: 0,
+                bgcolor: 'background.paper',
+                p: { xs: 2, md: 0 },
+                borderTop: { xs: '1px solid', md: 'none' },
+                borderColor: 'divider',
+                zIndex: 10,
+                pb: { xs: 'calc(16px + env(safe-area-inset-bottom, 16px))', md: 0 }
+              }}
+            >
               <Button onClick={() => setStep("GARMENTS_TIMELINE")} sx={{ color: 'text.primary' }}>Back</Button>
               <Button
                 variant="contained"
@@ -966,7 +1053,21 @@ export function NewOrderPage() {
         )}
           {step === "MEASUREMENTS" && (
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
-              <Typography variant="h5" sx={{ mb: 4, fontWeight: 700, color: 'text.primary' }}>4. Recording Measurements (cm)</Typography>
+              <Box sx={{ mb: 4 }}>
+                <Typography 
+                  variant="h5" 
+                  className="mobile-page-title"
+                  sx={{ mb: 1, color: 'text.primary', display: { xs: 'block', md: 'none' } }}
+                >
+                  Step 4. Measurements
+                </Typography>
+                <Typography 
+                  variant="h5" 
+                  sx={{ mb: 4, fontWeight: 700, color: 'text.primary', display: { xs: 'none', md: 'block' } }}
+                >
+                  4. Recording Measurements (cm)
+                </Typography>
+              </Box>
               
               <Grid container spacing={4}>
                 {/* Left Side: Measurement Inputs */}
@@ -1093,7 +1194,24 @@ export function NewOrderPage() {
               </Grid>
 
               <Divider sx={{ my: 4 }} />
-              <Stack direction="row" spacing={2} justifyContent="space-between">
+              <Stack 
+                direction="row" 
+                spacing={2} 
+                justifyContent="space-between" 
+                sx={{ 
+                  pt: 8,
+                  position: { xs: 'fixed', md: 'static' },
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  bgcolor: 'background.paper',
+                  p: { xs: 2, md: 0 },
+                  borderTop: { xs: '1px solid', md: 'none' },
+                  borderColor: 'divider',
+                  zIndex: 10,
+                  pb: { xs: 'calc(16px + env(safe-area-inset-bottom, 16px))', md: 0 }
+                }}
+              >
                 <Button onClick={() => setStep("FABRIC_DETAILS")} sx={{ color: 'text.primary' }}>Back</Button>
                 <Button
                   variant="contained"
@@ -1109,7 +1227,21 @@ export function NewOrderPage() {
           {/* STEP: SUMMARY */}
           {step === "SUMMARY" && (
             <Box className="animate-in zoom-in-95 duration-300">
-              <Typography variant="h5" sx={{ mb: 4, fontWeight: 700, color: 'text.primary' }}>5. Formalize Order</Typography>
+              <Box sx={{ mb: 4 }}>
+                <Typography 
+                  variant="h5" 
+                  className="mobile-page-title"
+                  sx={{ mb: 1, color: 'text.primary', display: { xs: 'block', md: 'none' } }}
+                >
+                  Step 5. Confirmation
+                </Typography>
+                <Typography 
+                  variant="h5" 
+                  sx={{ mb: 4, fontWeight: 700, color: 'text.primary', display: { xs: 'none', md: 'block' } }}
+                >
+                  5. Formalize Order
+                </Typography>
+              </Box>
 
               <Stack spacing={3}>
                 <Box sx={{ p: 4, bgcolor: alpha('#1e5c3a', 0.04), border: '1px solid', borderColor: 'divider', borderRadius: '20px' }}>
@@ -1165,7 +1297,23 @@ export function NewOrderPage() {
                   </Stack>
                 </Box>
 
-                <Stack direction="row" spacing={2} sx={{ pt: 4 }}>
+                <Stack 
+                  direction="row" 
+                  spacing={2} 
+                  sx={{ 
+                    pt: 8,
+                    position: { xs: 'fixed', md: 'static' },
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    bgcolor: 'background.paper',
+                    p: { xs: 2, md: 0 },
+                    borderTop: { xs: '1px solid', md: 'none' },
+                    borderColor: 'divider',
+                    zIndex: 10,
+                    pb: { xs: 'calc(16px + env(safe-area-inset-bottom, 16px))', md: 0 }
+                  }}
+                >
                   <Button onClick={() => setStep("MEASUREMENTS")} sx={{ color: 'text.primary' }}>Back</Button>
                   <Button
                     variant="contained"

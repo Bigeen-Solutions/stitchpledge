@@ -4,6 +4,8 @@ import { useCustomers } from '../features/customers/hooks/useCustomers';
 import { WorkshopTable } from '../components/ui/WorkshopTable';
 import { WorkshopTableSkeleton } from '../components/ui/WorkshopTableSkeleton';
 import { ErrorState } from '../components/feedback/ErrorState';
+import { CircularProgress, Typography, Box } from '@mui/material';
+import { usePullToRefresh } from '../hooks/usePullToRefresh.ts';
 
 export function CustomersPage() {
   const navigate = useNavigate();
@@ -24,6 +26,12 @@ export function CustomersPage() {
 
   const { data, isLoading, isError, error, refetch } = useCustomers(page, limit, debouncedSearch);
 
+  const { refreshing, pullDelta } = usePullToRefresh({
+    onRefresh: async () => {
+      await refetch();
+    }
+  });
+
   if (isError) {
     return (
       <div className="container mt-xl">
@@ -39,11 +47,45 @@ export function CustomersPage() {
   const totalPages = data ? Math.ceil(data.total / limit) : 0;
 
   return (
-    <div className="customers-page container">
+    <div className="customers-page container" style={{ position: 'relative' }}>
+      {/* Pull to Refresh Indicator */}
+      <div 
+        style={{ 
+          position: 'absolute', 
+          top: -40, 
+          left: 0, 
+          right: 0, 
+          display: 'flex', 
+          justifyContent: 'center',
+          transform: `translateY(${Math.min(pullDelta, 100)}px)`,
+          opacity: pullDelta > 20 ? 1 : 0,
+          transition: refreshing ? 'transform 0.2s' : 'none',
+          zIndex: 10
+        }}
+      >
+        <CircularProgress 
+          size={24} 
+          thickness={6} 
+          value={refreshing ? undefined : Math.min((pullDelta / 80) * 100, 100)}
+          variant={refreshing ? "indeterminate" : "determinate"}
+          sx={{ color: '#1e5c3a' }}
+        />
+      </div>
+
       <header className="mb-lg flex justify-between items-end">
         <div>
-          <h1 className="text-h1">Client CRM</h1>
-          <p className="text-black">Manage your customer relationships and order history</p>
+          <Typography 
+            variant="h3" 
+            className="mobile-page-title md:text-h1"
+            sx={{ 
+              fontSize: { xs: '1.25rem', md: 'clamp(1.5rem, 4vw, 2.5rem)' },
+              fontWeight: 800,
+              lineHeight: 1.2 
+            }}
+          >
+            Client CRM
+          </Typography>
+          <p className="text-black text-sm md:text-base">Manage your customer relationships and order history</p>
         </div>
         <button className="btn btn-primary" onClick={() => alert('New Client feature coming soon!')}>
           + New Client
