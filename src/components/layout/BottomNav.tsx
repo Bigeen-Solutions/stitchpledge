@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { 
-  Paper, 
-  BottomNavigation, 
-  BottomNavigationAction, 
+import {
+  Paper,
+  BottomNavigation,
+  BottomNavigationAction,
   Box,
   useTheme,
   useMediaQuery
 } from '@mui/material';
-import { 
-  Dashboard as DashboardIcon, 
-  Assignment as OrdersIcon, 
-  People as CustomersIcon, 
-  Inventory as InventoryIcon,
+import {
+  Dashboard as DashboardIcon,
+  Assignment as OrdersIcon,
+  People as CustomersIcon,
   MoreHoriz as MoreIcon,
   Factory as ProductionIcon
 } from '@mui/icons-material';
@@ -47,9 +46,9 @@ export const BottomNav: React.FC = () => {
 
   return (
     <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1100 }}>
-      <Paper 
-        elevation={3} 
-        sx={{ 
+      <Paper
+        elevation={3}
+        sx={{
           borderRadius: 0,
           borderTop: '1px solid',
           borderColor: 'divider',
@@ -63,7 +62,7 @@ export const BottomNav: React.FC = () => {
           showLabels
           value={getActiveTab()}
           onChange={handleTabChange}
-          sx={{ 
+          sx={{
             height: 64,
             bgcolor: 'transparent',
             '& .MuiBottomNavigationAction-root': {
@@ -87,10 +86,10 @@ export const BottomNav: React.FC = () => {
         </BottomNavigation>
       </Paper>
 
-      <MoreDrawer 
-        open={drawerOpen} 
-        onClose={() => setDrawerOpen(false)} 
-        onOpen={() => setDrawerOpen(true)} 
+      <MoreDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onOpen={() => setDrawerOpen(true)}
       />
     </Box>
   );
