@@ -45,7 +45,7 @@ const navItems = [
   { label: 'Customers', icon: Users, path: '/customers', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Inventory', icon: ClipboardList, path: '/inventory', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
   { label: 'Payments', icon: CreditCard, path: '/payments', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'], isBeta: true },
-  { label: 'Staff Management', icon: UserCog, path: '/staff', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
+  { label: 'Staff Management', icon: UserCog, path: '/staff', roles: ['COMPANY_ADMIN'] },
   { label: 'Reports', icon: BarChart2, path: '/reports', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
 ];
 

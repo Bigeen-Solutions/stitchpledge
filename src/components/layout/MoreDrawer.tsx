@@ -17,7 +17,8 @@ import {
   Settings as SettingsIcon, 
   History as HistoryIcon,
   Logout as LogoutIcon,
-  ChevronRight as ChevronRightIcon
+  ChevronRight as ChevronRightIcon,
+  Inventory as InventoryIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../features/auth/auth.store';
@@ -34,7 +35,8 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({ open, onClose, onOpen })
 
   const menuItems = [
     { label: 'Reports', icon: BarChartIcon, path: '/reports', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
-    { label: 'Staff Management', icon: PeopleIcon, path: '/staff', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
+    { label: 'Vault', icon: InventoryIcon, path: '/inventory', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
+    { label: 'Staff Management', icon: PeopleIcon, path: '/staff', roles: ['COMPANY_ADMIN'] },
     { label: 'Settings', icon: SettingsIcon, path: '/settings', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
     { label: 'Audit Log', icon: HistoryIcon, path: '/reports/audit', roles: ['COMPANY_ADMIN'] },
   ];

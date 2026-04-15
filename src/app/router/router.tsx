@@ -81,7 +81,7 @@ export const router = createBrowserRouter([
           {
             path: '/staff',
             element: (
-              <ProtectedRoute requiredPermission="staff:read">
+              <ProtectedRoute allowedRoles={['COMPANY_ADMIN']}>
                 <StaffManagementPage />
               </ProtectedRoute>
             )

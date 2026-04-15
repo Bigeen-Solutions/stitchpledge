@@ -12,7 +12,8 @@ import {
   Assignment as OrdersIcon, 
   People as CustomersIcon, 
   Inventory as InventoryIcon,
-  MoreHoriz as MoreIcon 
+  MoreHoriz as MoreIcon,
+  Factory as ProductionIcon
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MoreDrawer } from './MoreDrawer';
@@ -28,8 +29,8 @@ export const BottomNav: React.FC = () => {
 
   const getActiveTab = () => {
     if (pathname.startsWith('/orders')) return 1;
-    if (pathname.startsWith('/customers')) return 2;
-    if (pathname.startsWith('/inventory')) return 3;
+    if (pathname.startsWith('/production')) return 2;
+    if (pathname.startsWith('/customers')) return 3;
     if (pathname === '/dashboard') return 0;
     return -1; // "More" is active if it's one of the other pages, but we'll reflect it via the drawer
   };
@@ -40,7 +41,7 @@ export const BottomNav: React.FC = () => {
       return;
     }
 
-    const paths = ['/dashboard', '/orders', '/customers', '/inventory'];
+    const paths = ['/dashboard', '/orders', '/production', '/customers'];
     navigate(paths[newValue]);
   };
 
@@ -80,8 +81,8 @@ export const BottomNav: React.FC = () => {
         >
           <BottomNavigationAction label="Dashboard" icon={<DashboardIcon />} />
           <BottomNavigationAction label="Orders" icon={<OrdersIcon />} />
+          <BottomNavigationAction label="Production" icon={<ProductionIcon />} />
           <BottomNavigationAction label="Clients" icon={<CustomersIcon />} />
-          <BottomNavigationAction label="Vault" icon={<InventoryIcon />} />
           <BottomNavigationAction label="More" icon={<MoreIcon />} />
         </BottomNavigation>
       </Paper>
