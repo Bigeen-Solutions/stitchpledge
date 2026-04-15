@@ -21,7 +21,6 @@ import {
   Dashboard as LayoutDashboard,
   Assignment as ClipboardList,
   People as Users,
-  Straighten as Ruler,
   Payment as CreditCard,
   ManageAccounts as UserCog,
   BarChart as BarChart2,
