@@ -171,9 +171,9 @@ export function InventoryPage() {
                   {/* Avatar & Identifiers */}
                   <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, gap: 2 }}>
                     <ListItemAvatar>
-                      { (item.imageUrl || (item as any).image_url) ? (
+                      { item.imageUrl ? (
                         <Avatar
-                          src={item.imageUrl || (item as any).image_url}
+                          src={item.imageUrl}
                           variant="rounded"
                           sx={{ width: 64, height: 64, borderRadius: '16px', border: '1px solid', borderColor: 'divider' }}
                         />

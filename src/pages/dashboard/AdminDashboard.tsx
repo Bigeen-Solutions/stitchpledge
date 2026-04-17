@@ -247,7 +247,7 @@ export const AdminDashboard: React.FC = () => {
           <Typography variant="h4" sx={{ fontWeight: 800, color: '#1a2340', letterSpacing: '-0.02em' }}>
             Production Intelligence
           </Typography>
-          <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500, mt: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography component="div" variant="body2" sx={{ color: '#6b7280', fontWeight: 500, mt: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
             Factory Command Center •
             <Box component="span" sx={{
               display: 'inline-flex',
@@ -258,7 +258,7 @@ export const AdminDashboard: React.FC = () => {
               fontSize: '11px',
               letterSpacing: '0.05em'
             }}>
-              <Box sx={{
+              <Box component="span" sx={{
                 width: 6,
                 height: 6,
                 borderRadius: '50%',
