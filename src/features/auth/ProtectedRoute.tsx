@@ -2,11 +2,11 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './auth.store';
 import { usePermissions } from './use-permissions';
-import type { Permission, StitchFlowRole } from './auth.types';
+import type { Permission, StitchFynRole } from './auth.types';
 
 interface ProtectedRouteProps {
   requiredPermission?: Permission;
-  allowedRoles?: StitchFlowRole[];
+  allowedRoles?: StitchFynRole[];
   children: React.ReactNode;
 }
 
@@ -27,7 +27,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   if (isLoading) {
     return (
       <div className="full-screen-skeleton">
-        <div className="loading-spinner">Loading StitchFlow...</div>
+        <div className="loading-spinner">Loading StitchFyn...</div>
       </div>
     );
   }

@@ -20,7 +20,7 @@ export function ForbiddenPage() {
           </div>
         </div>
         
-        <div className="sf-brand-footer">STITCHFLOW</div>
+        <div className="sf-brand-footer">StitchFyn</div>
         
         <div style={{ position: 'absolute', bottom: '48px', color: '#c49a1a', fontSize: '0.75rem', letterSpacing: '2px' }}>
           ERROR CODE 403

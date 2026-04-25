@@ -74,7 +74,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
         <Stack direction="row" spacing={1} alignItems="center">
           <ScissorsIcon sx={{ color: 'var(--color-warning)', fontSize: 24 }} />
           <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: -0.5 }}>
-            StitchFlow
+            StitchFyn
           </Typography>
         </Stack>
       </Box>

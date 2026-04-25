@@ -112,7 +112,7 @@ export function LoginPage() {
           <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="center" sx={{ mb: 4 }}>
             <ScissorsIcon sx={{ color: '#1e5c3a', fontSize: 28 }} />
             <Typography variant="h5" sx={{ color: '#1e5c3a', fontWeight: 700, letterSpacing: -0.5 }}>
-              StitchFlow
+              StitchFyn
             </Typography>
           </Stack>
 

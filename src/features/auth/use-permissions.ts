@@ -1,5 +1,5 @@
 import { useAuthStore } from './auth.store';
-import type { Permission, StitchFlowRole } from './auth.types';
+import type { Permission, StitchFynRole } from './auth.types';
 
 /**
  * Hook for component-level RBAC gating.
@@ -17,7 +17,7 @@ export function usePermissions() {
     return user.permissions.includes(permission);
   };
 
-  const role: StitchFlowRole | null = user?.role || null;
+  const role: StitchFynRole | null = user?.role || null;
 
   return {
     can,

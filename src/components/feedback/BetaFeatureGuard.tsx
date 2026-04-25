@@ -69,7 +69,7 @@ export function BetaFeatureGuard({ featureName }: BetaFeatureGuardProps) {
           </Box>
 
           <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
-            The <strong>{featureName}</strong> module is currently in active development for the StitchFlow v1.1 release. 
+            The <strong>{featureName}</strong> module is currently in active development for the StitchFyn v1.1 release. 
             We're building sophisticated physical-to-digital processing to ensure professional accuracy.
           </Typography>
 

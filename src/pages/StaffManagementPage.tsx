@@ -279,7 +279,7 @@ export function StaffManagementPage() {
                   size="small"
                   value={inviteData.email}
                   onChange={(e) => setInviteData({ ...inviteData, email: e.target.value })}
-                  placeholder="jane@stitchflow.io"
+                  placeholder="jane@StitchFyn.io"
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                 />
 
