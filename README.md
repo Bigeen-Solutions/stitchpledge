@@ -1,6 +1,6 @@
-# 🎨 StitchFyn Web Engine
+# 🎨 Stitchfyn Web Engine
 
-The high-trust frontend projection layer for the StitchFyn workshop engine.
+The high-trust frontend projection layer for the Stitchfyn workshop engine.
 
 ## 🏗️ Architecture: Pure Projection
 
@@ -18,7 +18,7 @@ To maintain absolute synchronization with the workshop floor, we avoid optimisti
 
 ## 💎 Design System & Aesthetics
 
-StitchFyn is designed to be a premium, "Trust-First" tool for modern workshops.
+Stitchfyn is designed to be a premium, "Trust-First" tool for modern workshops.
 - **Premium Aesthetics**: Vibrant, curated color palettes, modern typography (Inter/Outfit), and subtle glassmorphism.
 - **Modular CSS**: A token-driven styling architecture ensuring consistency across high-density management views and large-target shop floor interfaces.
 - **Micro-animations**: Smooth transitions for stage completions and status changes to make the system feel responsive and "alive."

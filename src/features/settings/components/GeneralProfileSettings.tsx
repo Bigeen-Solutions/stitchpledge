@@ -49,7 +49,7 @@ export function GeneralProfileSettings() {
                 <TextField 
                   fullWidth 
                   placeholder="Enter company name" 
-                  defaultValue="StitchFyn Atelier"
+                  defaultValue="Stitchfyn Atelier"
                   variant="outlined"
                   sx={{ 
                     '& .MuiOutlinedInput-root': { 

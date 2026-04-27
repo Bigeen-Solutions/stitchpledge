@@ -13,14 +13,14 @@ export type Permission =
   | 'reports:read'
   | 'customer:portal'; // read-only customer role
 
-export type StitchFynRole = 'COMPANY_ADMIN' | 'STORE_MANAGER' | 'TAILOR' | 'CUSTOMER';
+export type StitchfynRole = 'COMPANY_ADMIN' | 'STORE_MANAGER' | 'TAILOR' | 'CUSTOMER';
 
 export interface AuthUser {
   userId: string;
   tenantId: string;
   email: string;
   fullName: string;
-  role: StitchFynRole;
+  role: StitchfynRole;
   storeId?: string;
   permissions: Permission[]; // Explicit list from backend — never derived locally
   avatarUrl?: string;

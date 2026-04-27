@@ -37,7 +37,7 @@ export function NotFoundPage() {
         </h1>
         <p className="error-description">
           The page you are looking for might have been moved or doesn't exist. 
-          In the StitchFyn architecture, every thread counts, yet this one 
+          In the Stitchfyn architecture, every thread counts, yet this one 
           seems to have frayed.
         </p>
 

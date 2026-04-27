@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  TextField, 
+import {
+  Box,
+  Typography,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
   Stack,
   alpha,
   MenuItem,
@@ -19,25 +19,32 @@ import {
   Card,
   CircularProgress
 } from '@mui/material';
-import { 
+import {
   Add as AddIcon,
   Inventory as InventoryIcon,
-  LocalShipping as ShippingIcon
+  LocalShipping as ShippingIcon,
+  CameraAlt as CameraIcon
 } from '@mui/icons-material';
-import { useInventory, useReceiveShipment, useRegisterMaterial } from '../features/inventory/useInventory';
+import { useInventory, useReceiveShipment, useRegisterMaterial, useUpdateMaterialImage } from '../features/inventory/useInventory';
 import { ErrorState } from '../components/feedback/ErrorState';
 
 export function InventoryPage() {
   const { data: inventory, isLoading, isError, error, refetch } = useInventory();
   const receiveMutation = useReceiveShipment();
   const registerMutation = useRegisterMaterial();
- 
+  const updateImageMutation = useUpdateMaterialImage();
+
   const [selectedMaterial, setSelectedMaterial] = useState<{ id: string, name: string } | null>(null);
   const [receiveData, setReceiveData] = useState({ quantity: '', notes: '' });
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [newMaterial, setNewMaterial] = useState({ name: '', sku: '', canonicalUnit: 'Yards' });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  // Edit Image state
+  const [editImageTarget, setEditImageTarget] = useState<{ id: string; name: string; currentImageUrl?: string } | null>(null);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
 
   const handleOpenReceive = (material: { materialId: string, name: string }) => {
     setSelectedMaterial({ id: material.materialId, name: material.name });
@@ -51,19 +58,19 @@ export function InventoryPage() {
 
   const handleSubmitReceive = async () => {
     if (!selectedMaterial || !receiveData.quantity) return;
-    
+
     await receiveMutation.mutateAsync({
       materialId: selectedMaterial.id,
       quantity: parseFloat(receiveData.quantity),
       notes: receiveData.notes
     });
-    
+
     handleCloseReceive();
   };
- 
+
   const handleRegisterMaterial = async () => {
     if (!newMaterial.name || !newMaterial.canonicalUnit) return;
-    
+
     const formData = new FormData();
     formData.append('name', newMaterial.name);
     if (newMaterial.sku) formData.append('sku', newMaterial.sku);
@@ -88,12 +95,34 @@ export function InventoryPage() {
     }
   };
 
+  const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditImageFile(file);
+      setEditImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleCloseEditImage = () => {
+    setEditImageTarget(null);
+    setEditImageFile(null);
+    setEditImagePreview(null);
+  };
+
+  const handleSubmitEditImage = async () => {
+    if (!editImageTarget || !editImageFile) return;
+    const formData = new FormData();
+    formData.append('image', editImageFile);
+    await updateImageMutation.mutateAsync({ materialId: editImageTarget.id, formData });
+    handleCloseEditImage();
+  };
+
   if (isError) {
     return (
       <Box className="container mt-xl">
-        <ErrorState 
-          error={error} 
-          onRetry={() => refetch()} 
+        <ErrorState
+          error={error}
+          onRetry={() => refetch()}
           title="The Vault Door is Jammed"
         />
       </Box>
@@ -104,10 +133,10 @@ export function InventoryPage() {
     <Box className="container" sx={{ paddingBottom: '90px' }}>
       <header className="mb-lg flex justify-between items-end">
         <Box>
-          <Typography 
-            variant="h3" 
+          <Typography
+            variant="h3"
             className="mobile-page-title md:text-h1"
-            sx={{ 
+            sx={{
               fontSize: { xs: '1.75rem', md: 'clamp(1.5rem, 4vw, 2.5rem)' },
               fontWeight: 800,
               lineHeight: 1.2,
@@ -122,13 +151,13 @@ export function InventoryPage() {
           </Typography>
         </Box>
         <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setIsRegisterOpen(true)}
-            sx={{ 
-              borderRadius: '12px', 
-              fontWeight: 700, 
+            sx={{
+              borderRadius: '12px',
+              fontWeight: 700,
               bgcolor: '#1e5c3a',
               px: 3,
               py: 1.5,
@@ -159,8 +188,8 @@ export function InventoryPage() {
           <List sx={{ p: 0 }}>
             {inventory?.map((item, index) => (
               <Box key={`${item.materialId}-${index}`}>
-                <ListItem 
-                  sx={{ 
+                <ListItem
+                  sx={{
                     p: { xs: 2.5, sm: 3 },
                     display: 'flex',
                     flexDirection: { xs: 'column', md: 'row' },
@@ -171,17 +200,33 @@ export function InventoryPage() {
                   {/* Avatar & Identifiers */}
                   <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, gap: 2 }}>
                     <ListItemAvatar>
-                      { item.imageUrl ? (
-                        <Avatar
-                          src={item.imageUrl}
-                          variant="rounded"
-                          sx={{ width: 64, height: 64, borderRadius: '16px', border: '1px solid', borderColor: 'divider' }}
-                        />
-                      ) : (
-                        <Avatar variant="rounded" sx={{ width: 64, height: 64, borderRadius: '16px', bgcolor: alpha('#1e5c3a', 0.05), color: 'primary.main' }}>
-                          <InventoryIcon />
-                        </Avatar>
-                      )}
+                      {/* Clickable avatar with camera hover overlay */}
+                      <Box
+                        sx={{ position: 'relative', width: 64, height: 64, flexShrink: 0, cursor: 'pointer' }}
+                        onClick={() => setEditImageTarget({ id: item.materialId, name: item.name, currentImageUrl: item.imageUrl })}
+                        title="Update material photo"
+                      >
+                        {item.imageUrl ? (
+                          <Avatar
+                            src={item.imageUrl}
+                            variant="rounded"
+                            sx={{ width: 64, height: 64, borderRadius: '16px', border: '1px solid', borderColor: 'divider' }}
+                          />
+                        ) : (
+                          <Avatar variant="rounded" sx={{ width: 64, height: 64, borderRadius: '16px', bgcolor: alpha('#1e5c3a', 0.05), color: 'primary.main' }}>
+                            <InventoryIcon />
+                          </Avatar>
+                        )}
+                        {/* Camera hover overlay */}
+                        <Box sx={{
+                          position: 'absolute', inset: 0, borderRadius: '16px',
+                          bgcolor: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          opacity: 0, transition: 'opacity 0.18s',
+                          '&:hover': { opacity: 1 }
+                        }}>
+                          <CameraIcon sx={{ color: '#fff', fontSize: 22 }} />
+                        </Box>
+                      </Box>
                     </ListItemAvatar>
                     <ListItemText
                       disableTypography
@@ -201,13 +246,13 @@ export function InventoryPage() {
                   </Box>
 
                   {/* Stock Metrics */}
-                  <Box sx={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(3, 1fr)', 
-                    gap: 2, 
-                    bgcolor: { xs: alpha('#000', 0.02), md: 'transparent' }, 
-                    p: { xs: 1.5, md: 0 }, 
-                    borderRadius: '12px' 
+                  <Box sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: 2,
+                    bgcolor: { xs: alpha('#000', 0.02), md: 'transparent' },
+                    p: { xs: 1.5, md: 0 },
+                    borderRadius: '12px'
                   }}>
                     <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                       <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, lineHeight: 1 }}>TOTAL</Typography>
@@ -229,8 +274,8 @@ export function InventoryPage() {
 
                   {/* Actions */}
                   <Box sx={{ mt: { xs: 1, md: 0 }, minWidth: { md: 180 } }}>
-                    <Button 
-                      variant="outlined" 
+                    <Button
+                      variant="outlined"
                       fullWidth
                       startIcon={<ShippingIcon />}
                       onClick={() => handleOpenReceive(item)}
@@ -255,8 +300,8 @@ export function InventoryPage() {
       </div>
 
       {/* RECEIVE SHIPMENT MODAL */}
-      <Dialog 
-        open={Boolean(selectedMaterial)} 
+      <Dialog
+        open={Boolean(selectedMaterial)}
         onClose={handleCloseReceive}
         maxWidth="xs"
         fullWidth
@@ -268,7 +313,7 @@ export function InventoryPage() {
             <Typography variant="subtitle2" sx={{ mb: 2 }}>
               Logging incoming stock for: <strong style={{ color: 'var(--color-primary)' }}>{selectedMaterial?.name}</strong>
             </Typography>
-            
+
             <Stack spacing={3}>
               <TextField
                 label="Quantity (Yards/Units)"
@@ -302,8 +347,8 @@ export function InventoryPage() {
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={handleCloseReceive} sx={{ color: 'text.secondary' }}>Cancel</Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleSubmitReceive}
             disabled={!receiveData.quantity || receiveMutation.isPending}
             startIcon={<AddIcon />}
@@ -313,10 +358,10 @@ export function InventoryPage() {
           </Button>
         </DialogActions>
       </Dialog>
- 
+
       {/* REGISTER MATERIAL MODAL */}
-      <Dialog 
-        open={isRegisterOpen} 
+      <Dialog
+        open={isRegisterOpen}
         onClose={() => setIsRegisterOpen(false)}
         maxWidth="xs"
         fullWidth
@@ -332,21 +377,21 @@ export function InventoryPage() {
                 </Typography>
                 <Stack spacing={2} alignItems="center">
                   {imagePreview ? (
-                    <Box 
-                      component="img" 
-                      src={imagePreview} 
-                      sx={{ width: '100%', height: 160, borderRadius: '16px', objectFit: 'cover', border: '1px solid var(--color-border)' }} 
+                    <Box
+                      component="img"
+                      src={imagePreview}
+                      sx={{ width: '100%', height: 160, borderRadius: '16px', objectFit: 'cover', border: '1px solid var(--color-border)' }}
                     />
                   ) : (
-                    <Box sx={{ 
-                      width: '100%', 
-                      height: 120, 
-                      borderRadius: '16px', 
+                    <Box sx={{
+                      width: '100%',
+                      height: 120,
+                      borderRadius: '16px',
                       border: '2px dashed',
                       borderColor: 'divider',
-                      display: 'flex', 
+                      display: 'flex',
                       flexDirection: 'column',
-                      alignItems: 'center', 
+                      alignItems: 'center',
                       justifyContent: 'center',
                       bgcolor: alpha('#000', 0.02)
                     }}>
@@ -375,7 +420,7 @@ export function InventoryPage() {
               <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', display: 'block' }}>
                 Material Metadata
               </Typography>
-              
+
               <TextField
                 label="Material Name"
                 fullWidth
@@ -406,26 +451,109 @@ export function InventoryPage() {
                 <MenuItem value="Yards">Yards</MenuItem>
                 <MenuItem value="Meters">Meters</MenuItem>
                 <MenuItem value="Pieces">Pieces</MenuItem>
-                <MenuItem value="Boxes">Boxes</MenuItem>
+                <MenuItem value="Trouser-Length">Trouser Length</MenuItem>
               </TextField>
             </Stack>
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={() => setIsRegisterOpen(false)} sx={{ color: 'text.secondary' }}>Cancel</Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleRegisterMaterial}
             disabled={!newMaterial.name || !selectedImage || registerMutation.isPending}
-            sx={{ 
-              borderRadius: '12px', 
-              fontWeight: 700, 
-              px: 3, 
+            sx={{
+              borderRadius: '12px',
+              fontWeight: 700,
+              px: 3,
               bgcolor: '#1e5c3a',
               '&.Mui-disabled': { bgcolor: alpha('#1e5c3a', 0.1) }
             }}
           >
             {registerMutation.isPending ? 'Registering...' : 'Register Material'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* EDIT MATERIAL IMAGE MODAL */}
+      <Dialog
+        open={Boolean(editImageTarget)}
+        onClose={handleCloseEditImage}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}
+      >
+        <DialogTitle sx={{ fontWeight: 800 }}>Update Material Photo</DialogTitle>
+        <DialogContent>
+          <Box sx={{ py: 1 }}>
+            <Typography variant="subtitle2" sx={{ mb: 2 }}>
+              Updating photo for: <strong style={{ color: 'var(--color-primary)' }}>{editImageTarget?.name}</strong>
+            </Typography>
+            <Stack spacing={2} alignItems="center">
+              {/* Preview: new selection takes priority, then existing image, then placeholder */}
+              {editImagePreview ? (
+                <Box
+                  component="img"
+                  src={editImagePreview}
+                  sx={{ width: '100%', height: 160, borderRadius: '16px', objectFit: 'cover', border: '1px solid var(--color-border)' }}
+                />
+              ) : editImageTarget?.currentImageUrl ? (
+                <Box sx={{ position: 'relative', width: '100%' }}>
+                  <Box
+                    component="img"
+                    src={editImageTarget.currentImageUrl}
+                    sx={{ width: '100%', height: 160, borderRadius: '16px', objectFit: 'cover', border: '1px solid var(--color-border)', opacity: 0.6 }}
+                  />
+                  <Box sx={{
+                    position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    borderRadius: '16px'
+                  }}>
+                    <Typography variant="caption" sx={{ bgcolor: 'rgba(0,0,0,0.55)', color: '#fff', px: 1.5, py: 0.5, borderRadius: '8px', fontWeight: 700 }}>
+                      Current photo — select a new one below
+                    </Typography>
+                  </Box>
+                </Box>
+              ) : (
+                <Box sx={{
+                  width: '100%', height: 120, borderRadius: '16px', border: '2px dashed',
+                  borderColor: 'divider', display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center', bgcolor: alpha('#000', 0.02)
+                }}>
+                  <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>No photo yet</Typography>
+                </Box>
+              )}
+              <Button
+                component="label"
+                variant="outlined"
+                fullWidth
+                startIcon={<CameraIcon />}
+                sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700 }}
+              >
+                {editImagePreview ? 'Retake Photo' : 'Capture New Photo'}
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleEditImageChange}
+                />
+              </Button>
+            </Stack>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={handleCloseEditImage} sx={{ color: 'text.secondary' }}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmitEditImage}
+            disabled={!editImageFile || updateImageMutation.isPending}
+            sx={{
+              borderRadius: '12px', fontWeight: 700, px: 3,
+              bgcolor: '#1e5c3a',
+              '&.Mui-disabled': { bgcolor: alpha('#1e5c3a', 0.1) }
+            }}
+          >
+            {updateImageMutation.isPending ? 'Uploading...' : 'Save Photo'}
           </Button>
         </DialogActions>
       </Dialog>

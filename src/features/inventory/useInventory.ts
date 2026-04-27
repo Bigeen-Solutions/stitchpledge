@@ -54,3 +54,25 @@ export const useRegisterMaterial = () => {
     }
   });
 };
+
+/**
+ * Mutation hook to update the image on an existing material record.
+ * Follows the Pure Refresh Sequence: command → toast → invalidate → server re-render.
+ */
+export const useUpdateMaterialImage = () => {
+  const queryClient = useQueryClient();
+  const showToast = useToastStore((state) => state.showToast);
+
+  return useMutation({
+    mutationFn: ({ materialId, formData }: { materialId: string; formData: FormData }) =>
+      inventoryApi.updateMaterialImage(materialId, formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.inventory.overview });
+      showToast('Image Updated', 'The material photo has been saved.', 'success');
+    },
+    onError: (error: any) => {
+      showToast('Upload Failed', error.message || 'Could not update the material image.', 'error');
+    }
+  });
+};
+

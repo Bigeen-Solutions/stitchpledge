@@ -70,7 +70,7 @@ export function SplashScreen() {
           }}>
             <ScissorsIcon sx={{ color: '#c49a1a', fontSize: 40 }} />
             <Typography variant="h3" sx={{ color: 'white', fontWeight: 700, letterSpacing: -0.5 }}>
-              StitchFyn
+              Stitchfyn
             </Typography>
           </Box>
         </Fade>

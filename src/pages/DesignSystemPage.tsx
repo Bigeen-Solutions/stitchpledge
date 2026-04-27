@@ -18,7 +18,7 @@ export function DesignSystemPage() {
           The Modern Workshop
         </Typography>
         <Typography variant="body1" color="textSecondary">
-          StitchFyn Design System & Theme Verification
+          Stitchfyn Design System & Theme Verification
         </Typography>
       </Box>
 

@@ -6,7 +6,7 @@ export function CustomerPortalLayout() {
       <nav className="sf-glass-nav flex justify-between items-center p-md mb-xl shadow-sm">
         <div className="flex items-center gap-md">
           <div className="sf-logo-badge">SF</div>
-          <span className="text-h3 font-bold">StitchFyn Portal</span>
+          <span className="text-h3 font-bold">Stitchfyn Portal</span>
         </div>
         <div className="flex items-center gap-lg">
           <span className="text-sm font-bold text-muted uppercase tracking-widest">Customer Access</span>
@@ -18,7 +18,7 @@ export function CustomerPortalLayout() {
       </main>
 
       <footer className="container py-lg border-t border-glass text-center">
-        <p className="text-xs text-muted">© 2026 StitchFyn Workshop Engine. Secure Read-Only Projection.</p>
+        <p className="text-xs text-muted">© 2026 Stitchfyn Workshop Engine. Secure Read-Only Projection.</p>
       </footer>
     </div>
   );

@@ -28,5 +28,15 @@ export const inventoryApi = {
   registerMaterial: async (data: FormData | { name: string; sku: string | null; canonicalUnit: string }) => {
     const { data: result } = await apiClient.post('/inventory/materials', data);
     return result;
+  },
+
+  updateMaterialImage: async (materialId: string, formData: FormData): Promise<{ imageUrl: string }> => {
+    const { data } = await apiClient.patch<{ imageUrl: string }>(
+      `/inventory/materials/${materialId}/image`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return data;
   }
 };
+

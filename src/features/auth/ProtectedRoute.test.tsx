@@ -27,7 +27,7 @@ describe("ProtectedRoute", () => {
         </ProtectedRoute>
       </MemoryRouter>,
     )
-    expect(screen.getByText(/Loading StitchFyn/i)).toBeInTheDocument()
+    expect(screen.getByText(/Loading Stitchfyn/i)).toBeInTheDocument()
   })
 
   it("redirects to /login when unauthenticated", () => {

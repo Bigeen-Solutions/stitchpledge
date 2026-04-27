@@ -24,7 +24,7 @@
   --risk-atrisk: var(--color-warning);
   --risk-overdue: var(--color-danger);
 
-  /* Spacing (StitchFyn Scale) */
+  /* Spacing (Stitchfyn Scale) */
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
