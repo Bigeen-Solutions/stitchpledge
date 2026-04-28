@@ -54,18 +54,18 @@ export const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isSidebarOpen }) 
 
   return (
     <AppBar
-      position="fixed"
+      position="sticky"
       elevation={0}
       className="top-bar"
       sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        width: { 
-          xs: '100%', 
-          sm: isSidebarOpen ? 'calc(100% - 240px)' : '100%' 
+        width: {
+          xs: '100%',
+          sm: isSidebarOpen ? 'calc(100% - 240px)' : '100%'
         },
-        ml: { 
-          xs: 0, 
-          sm: isSidebarOpen ? '240px' : 0 
+        ml: {
+          xs: 0,
+          sm: isSidebarOpen ? '240px' : 0
         },
       }}
     >
@@ -88,11 +88,11 @@ export const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isSidebarOpen }) 
           {isAdmin && (
             <Chip
               icon={<Calendar sx={{ fontSize: 16, color: 'var(--color-warning) !important' }} />}
-              label={new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                month: 'long', 
-                day: 'numeric', 
-                year: 'numeric' 
+              label={new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
               })}
               variant="outlined"
               sx={{
