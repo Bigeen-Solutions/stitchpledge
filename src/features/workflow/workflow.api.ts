@@ -13,9 +13,11 @@ export interface StageInstance {
   id: string;
   workflowInstanceId: string;
   stageId: string;
-  status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'BLOCKED';
+  status: 'PENDING' | 'IN_PROGRESS' | 'INHIBITED' | 'COMPLETED' | 'BLOCKED';
   completedBy: string | null;
   completedAt: string | null;
+  startedAt: string | null;
+  reasonCode?: string | null;
   evidencePhotoUrls: string[] | null;
 }
 
@@ -60,6 +62,7 @@ export interface ActiveFloorTask {
   fabricName?: string;
   fabric_image_base64?: string;
   startDate?: string;
+  startedAt?: string;
   storeId?: string;
   status: string;
 }

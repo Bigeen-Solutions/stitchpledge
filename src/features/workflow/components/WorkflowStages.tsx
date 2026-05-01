@@ -1,6 +1,8 @@
+import React from 'react'
 import { useWorkflow, useCompleteStage } from "../hooks/useWorkflowMutation"
 import { StageStepper } from "../../../components/ui/StageStepper.tsx"
 import type { StageInstance } from "../workflow.api"
+import { FabricSafetySeal } from "./FabricSafetySeal"
 
 export function WorkflowStages({ garmentId }: { garmentId: string }) {
   const { data: workflow, isLoading } = useWorkflow(garmentId)
@@ -10,10 +12,10 @@ export function WorkflowStages({ garmentId }: { garmentId: string }) {
   if (!workflow) return null
 
   const activeStageIndex = workflow.stages.findIndex(
-    (stage) => stage.status === "ACTIVE" || stage.status === "PENDING",
+    (stage) => stage.status === "IN_PROGRESS" || stage.status === "PENDING" || stage.status === "INHIBITED",
   )
 
-  const isWarning = workflow.stages.some((stage) => stage.status === "BLOCKED")
+  const isWarning = workflow.stages.some((stage) => stage.status === "BLOCKED" || stage.status === "INHIBITED")
 
   return (
     <div className="workflow-stages sf-card">
@@ -28,31 +30,44 @@ export function WorkflowStages({ garmentId }: { garmentId: string }) {
 
       <div className="stages-list grid gap-md">
         {workflow.stages.map((stage: StageInstance) => {
-          const isActive = stage.status === "ACTIVE"
+          const isInProgress = stage.status === "IN_PROGRESS"
           const isComplete = stage.status === "COMPLETED"
+          const isInhibited = stage.status === "INHIBITED"
 
           return (
-            <div
-              key={stage.id}
-              className="stage-item flex justify-between items-center p-md sf-glass mb-md"
-              style={{ borderRadius: "var(--radius-card)" }}
-            >
-              <div>
-                <span className="text-sm font-bold">{stage.stageId}</span>
-                <p className="text-xs text-muted">{stage.status}</p>
+            <React.Fragment key={stage.id}>
+              <div
+                className="stage-item flex justify-between items-center p-md sf-glass mb-md"
+                style={{ borderRadius: "var(--radius-card)" }}
+              >
+              <div className="flex items-center gap-4">
+                <div>
+                  <span className="text-sm font-bold uppercase tracking-tight">{stage.stageId}</span>
+                  <p className={`text-[10px] font-bold ${isInhibited ? 'text-red-500' : 'text-muted'}`}>{stage.status}</p>
+                </div>
               </div>
-              {isActive ? (
+              {isInProgress ? (
                 <button
                   onClick={() => completeStage.mutate(stage.id)}
                   disabled={completeStage.isPending}
-                  className="btn btn-accent btn-sm"
+                  className="btn btn-accent btn-sm shadow-lg shadow-accent/20"
                 >
                   {completeStage.isPending ? "Syncing..." : "Complete Stage"}
                 </button>
+              ) : isInhibited ? (
+                <div className="flex flex-col items-end">
+                   <span className="text-[10px] text-red-500 font-bold bg-red-500/10 px-2 py-0.5 rounded uppercase tracking-widest">Inhibited</span>
+                </div>
               ) : isComplete ? (
-                <span className="badge badge-ontrack">Done</span>
+                <span className="badge badge-ontrack px-4">Done</span>
               ) : null}
             </div>
+            {isInhibited && (
+              <div className="px-md pb-md">
+                <FabricSafetySeal reasonCode={stage.reasonCode || 'MATERIAL_DISRUPTION'} />
+              </div>
+            )}
+          </React.Fragment>
           )
         })}
       </div>
