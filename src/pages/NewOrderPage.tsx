@@ -58,6 +58,7 @@ import { useToastStore } from "../components/feedback/Toast";
 import { useInventory } from "../features/inventory/useInventory";
 import { truncateId, safeLocaleDate } from "../utils/format";
 import { NumberField } from "../components/inputs/NumberField";
+import { mapErrorCode } from "../utils/errorMapper";
 
 type Step = "CLIENT_SELECTION" | "CLIENT_DETAILS" | "GARMENTS_TIMELINE" | "FABRIC_DETAILS" | "MEASUREMENTS" | "SUMMARY";
 
@@ -375,9 +376,13 @@ export function NewOrderPage() {
       const errorData = err.response?.data;
       let errorMessage = errorData?.message || err.message || "Failed to finalize order";
       
-      // The UI Guardrail: Specific handling for material failures
-      if (errorData?.code === 'INSUFFICIENT_STOCK') {
-        errorMessage = `Material Vault Error: ${errorMessage}`;
+      // The UI Guardrail: Use centralized mapping for dignified error feedback
+      if (errorData?.code) {
+        errorMessage = mapErrorCode(errorData.code);
+        
+        if (errorData.code === 'INSUFFICIENT_STOCK') {
+          errorMessage = `Material Vault Error: ${errorMessage}`;
+        }
       }
       
       showToast("Intake Error", errorMessage, "error");
