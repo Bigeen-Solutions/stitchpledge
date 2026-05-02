@@ -15,8 +15,8 @@ import { InventoryPage } from '../../pages/InventoryPage.tsx';
 import { SettingsPage } from '../../pages/SettingsPage.tsx';
 import AuditLogPage from '../../pages/AuditLogPage.tsx';
 import { ForbiddenPage } from '../../pages/error/ForbiddenPage.tsx';
-// import { ServerErrorPage } from '../../pages/error/ServerErrorPage.tsx';
 import ReportsPage from '../../pages/ReportsPage.tsx';
+import { TrackingPage } from '../../pages/TrackingPage.tsx';
 import { BetaFeatureGuard } from '../../components/feedback/BetaFeatureGuard.tsx';
 
 
@@ -43,6 +43,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/', element: <SplashScreen /> },
           { path: '/login', element: <LoginPage /> },
+          { path: '/track/:slug', element: <TrackingPage /> },
           ...(import.meta.env.DEV ? [{ path: '/design-system', element: <DesignSystemPage /> }] : []),
         ],
       },
