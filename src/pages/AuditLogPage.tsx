@@ -2,98 +2,16 @@ import React from 'react';
 import {
   Box,
   Typography,
-  Card,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Avatar,
-  Chip,
   Breadcrumbs,
   Link,
-  CircularProgress,
-  Stack,
   alpha
 } from '@mui/material';
-import {
-  InfoOutlined as InfoOutlinedIcon,
-  ContentCut as ContentCutIcon,
-  Straighten as StraightenIcon,
-  Verified as VerifiedIcon,
-  ShoppingBag as ShoppingBagIcon,
-  Warehouse as WarehouseIcon,
-  Engineering as EngineeringIcon,
-  FactCheck as FactCheckIcon,
-  AutoFixHigh as FinishingIcon
-} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../infrastructure/http/axios.client';
 import { MobileHeader } from '../components/layout/MobileHeader';
+import { AuditTrailTimeline } from '../features/audit/components/AuditTrailTimeline';
 
 const AuditLogPage: React.FC = () => {
   const navigate = useNavigate();
-
-  const { data: events, isLoading } = useQuery({
-    queryKey: ['audit-log'],
-    queryFn: async () => {
-      const { data } = await apiClient.get<any[]>('/audit');
-      return data;
-    },
-  });
-
-  const getEventAvatarProps = (type: string, detail: string = '') => {
-    const detailLower = detail.toLowerCase();
-
-    switch (type) {
-      case 'ORDER_CREATED':
-        return { 
-          icon: <ShoppingBagIcon fontSize="small" />, 
-          bgcolor: alpha('#2196f3', 0.1), 
-          color: '#2196f3', 
-          label: 'ORDER CREATED' 
-        };
-      case 'MATERIAL_RECEIVED':
-      case 'MATERIAL_INTAKE':
-        return { 
-          icon: <WarehouseIcon fontSize="small" />, 
-          bgcolor: alpha('#ff9800', 0.1), 
-          color: '#ff9800', 
-          label: 'INVENTORY INTAKE' 
-        };
-      case 'STAGE_COMPLETED':
-        // Granular Stage Matching
-        if (detailLower.includes('cutting')) {
-          return { icon: <ContentCutIcon fontSize="small" />, bgcolor: alpha('#1b5e20', 0.1), color: '#1b5e20', label: 'CUTTING COMPLETE' };
-        }
-        if (detailLower.includes('sewing')) {
-          return { icon: <FactCheckIcon fontSize="small" />, bgcolor: alpha('#1b5e20', 0.1), color: '#1b5e20', label: 'SEWING COMPLETE' };
-        }
-        if (detailLower.includes('quality') || detailLower.includes('qc')) {
-          return { icon: <VerifiedIcon fontSize="small" />, bgcolor: alpha('#00867d', 0.1), color: '#00867d', label: 'QA PASSED' };
-        }
-        if (detailLower.includes('measurement')) {
-          return { icon: <StraightenIcon fontSize="small" />, bgcolor: alpha('#43a047', 0.1), color: '#43a047', label: 'MEASUREMENTS TAKEN' };
-        }
-        if (detailLower.includes('finishing')) {
-          return { icon: <FinishingIcon fontSize="small" />, bgcolor: alpha('#1b5e20', 0.1), color: '#1b5e20', label: 'FINISHING COMPLETE' };
-        }
-        
-        return { 
-          icon: <EngineeringIcon fontSize="small" />, 
-          bgcolor: alpha('#1b5e20', 0.1), 
-          color: '#1b5e20', 
-          label: 'STAGE COMPLETED' 
-        };
-      default:
-        return { 
-          icon: <InfoOutlinedIcon fontSize="small" />, 
-          bgcolor: alpha('#000', 0.05), 
-          color: 'text.secondary', 
-          label: type?.replace('_', ' ') || 'SYSTEM EVENT' 
-        };
-    }
-  };
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1200, mx: 'auto', paddingBottom: '90px' }}>
@@ -131,75 +49,16 @@ const AuditLogPage: React.FC = () => {
         </Box>
       </Box>
 
-      {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 8 }}>
-          <CircularProgress sx={{ color: 'primary.main' }} />
-        </Box>
-      ) : !events || events.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 8, px: 2 }}>
-          <Avatar sx={{ mx: 'auto', mb: 2, bgcolor: alpha('#000', 0.05), color: 'text.disabled', width: 64, height: 64 }}>
-            <InfoOutlinedIcon sx={{ fontSize: 32 }} />
-          </Avatar>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            No events recorded in the current telemetry window.
-          </Typography>
-        </Box>
-      ) : (
-        <Card sx={{ borderRadius: '24px', boxShadow: '0 8px 32px rgba(0,0,0,0.04)', border: '1px solid', borderColor: 'divider' }}>
-          <List sx={{ p: 0 }}>
-            {events.map((event, index) => {
-              const eventProps = getEventAvatarProps(event.event_type, event.detail);
-              return (
-                <Box key={`${event.id || 'evt'}-${index}`}>
-                  <ListItem 
-                    sx={{ 
-                      p: { xs: 2.5, sm: 3 },
-                      display: 'flex',
-                      flexDirection: { xs: 'column', md: 'row' },
-                      alignItems: { xs: 'flex-start', md: 'center' },
-                      gap: 2
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', flex: 1, gap: 2, alignItems: 'flex-start' }}>
-                      <ListItemIcon sx={{ minWidth: 'auto', mt: 0.5 }}>
-                        <Avatar sx={{ bgcolor: eventProps.bgcolor, color: eventProps.color, width: 40, height: 40 }}>
-                          {eventProps.icon}
-                        </Avatar>
-                      </ListItemIcon>
-                      <ListItemText
-                        disableTypography
-                        primary={
-                          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1a2340', mb: 0.5, lineHeight: 1.3 }}>
-                            {event.detail}
-                          </Typography>
-                        }
-                        secondary={
-                          <Stack direction="row" alignItems="center" spacing={1.5} flexWrap="wrap" useFlexGap>
-                            <Chip 
-                              label={eventProps.label} 
-                              size="small" 
-                              sx={{ bgcolor: eventProps.bgcolor, color: eventProps.color, fontWeight: 800, borderRadius: '6px', fontSize: '10px' }} 
-                            />
-                            <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, fontFamily: 'monospace' }}>
-                              REF: {event.id?.split('-')[0].toUpperCase() || 'SYS'}
-                            </Typography>
-                          </Stack>
-                        }
-                      />
-                    </Box>
-                    <Box sx={{ mt: { xs: 1, md: 0 }, ml: { xs: 7, md: 0 }, textAlign: { xs: 'left', md: 'right' } }}>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                        {event.createdAt ? new Date(event.createdAt).toLocaleString() : 'Unknown Date'}
-                      </Typography>
-                    </Box>
-                  </ListItem>
-                  {index < events.length - 1 && <Box sx={{ height: '1px', bgcolor: 'divider', ml: { xs: 9, md: 3 }, mr: { md: 3 } }} />}
-                </Box>
-              )
-            })}
-          </List>
-        </Card>
-      )}
+      <Box sx={{ 
+        bgcolor: 'background.paper', 
+        p: 3, 
+        borderRadius: '24px', 
+        boxShadow: '0 8px 32px rgba(0,0,0,0.04)', 
+        border: '1px solid', 
+        borderColor: 'divider' 
+      }}>
+        <AuditTrailTimeline />
+      </Box>
     </Box>
   );
 };

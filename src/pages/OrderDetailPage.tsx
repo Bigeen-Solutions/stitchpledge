@@ -26,6 +26,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { RiskBadge } from '../components/ui/RiskBadge.tsx';
 import { EditOrderModal } from '../features/orders/components/EditOrderModal.tsx';
+import { AuditTrailTimeline } from '../features/audit/components/AuditTrailTimeline.tsx';
 
 import { truncateId } from '../utils/format.ts';
 import { MobileHeader } from '../components/layout/MobileHeader.tsx';
@@ -423,6 +424,12 @@ export function OrderDetailPage() {
             </Card>
 
             {/* Component C: History Logs */}
+            <Grid size = {{xs: 12}}>
+                <Card className="sf-card" sx={{ height: '100%', borderRadius: 3, p: 3 }}>
+                  <AuditTrailTimeline targetId={order.id} />
+                </Card>
+              </Grid>
+
               <Grid size = {{xs: 12}}>
                 <Card className="sf-card" sx={{ height: '100%', borderRadius: 3, p: 3 }}>
                   <MeasurementHistory orderId={order.id} />
