@@ -27,6 +27,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { RiskBadge } from '../components/ui/RiskBadge.tsx';
 import { EditOrderModal } from '../features/orders/components/EditOrderModal.tsx';
 import { AuditTrailTimeline } from '../features/audit/components/AuditTrailTimeline.tsx';
+import { DisputePortal } from '../features/dispute/components/DisputePortal.tsx';
 
 import { truncateId } from '../utils/format.ts';
 import { MobileHeader } from '../components/layout/MobileHeader.tsx';
@@ -154,6 +155,8 @@ export function OrderDetailPage() {
           </Stack>
         </Stack>
       </Card>
+
+      <DisputePortal orderId={order.id} />
 
       {/* Mobile Risk Indicator */}
       <Box sx={{ mb: 3, display: { xs: 'flex', md: 'none' }, justifyContent: 'space-between', alignItems: 'center' }}>

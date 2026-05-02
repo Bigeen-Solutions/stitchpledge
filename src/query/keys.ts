@@ -40,4 +40,7 @@ export const keys = {
     search: (query: string) => ['customers', 'search', query] as const,
     detail: (id: string) => ['customers', 'profile', id] as const,
   },
+  disputes: {
+    projection: (orderId: string) => ['disputes', 'projection', orderId] as const,
+  },
 };
