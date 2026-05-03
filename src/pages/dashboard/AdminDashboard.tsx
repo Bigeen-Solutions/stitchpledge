@@ -47,6 +47,7 @@ import { useAdminAnalytics } from '../../features/dashboard/useAdminAnalytics';
 import { useOrders } from '../../features/orders/hooks/useOrders';
 import { useInventory } from '../../features/inventory/useInventory';
 import { OrderEntryItem } from '../../features/orders/components/OrderEntryItem';
+import { StitchScoreCard } from '../../features/dashboard/components/StitchScoreCard';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -363,6 +364,9 @@ export const AdminDashboard: React.FC = () => {
         {/* Left Column */}
         <Grid size={{ xs: 12, md: 8 }}>
           <Stack spacing={4}>
+            {/* StitchScore Private Mirror */}
+            <StitchScoreCard />
+
             {/* Bottleneck Board */}
             <Card
               sx={{
