@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Typography, Stack } from '@mui/material';
 import { RiskBadge, type RiskLevel } from '../../../components/ui/RiskBadge.tsx';
 import { truncateId, safeFormatDistanceToNow } from '../../../utils/format.ts';
+import { DeadlineBadge } from './DeadlineBadge.tsx';
 
 interface OrderEntryItemProps {
   order: {
@@ -32,7 +33,7 @@ export const OrderEntryItem: React.FC<OrderEntryItemProps> = ({ order, onClick }
           </Typography>
         </Stack>
         <div className="desktop-hide">
-          <RiskBadge level={riskLevel} />
+          <DeadlineBadge orderId={order.id} />
         </div>
       </div>
 
@@ -48,7 +49,7 @@ export const OrderEntryItem: React.FC<OrderEntryItemProps> = ({ order, onClick }
           )}
         </Stack>
         <div className="mobile-hide">
-          <RiskBadge level={riskLevel} />
+          <DeadlineBadge orderId={order.id} />
         </div>
       </div>
 
@@ -58,7 +59,7 @@ export const OrderEntryItem: React.FC<OrderEntryItemProps> = ({ order, onClick }
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, letterSpacing: 1 }}>
               DEADLINE
             </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 800, color: riskLevel === 'OVERDUE' ? 'error.main' : 'text.primary' }}>
+            <Typography variant="body2" sx={{ fontWeight: 800, color: 'text.primary' }}>
               {new Date(order.eventDate).toLocaleDateString()}
             </Typography>
           </Stack>
