@@ -13,7 +13,7 @@ export async function loginApi(dto: LoginDTO): Promise<AuthResponse> {
     accessToken: raw.accessToken,
     user: {
       userId: raw.user.userId,
-      tenantId: raw.user.tenantId,
+      companyId: raw.user.companyId,
       email: raw.user.email,
       fullName: raw.user.fullName,
       role: raw.user.role,
@@ -35,7 +35,7 @@ export async function refreshApi(): Promise<AuthResponse> {
     accessToken: raw.accessToken,
     user: {
       userId: raw.user.userId,
-      tenantId: raw.user.tenantId,
+      companyId: raw.user.companyId,
       email: raw.user.email,
       fullName: raw.user.fullName,
       role: raw.user.role,

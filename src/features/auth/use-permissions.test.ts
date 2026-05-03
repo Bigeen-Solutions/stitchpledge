@@ -6,7 +6,7 @@ import type { AuthUser } from './auth.types';
 
 const mockUser: AuthUser = {
   userId: 'u1',
-  tenantId: 't1',
+  companyId: 't1',
   email: 'test@example.com',
   fullName: 'Test User',
   role: 'STORE_MANAGER',
@@ -15,7 +15,7 @@ const mockUser: AuthUser = {
 
 const mockCustomer: AuthUser = {
   userId: 'u2',
-  tenantId: 't1',
+  companyId: 't1',
   email: 'customer@example.com',
   fullName: 'Customer User',
   role: 'CUSTOMER',
