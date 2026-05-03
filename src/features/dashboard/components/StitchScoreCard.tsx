@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Card, Typography, CircularProgress, Stack, LinearProgress, alpha, Grid } from '@mui/material';
-import { WorkspacePremium as WorkspacePremiumIcon, CheckCircle as CheckCircleIcon } from '@mui/icons-material';
+import { WorkspacePremium as WorkspacePremiumIcon } from '@mui/icons-material';
 import { useStitchScore } from '../useStitchScore';
 
 export const StitchScoreCard: React.FC = () => {
@@ -90,7 +90,7 @@ export const StitchScoreCard: React.FC = () => {
 
       <Grid container spacing={4} alignItems="center">
         {/* Score Ring */}
-        <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Grid size={{ xs: 12, md: 4 }} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Box sx={{ position: 'relative', display: 'inline-flex' }}>
             <CircularProgress
               variant="determinate"
@@ -134,7 +134,7 @@ export const StitchScoreCard: React.FC = () => {
         </Grid>
 
         {/* Breakdowns */}
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Stack spacing={3}>
             <MetricBar label="On-Time Delivery Rate" value={(breakdown.onTimeRate || 0) * 100} color="#1e5c3a" />
             <MetricBar label="Zero-Dispute Integrity" value={(breakdown.integrityRate || 0) * 100} color="#0369a1" />

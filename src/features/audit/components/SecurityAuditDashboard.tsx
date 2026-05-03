@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePermissions, Capability } from '../../auth/use-permissions';
+import { usePermissions, AuthCapabilities } from '../../auth/use-permissions';
 import ShieldOutlined from '@mui/icons-material/ShieldOutlined';
 import AlarmOnOutlined from '@mui/icons-material/AlarmOnOutlined';
 import PersonOutlined from '@mui/icons-material/PersonOutlined';
@@ -10,7 +10,8 @@ export const SecurityAuditDashboard: React.FC = () => {
   const { hasCapability } = usePermissions();
 
   // Gate: Owner-only capability required.
-  if (!hasCapability(Capability.VIEW_AUDIT_LOGS)) {
+  const canViewLogs = hasCapability(AuthCapabilities.VIEW_AUDIT_LOGS);
+  if (!canViewLogs) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
         <ShieldOutlined sx={{ fontSize: 64, color: '#d1d5db', marginBottom: 2 }} />

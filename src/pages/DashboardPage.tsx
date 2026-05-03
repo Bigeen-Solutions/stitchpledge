@@ -29,14 +29,14 @@ export const DashboardPage: React.FC = () => {
 
   const hasOrders = (data?.totalActiveOrders || 0) > 0;
 
-  // Role names from auth.types.ts: 'COMPANY_ADMIN' | 'STORE_MANAGER' | 'TAILOR' | 'CUSTOMER'
+  // Role names from auth.types.ts: 'OWNER' | 'MANAGER' | 'TAILOR' | 'CUSTOMER'
   
   if (role === 'TAILOR') {
     if (!hasOrders) return <TailorDashboardEmpty />;
     return <TailorDashboard />;
   }
 
-  if (role === 'COMPANY_ADMIN' || role === 'STORE_MANAGER') {
+  if (role === 'OWNER' || role === 'MANAGER') {
     return <AdminDashboard />;
   }
 

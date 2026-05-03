@@ -19,7 +19,7 @@ import {
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../../infrastructure/http/axios.client';
-import { AuditRecord } from '../types';
+import type { AuditRecord } from '../types';
 
 interface AuditTrailTimelineProps {
   targetId?: string;

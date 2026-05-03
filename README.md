@@ -33,6 +33,11 @@ StitchFyn is designed to be a premium, "Trust-First" tool for modern workshops.
 - **Material Vault**: Real-time stock reservation, immutable ledger views, and dynamic low-stock guards.
 - **Measurement Archives**: Version-controlled measurement logs with immutable history.
 - **Customer Portal**: A strictly read-only environment for production transparency.
+- **StitchScore Dashboard**: Real-time projection of workshop reputation and on-time performance metrics.
+- **Fabric Safety Protocol**: Visual intake verification flows and dispute standoffs.
+- **Group Order Coordination**: Unified cluster monitoring for large-scale "Aso-Ebi" and uniform bookings.
+- **Event Countdown Mode**: Automatic daily-digest tracking and urgent timeline escalation visualization.
+- **Immutable Audit Trail**: Full-screen "Show Proof" views for objective truth resolution.
 
 ---
 

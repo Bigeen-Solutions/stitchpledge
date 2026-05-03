@@ -211,7 +211,7 @@ export function StaffManagementPage() {
                         isActive: !member.isActive,
                       })
                     }
-                    disabled={updateStatus.isPending || member.id === currentUser.userId}
+                    disabled={updateStatus.isPending || member.id === currentUser.id}
                     sx={{ 
                       borderRadius: '12px', 
                       fontWeight: 800, 

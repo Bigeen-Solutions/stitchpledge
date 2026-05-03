@@ -17,8 +17,9 @@ import AuditLogPage from '../../pages/AuditLogPage.tsx';
 import { ForbiddenPage } from '../../pages/error/ForbiddenPage.tsx';
 import ReportsPage from '../../pages/ReportsPage.tsx';
 import { TrackingPage } from '../../pages/TrackingPage.tsx';
+import { DisputesPage } from '../../pages/DisputesPage.tsx';
+import { SecurityAuditPage } from '../../pages/SecurityAuditPage.tsx';
 import { BetaFeatureGuard } from '../../components/feedback/BetaFeatureGuard.tsx';
-
 
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
 import { CustomerOrderPage } from '../../features/customer/pages/CustomerOrderPage.tsx';
@@ -58,7 +59,7 @@ export const router = createBrowserRouter([
           {
             path: '/orders',
             element: (
-              <ProtectedRoute requiredPermission="orders:read">
+              <ProtectedRoute requiredPermission="MANAGE_ORDERS">
                 <OrdersPage />
               </ProtectedRoute>
             )
@@ -66,7 +67,7 @@ export const router = createBrowserRouter([
           {
             path: '/orders/new',
             element: (
-              <ProtectedRoute requiredPermission="orders:write">
+              <ProtectedRoute requiredPermission="MANAGE_ORDERS">
                 <NewOrderPage />
               </ProtectedRoute>
             )
@@ -74,7 +75,7 @@ export const router = createBrowserRouter([
           {
             path: '/orders/:id',
             element: (
-              <ProtectedRoute requiredPermission="orders:read">
+              <ProtectedRoute requiredPermission="MANAGE_ORDERS">
                 <OrderDetailPage />
               </ProtectedRoute>
             )
@@ -82,7 +83,7 @@ export const router = createBrowserRouter([
           {
             path: '/staff',
             element: (
-              <ProtectedRoute allowedRoles={['COMPANY_ADMIN']}>
+              <ProtectedRoute allowedRoles={['OWNER']}>
                 <StaffManagementPage />
               </ProtectedRoute>
             )
@@ -90,7 +91,7 @@ export const router = createBrowserRouter([
           {
             path: '/customers',
             element: (
-              <ProtectedRoute requiredPermission="orders:read">
+              <ProtectedRoute requiredPermission="MANAGE_ORDERS">
                 <CustomersPage />
               </ProtectedRoute>
             )
@@ -98,7 +99,7 @@ export const router = createBrowserRouter([
           {
             path: '/customers/:id',
             element: (
-              <ProtectedRoute requiredPermission="orders:read">
+              <ProtectedRoute requiredPermission="MANAGE_ORDERS">
                 <ClientProfilePage />
               </ProtectedRoute>
             )
@@ -110,7 +111,7 @@ export const router = createBrowserRouter([
           {
             path: '/inventory',
             element: (
-              <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'STORE_MANAGER']}>
+              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
                 <InventoryPage />
               </ProtectedRoute>
             )
@@ -118,7 +119,7 @@ export const router = createBrowserRouter([
           {
             path: '/settings',
             element: (
-              <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'STORE_MANAGER']}>
+              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
                 <SettingsPage />
               </ProtectedRoute>
             )
@@ -126,7 +127,7 @@ export const router = createBrowserRouter([
           {
             path: '/reports',
             element: (
-              <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'STORE_MANAGER']}>
+              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
                 <ReportsPage />
               </ProtectedRoute>
             )
@@ -134,8 +135,24 @@ export const router = createBrowserRouter([
           {
             path: '/reports/audit',
             element: (
-              <ProtectedRoute allowedRoles={['COMPANY_ADMIN']}>
+              <ProtectedRoute allowedRoles={['OWNER']}>
                 <AuditLogPage />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: '/reports/security-audit',
+            element: (
+              <ProtectedRoute allowedRoles={['OWNER']}>
+                <SecurityAuditPage />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: '/disputes',
+            element: (
+              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
+                <DisputesPage />
               </ProtectedRoute>
             )
           },
@@ -151,7 +168,7 @@ export const router = createBrowserRouter([
       },
       {
         element: (
-          <ProtectedRoute requiredPermission="customer:portal">
+          <ProtectedRoute allowedRoles={['CUSTOMER']}>
             <CustomerPortalLayout />
           </ProtectedRoute>
         ),

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Typography, Stack } from '@mui/material';
-import { RiskBadge, type RiskLevel } from '../../../components/ui/RiskBadge.tsx';
 import { truncateId, safeFormatDistanceToNow } from '../../../utils/format.ts';
 import { DeadlineBadge } from './DeadlineBadge.tsx';
 
@@ -19,8 +18,6 @@ interface OrderEntryItemProps {
 }
 
 export const OrderEntryItem: React.FC<OrderEntryItemProps> = ({ order, onClick }) => {
-  const riskLevel = (order.status === 'COMPLETED' ? 'ON_TRACK' : (order.riskLevel || 'ON_TRACK')) as RiskLevel;
-  
   return (
     <Box onClick={onClick} className="order-entry-card">
       <div className="card-top">

@@ -2,10 +2,10 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './auth.store';
 import { usePermissions } from './use-permissions';
-import type { Permission, StitchFynRole } from './auth.types';
+import type { Capability, StitchFynRole } from './auth.types';
 
 interface ProtectedRouteProps {
-  requiredPermission?: Permission;
+  requiredPermission?: Capability;
   allowedRoles?: StitchFynRole[];
   children: React.ReactNode;
 }
@@ -20,7 +20,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
 }) => {
   const { isAuthenticated, isLoading, user } = useAuthStore();
-  const { can } = usePermissions();
+  const { hasCapability } = usePermissions();
   const location = useLocation();
 
   // 1. App-wide silent refresh in progress
@@ -38,7 +38,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // 3. Authenticated but missing specific permission — treat as 404
-  if (requiredPermission && !can(requiredPermission)) {
+  if (requiredPermission && !hasCapability(requiredPermission as any)) {
     return <Navigate to="/404" replace />;
   }
 

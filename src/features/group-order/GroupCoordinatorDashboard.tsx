@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getGroupProjection, type GroupHealthProjection, type RiskLevel } from './group-order.api';
+import { getGroupProjection, type GroupHealthProjection } from './group-order.api';
 import './GroupDashboard.css';
 
 export const GroupCoordinatorDashboard: React.FC = () => {

@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useOrderDetail, useOrderGarments } from '../features/orders/hooks/useOrderDetail.ts';
 import { useStaffList } from '../features/auth/hooks/useStaff.ts';
-import { usePermissions } from '../features/auth/use-permissions.ts';
 import { ordersApi } from '../features/orders/orders.api.ts';
+import { useAuthStore } from '../features/auth/auth.store.ts';
 import { useToastStore } from '../components/feedback/Toast.tsx';
 import { WorkflowGraph } from '../features/workflow/components/WorkflowGraph.tsx';
 import { MeasurementHistory } from '../features/measurements/components/MeasurementHistory.tsx';
@@ -37,7 +37,8 @@ export function OrderDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const showToast = useToastStore((state) => state.showToast);
-  const { isCompanyAdminOrManager } = usePermissions();
+  const user = useAuthStore((state) => state.user);
+  const isCompanyAdminOrManager = user?.role === 'OWNER' || user?.role === 'MANAGER';
   const { data: detail, isLoading, isError } = useOrderDetail(id!);
   const { data: garments, isLoading: isLoadingGarments, refetch: refetchGarments } = useOrderGarments(id!);
   const { data: staff } = useStaffList({ 

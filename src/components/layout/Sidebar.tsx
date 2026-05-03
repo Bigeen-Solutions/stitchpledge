@@ -38,15 +38,15 @@ interface SidebarProps {
 const SIDEBAR_WIDTH = 240;
 
 const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR', 'CUSTOMER'] },
-  { label: 'Orders', icon: ClipboardList, path: '/orders', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
-  { label: 'New Order', icon: Plus, path: '/orders/new', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
-  { label: 'Production', icon: ScissorsIcon, path: '/production', roles: ['COMPANY_ADMIN', 'STORE_MANAGER', 'TAILOR'] },
-  { label: 'Customers', icon: Users, path: '/customers', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
-  { label: 'Inventory', icon: ClipboardList, path: '/inventory', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
-  { label: 'Payments', icon: CreditCard, path: '/payments', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'], isBeta: true },
-  { label: 'Staff Management', icon: UserCog, path: '/staff', roles: ['COMPANY_ADMIN'] },
-  { label: 'Reports', icon: BarChart2, path: '/reports', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
+  { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['OWNER', 'MANAGER', 'TAILOR', 'CUSTOMER'] },
+  { label: 'Orders', icon: ClipboardList, path: '/orders', roles: ['OWNER', 'MANAGER', 'TAILOR'] },
+  { label: 'New Order', icon: Plus, path: '/orders/new', roles: ['OWNER', 'MANAGER', 'TAILOR'] },
+  { label: 'Production', icon: ScissorsIcon, path: '/production', roles: ['OWNER', 'MANAGER', 'TAILOR'] },
+  { label: 'Customers', icon: Users, path: '/customers', roles: ['OWNER', 'MANAGER'] },
+  { label: 'Inventory', icon: ClipboardList, path: '/inventory', roles: ['OWNER', 'MANAGER'] },
+  { label: 'Payments', icon: CreditCard, path: '/payments', roles: ['OWNER', 'MANAGER'], isBeta: true },
+  { label: 'Staff Management', icon: UserCog, path: '/staff', roles: ['OWNER'] },
+  { label: 'Reports', icon: BarChart2, path: '/reports', roles: ['OWNER', 'MANAGER'] },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }) => {
@@ -136,7 +136,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
 
       {/* Bottom Actions */}
       <Box sx={{ mt: 'auto' }}>
-        {(user?.role === 'COMPANY_ADMIN' || user?.role === 'STORE_MANAGER') && (
+        {(user?.role === 'OWNER' || user?.role === 'MANAGER') && (
           <List sx={{ px: 0, pb: 2 }}>
             <ListItem disablePadding>
               <ListItemButton

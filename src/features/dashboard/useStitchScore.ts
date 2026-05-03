@@ -1,10 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { stitchScoreApi } from './stitchScore.api';
-import { useAuthStore } from '../../auth/auth.store';
-import { keys } from '../../../query/keys';
-
+import { useAuthStore } from '../auth/auth.store';
 export const useStitchScore = () => {
-  const user = useAuthStore(state => state.user);
+  const user = useAuthStore((state: any) => state.user);
   const companyId = user?.companyId;
 
   return useQuery({

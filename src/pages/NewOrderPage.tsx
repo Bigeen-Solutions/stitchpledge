@@ -52,7 +52,6 @@ import { customersApi } from "../features/customers/customers.api";
 import { useWorkflowTemplates } from "../features/workflow/hooks/useWorkflowTemplates";
 import { useAuthStore } from "../features/auth/auth.store";
 import { useStores, useStaffList } from "../features/auth/hooks/useStaff";
-import { usePermissions } from "../features/auth/use-permissions";
 import { ordersApi } from "../features/orders/orders.api";
 import { useToastStore } from "../components/feedback/Toast";
 import { useInventory } from "../features/inventory/useInventory";
@@ -83,9 +82,12 @@ export function NewOrderPage() {
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const showToast = useToastStore((state) => state.showToast);
-  const { role, isStoreManager, isTailor, storeId: userStoreId } = usePermissions();
   const user = useAuthStore((state) => state.user);
+  const role = user?.role;
   const { data: stores } = useStores();
+  const isStoreManager = role === 'MANAGER';
+  const isTailor = role === 'TAILOR';
+  const userStoreId = undefined; // storeId is not present on AuthUser currently
   const { data: templates } = useWorkflowTemplates();
   const createCustomer = useCreateCustomer();
   const createMeasurement = useCreateMeasurement();
@@ -116,10 +118,10 @@ export function NewOrderPage() {
   const [materialQuantity, setMaterialQuantity] = useState<number | "">("");
   
   const { data: inventory } = useInventory();
-  const effectiveStoreId = role === 'COMPANY_ADMIN' ? selectedStoreId : userStoreId || undefined;
+  const effectiveStoreId = role === 'OWNER' ? selectedStoreId : userStoreId || undefined;
   const { data: staff } = useStaffList({ 
     storeId: effectiveStoreId,
-    enabled: !!effectiveStoreId || role === 'COMPANY_ADMIN' 
+    enabled: !!effectiveStoreId || role === 'OWNER' 
   });
   const [orderItems, setOrderItems] = useState<{
     templateId: string;
@@ -184,7 +186,7 @@ export function NewOrderPage() {
     setOrderItems([...orderItems, {
       templateId: template.id,
       estimatedTotalDurationHours: 24,
-      assignedTailorId: role === 'TAILOR' ? user?.userId : null
+      assignedTailorId: role === 'TAILOR' ? user?.id : null
     }]);
 
     // If we have a customer, check measurements for this template
@@ -342,7 +344,7 @@ export function NewOrderPage() {
         finalMeasurementVersionId = mv.id;
       }
 
-      const finalStoreId = role === 'COMPANY_ADMIN' ? selectedStoreId : userStoreId;
+      const finalStoreId = role === 'OWNER' ? selectedStoreId : userStoreId;
       if (!finalStoreId) {
         showToast("Store Assignment Required", "Store assignment is required. Please contact admin.", "error");
         return;
@@ -913,7 +915,7 @@ export function NewOrderPage() {
                     </Typography>
                   </Box>
 
-                  {role === 'COMPANY_ADMIN' && !isStoreManager && !isTailor && (
+                  {role === 'OWNER' && !isStoreManager && !isTailor && (
                     <Box sx={{ mt: 4 }}>
                       <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
                         STORE ASSIGNMENT

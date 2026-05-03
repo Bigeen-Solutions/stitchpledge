@@ -1,4 +1,4 @@
-import { api } from '../../api/client';
+import { apiClient } from '../../infrastructure/http/axios.client';
 
 export interface StitchScoreDTO {
   score: number | null;
@@ -14,7 +14,7 @@ export interface StitchScoreDTO {
 
 export const stitchScoreApi = {
   getScore: async (companyId: string): Promise<StitchScoreDTO> => {
-    const { data } = await api.get(`/companies/${companyId}/stitch-score`);
+    const { data } = await apiClient.get(`/companies/${companyId}/stitch-score`);
     return data;
   },
 };

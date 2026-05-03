@@ -30,7 +30,8 @@ import {
   TextField,
   Typography,
   Tooltip,
-  alpha
+  alpha,
+  AlertTitle
 } from '@mui/material';
 import FactoryIcon from '@mui/icons-material/Factory';
 import SearchIcon from '@mui/icons-material/Search';
@@ -638,6 +639,11 @@ export function ProductionBoardPage() {
           </Stack>
         </Stack>
       </Box>
+
+      <Alert severity="info" sx={{ mb: 4, borderRadius: '12px' }}>
+        <AlertTitle sx={{ fontWeight: 700 }}>Temporal Ledgers Enforced</AlertTitle>
+        Deadline Intelligence is actively projecting countdown stasis and high-water marks for all active orders. Production deadlines are dynamically adjusted based on dispute resolution states.
+      </Alert>
 
       {/* 2. KPI Summary Cards */}
       <Grid container spacing={3} sx={{ mb: 6 }}>

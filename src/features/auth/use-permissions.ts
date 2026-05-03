@@ -4,7 +4,7 @@ import { useAuthStore } from './auth.store';
  * Capability Definitions
  * These must match the backend auth.types.ts exactly.
  */
-export const Capability = {
+export const AuthCapabilities = {
   MANAGE_ORDERS: 'MANAGE_ORDERS',
   BYPASS_CAPACITY: 'BYPASS_CAPACITY',
   TRANSITION_STAGE: 'TRANSITION_STAGE',
@@ -17,7 +17,7 @@ export const Capability = {
   SUSPEND_ACCOUNT: 'SUSPEND_ACCOUNT',
 } as const;
 
-export type CapabilityType = (typeof Capability)[keyof typeof Capability];
+export type CapabilityType = (typeof AuthCapabilities)[keyof typeof AuthCapabilities];
 
 /**
  * Hook for component-level capability gating.

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { disputeApi, RaiseDisputeDTO, SubmitEvidenceDTO, ResolveDisputeDTO } from './dispute.api';
+import { disputeApi } from './dispute.api';
+import type { RaiseDisputeDTO, SubmitEvidenceDTO, ResolveDisputeDTO } from './dispute.api';
 import { keys } from '../../query/keys';
 import { useToastStore } from '../../components/feedback/Toast';
 

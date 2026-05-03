@@ -13,10 +13,12 @@ import {
 import { 
   Settings as SettingsIcon,
   Business as GeneralIcon,
-  AccountTree as WorkshopIcon
+  AccountTree as WorkshopIcon,
+  DataUsage as CapacityIcon
 } from '@mui/icons-material';
 import { WorkshopConfiguration } from '../features/workflow/components/WorkshopConfiguration';
 import { GeneralProfileSettings } from '../features/settings/components/GeneralProfileSettings';
+import { CapacitySettingsPanel } from '../features/capacity/components/CapacitySettingsPanel';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -149,6 +151,11 @@ export const SettingsPage: React.FC = () => {
               label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Workshop Config</Typography>} 
             />
             <Tab 
+              icon={<CapacityIcon sx={{ mr: 1.5, fontSize: 20 }} />} 
+              iconPosition="start" 
+              label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Capacity Management</Typography>} 
+            />
+            <Tab 
               icon={<GeneralIcon sx={{ mr: 1.5, fontSize: 20 }} />} 
               iconPosition="start" 
               label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>General Profile</Typography>} 
@@ -162,6 +169,9 @@ export const SettingsPage: React.FC = () => {
             <WorkshopConfiguration />
           </CustomTabPanel>
           <CustomTabPanel value={activeTab} index={1}>
+            <CapacitySettingsPanel />
+          </CustomTabPanel>
+          <CustomTabPanel value={activeTab} index={2}>
             <GeneralProfileSettings />
           </CustomTabPanel>
         </Box>

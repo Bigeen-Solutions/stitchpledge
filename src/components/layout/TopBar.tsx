@@ -50,7 +50,7 @@ export const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isSidebarOpen }) 
     logout.mutate();
   };
 
-  const isAdmin = user?.role === 'COMPANY_ADMIN';
+  const isAdmin = user?.role === 'OWNER';
 
   return (
     <AppBar
