@@ -26,6 +26,7 @@ import {
   BarChart as BarChart2,
   Settings,
   Add as Plus,
+  Gavel as GavelIcon,
 } from '@mui/icons-material';
 import { useAuthStore } from '../../features/auth/auth.store';
 
@@ -44,6 +45,7 @@ const navItems = [
   { label: 'Production', icon: ScissorsIcon, path: '/production', roles: ['OWNER', 'MANAGER', 'TAILOR'] },
   { label: 'Customers', icon: Users, path: '/customers', roles: ['OWNER', 'MANAGER'] },
   { label: 'Inventory', icon: ClipboardList, path: '/inventory', roles: ['OWNER', 'MANAGER'] },
+  { label: 'Disputes', icon: GavelIcon, path: '/disputes', roles: ['OWNER', 'MANAGER'] },
   { label: 'Payments', icon: CreditCard, path: '/payments', roles: ['OWNER', 'MANAGER'], isBeta: true },
   { label: 'Staff Management', icon: UserCog, path: '/staff', roles: ['OWNER'] },
   { label: 'Reports', icon: BarChart2, path: '/reports', roles: ['OWNER', 'MANAGER'] },

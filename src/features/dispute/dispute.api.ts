@@ -33,6 +33,28 @@ export interface DisputeStandoffDTO {
   requiredAction: 'UPLOAD_PHOTO' | 'SIGN_AGREEMENT' | 'WAIT_FOR_REVIEW' | 'NONE';
 }
 
+export type DisputeStatus = 'OPEN' | 'EVIDENCE_REQUIRED' | 'UNDER_REVIEW' | 'RESOLVED' | 'TERMINATED';
+export type DisputeCategory = 'MATERIAL' | 'MEASUREMENT' | 'FINANCIAL' | 'AESTHETIC';
+
+export interface DisputeListItem {
+  id: string;
+  orderId: string;
+  category: DisputeCategory;
+  severity: 'CRITICAL' | 'WARNING';
+  status: DisputeStatus;
+  description: string;
+  daysInStandoff: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DisputesListResponse {
+  items: DisputeListItem[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
 const API_BASE = '/api/disputes';
 
 export const disputeApi = {
@@ -53,5 +75,10 @@ export const disputeApi = {
   getProjection: async (orderId: string): Promise<DisputeStandoffDTO> => {
     const response = await axios.get(`${API_BASE}/order/${orderId}/projection`);
     return response.data;
-  }
+  },
+
+  listDisputes: async (page = 1, limit = 10): Promise<DisputesListResponse> => {
+    const response = await axios.get(`${API_BASE}`, { params: { page, limit } });
+    return response.data;
+  },
 };

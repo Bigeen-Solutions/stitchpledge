@@ -41,6 +41,7 @@ export const keys = {
     detail: (id: string) => ['customers', 'profile', id] as const,
   },
   disputes: {
+    list: (page: number, limit: number) => ['disputes', 'list', { page, limit }] as const,
     projection: (orderId: string) => ['disputes', 'projection', orderId] as const,
   },
 };

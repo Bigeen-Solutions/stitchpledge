@@ -1,12 +1,25 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { disputeApi } from './dispute.api';
 import type { RaiseDisputeDTO, SubmitEvidenceDTO, ResolveDisputeDTO } from './dispute.api';
+export type { DisputeListItem, DisputesListResponse, DisputeStatus, DisputeCategory } from './dispute.api';
 import { keys } from '../../query/keys';
 import { useToastStore } from '../../components/feedback/Toast';
 
 /**
+ * useDisputesList
+ *
+ * Paginated list of all company disputes for the management view.
+ */
+export function useDisputesList(page = 1, limit = 10) {
+  return useQuery({
+    queryKey: keys.disputes.list(page, limit),
+    queryFn: () => disputeApi.listDisputes(page, limit),
+  });
+}
+
+/**
  * useDisputeProjection
- * 
+ *
  * Subscribes the UI to the backend's standoff projection.
  */
 export function useDisputeProjection(orderId: string) {
