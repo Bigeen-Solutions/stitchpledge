@@ -48,6 +48,8 @@ import { useOrders } from '../../features/orders/hooks/useOrders';
 import { useInventory } from '../../features/inventory/useInventory';
 import { OrderEntryItem } from '../../features/orders/components/OrderEntryItem';
 import { StitchScoreCard } from '../../features/dashboard/components/StitchScoreCard';
+import { TransparencyStatus } from '../../features/transparency/components/TransparencyStatus';
+import { CapacityVisualizer } from '../../features/transparency/components/CapacityVisualizer';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -248,8 +250,10 @@ export const AdminDashboard: React.FC = () => {
           <Typography variant="h4" sx={{ fontWeight: 800, color: '#1a2340', letterSpacing: '-0.02em' }}>
             Production Intelligence
           </Typography>
-          <Typography component="div" variant="body2" sx={{ color: '#6b7280', fontWeight: 500, mt: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-            Factory Command Center •
+          <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 1 }}>
+            <TransparencyStatus />
+            <Typography component="div" variant="body2" sx={{ color: '#6b7280', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+              Factory Command Center •
             <Box component="span" sx={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -269,6 +273,7 @@ export const AdminDashboard: React.FC = () => {
               LIVE
             </Box>
           </Typography>
+          </Stack>
         </Box>
 
         <Stack direction="row" spacing={2} sx={{ width: { xs: '100%', md: 'auto' } }}>
@@ -306,14 +311,22 @@ export const AdminDashboard: React.FC = () => {
           {isLoading ? (
             <Skeleton variant="rectangular" height={160} sx={{ borderRadius: '24px' }} />
           ) : (
-            <KPICard
-              label="ACTIVE ORDERS"
-              value={stats.activeOrders}
-              icon={ClipboardList}
-              trend={{ value: 'Real-time', type: 'neutral' }}
-              delay="0ms"
-              variant="emerald"
-            />
+            <Card
+              sx={{
+                p: 3,
+                borderRadius: '24px',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+                bgcolor: 'rgba(255, 255, 255, 0.5)',
+                backdropFilter: 'blur(10px)',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                animation: `${fadeIn} 0.6s ease-out both 0ms`,
+              }}
+            >
+              <CapacityVisualizer />
+            </Card>
           )}
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>

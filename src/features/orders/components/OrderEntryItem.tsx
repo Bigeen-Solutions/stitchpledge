@@ -13,9 +13,39 @@ interface OrderEntryItemProps {
     riskLevel?: string;
     eventDate: string;
     createdAt?: string;
+    unverified_flags?: string[];
   };
   onClick?: () => void;
 }
+
+const ActivationBadges: React.FC<{ flags?: string[] }> = ({ flags }) => {
+  if (!flags || flags.length === 0) return null;
+
+  return (
+    <Stack direction="row" spacing={0.5} sx={{ mt: 1 }}>
+      {flags.map((flag) => (
+        <Box
+          key={flag}
+          sx={{
+            px: 1,
+            py: 0.25,
+            borderRadius: '4px',
+            bgcolor: 'rgba(196, 154, 26, 0.1)',
+            border: '1px solid rgba(196, 154, 26, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+          }}
+        >
+          <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#c49a1a' }} />
+          <Typography variant="caption" sx={{ color: '#c49a1a', fontWeight: 800, fontSize: '9px', textTransform: 'uppercase' }}>
+            {flag}
+          </Typography>
+        </Box>
+      ))}
+    </Stack>
+  );
+};
 
 export const OrderEntryItem: React.FC<OrderEntryItemProps> = ({ order, onClick }) => {
   return (
@@ -44,6 +74,7 @@ export const OrderEntryItem: React.FC<OrderEntryItemProps> = ({ order, onClick }
               {order.garmentName}
             </Typography>
           )}
+          <ActivationBadges flags={order.unverified_flags} />
         </Stack>
         <div className="mobile-hide">
           <DeadlineBadge orderId={order.id} />

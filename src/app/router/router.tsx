@@ -29,6 +29,7 @@ import { useAxiosInterceptors } from '../../infrastructure/http/use-axios-interc
 import { DesignSystemPage } from '../../pages/DesignSystemPage.tsx';
 
 import { SplashScreen } from '../../pages/SplashScreen.tsx';
+import { GroupCoordinatorDashboard } from '../../features/group-order/GroupCoordinatorDashboard.tsx';
 
 const AxiosInterceptorHandler = () => {
   useAxiosInterceptors();
@@ -163,6 +164,16 @@ export const router = createBrowserRouter([
           {
             path: '/payments',
             element: <BetaFeatureGuard featureName="Payment Ledger" />
+          },
+          {
+            path: '/groups/:token',
+            element: (
+              // JWT guard (outer ProtectedRoute) is already enforced by the parent wrapper.
+              // Capability guard ensures only users with MANAGE_ORDERS can view group dashboards.
+              <ProtectedRoute requiredPermission="MANAGE_ORDERS">
+                <GroupCoordinatorDashboard />
+              </ProtectedRoute>
+            ),
           },
         ],
       },
