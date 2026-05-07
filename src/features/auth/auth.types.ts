@@ -15,6 +15,7 @@ export type StitchFynRole = 'OWNER' | 'MANAGER' | 'TAILOR' | 'APPRENTICE' | 'CUS
 export interface AuthUser {
   id: string;
   companyId: string;
+  storeId?: string;
   email: string;
   fullName: string;
   role: StitchFynRole;

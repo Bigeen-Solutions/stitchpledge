@@ -1,5 +1,4 @@
-import { axiosInstance } from '../../../infrastructure/http/axios-instance';
-import { useAuthStore } from '../../auth/auth.store';
+import { apiClient } from '../../../infrastructure/http/axios.client';
 
 export type UiHint = 'GREEN' | 'AMBER' | 'RED';
 
@@ -25,7 +24,7 @@ export interface VisibilityBundle {
 
 export const transparencyApi = {
   getStoreStatus: async (storeId: string): Promise<VisibilityBundle> => {
-    const response = await axiosInstance.get(`/transparency/stores/${storeId}/status`);
+    const response = await apiClient.get(`/transparency/stores/${storeId}/status`);
     return response.data;
   },
 };
