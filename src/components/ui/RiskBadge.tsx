@@ -1,3 +1,5 @@
+import { mapRiskStatus } from "../../utils/status-mappers"
+
 export type RiskLevel = "ON_TRACK" | "AT_RISK" | "OVERDUE" | "UNKNOWN"
 
 interface RiskBadgeProps {
@@ -5,7 +7,7 @@ interface RiskBadgeProps {
 }
 
 export function RiskBadge({ level }: RiskBadgeProps) {
-  const label = level.replace("_", " ").toUpperCase()
+  const label = mapRiskStatus(level)
   const className = `badge badge-${level.toLowerCase().replace("_", "")}`
 
   return (

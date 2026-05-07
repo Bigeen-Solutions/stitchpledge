@@ -181,7 +181,7 @@ export const AdminDashboard: React.FC = () => {
     return (
       <Box sx={{ p: 4 }}>
         <Alert severity="error" variant="filled" sx={{ borderRadius: '12px' }}>
-          <AlertTitle sx={{ fontWeight: 700 }}>Telemetry Sync Failure</AlertTitle>
+          <AlertTitle sx={{ fontWeight: 700 }}>Dashboard Sync Failure</AlertTitle>
           The Admin Analytics engine is currently unreachable. Please verify network connectivity and risk engine status.
         </Alert>
       </Box>

@@ -54,9 +54,9 @@ export function ServerErrorPage() {
         <div className="error-code-badge">Error Protocol</div>
         <h1 className="error-title">A Tangled Thread</h1>
         <p className="error-description">
-          Something went wrong on our end. Our engineers are working to 
+          We ran into an issue. Our engineers are working to 
           untangle it. The production floor has encountered an unexpected 
-          blocker.
+          blocker. Please refresh the page.
         </p>
 
         <div className="error-actions">

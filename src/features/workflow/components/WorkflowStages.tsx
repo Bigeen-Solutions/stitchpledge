@@ -3,6 +3,7 @@ import { useWorkflow, useCompleteStage } from "../hooks/useWorkflowMutation"
 import { StageStepper } from "../../../components/ui/StageStepper.tsx"
 import type { StageInstance } from "../workflow.api"
 import { FabricSafetySeal } from "./FabricSafetySeal"
+import { mapWorkflowStageId, mapWorkflowStatus } from "../../../utils/status-mappers"
 
 export function WorkflowStages({ garmentId }: { garmentId: string }) {
   const { data: workflow, isLoading } = useWorkflow(garmentId)
@@ -42,8 +43,8 @@ export function WorkflowStages({ garmentId }: { garmentId: string }) {
               >
               <div className="flex items-center gap-4">
                 <div>
-                  <span className="text-sm font-bold uppercase tracking-tight">{stage.stageId}</span>
-                  <p className={`text-[10px] font-bold ${isInhibited ? 'text-red-500' : 'text-muted'}`}>{stage.status}</p>
+                  <span className="text-sm font-bold tracking-tight">{mapWorkflowStageId(stage.stageId)}</span>
+                  <p className={`text-[10px] font-bold ${isInhibited ? 'text-red-500' : 'text-muted'}`}>{mapWorkflowStatus(stage.status)}</p>
                 </div>
               </div>
               {isInProgress ? (

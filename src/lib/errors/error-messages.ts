@@ -17,11 +17,11 @@ export const errorMessages: Record<ErrorCode, ErrorMessage> = {
   },
   AUTH_SESSION_EXPIRED: {
     title: 'Session Expired',
-    detail: 'Your session has expired. Logging you out.',
+    detail: 'You\'ve been signed out due to inactivity. Please sign back in.',
   },
   CAPACITY_LIMIT_EXCEEDED: {
     title: 'Workshop Full',
-    detail: 'The workshop has reached its active order limit. Complete existing orders before adding new ones.',
+    detail: 'Your workshop is fully booked. Complete existing orders before adding new ones.',
   },
   MATERIAL_PHOTO_REQUIRED: {
     title: 'Photo Required',
@@ -30,7 +30,7 @@ export const errorMessages: Record<ErrorCode, ErrorMessage> = {
   },
   MATERIAL_DELTA_ZERO: {
     title: 'Invalid Quantity',
-    detail: 'The quantity adjustment cannot be zero.',
+    detail: 'Please enter a number greater than zero.',
     field: 'quantityDelta',
   },
   MEASUREMENT_ORDER_LOCKED: {
@@ -39,12 +39,12 @@ export const errorMessages: Record<ErrorCode, ErrorMessage> = {
   },
   ORDER_EVENT_DATE_REQUIRED: {
     title: 'Event Date Required',
-    detail: 'An event date is required to calculate the production deadline.',
+    detail: 'Please fill out this field to calculate the production deadline.',
     field: 'eventDate',
   },
   ORDER_NOT_FOUND: {
     title: 'Order Not Found',
-    detail: 'This order does not exist or you do not have access to it.',
+    detail: 'We couldn\'t find what you\'re looking for.',
   },
   WORKFLOW_STAGE_SKIP: {
     title: 'Stage Cannot Be Skipped',
@@ -56,7 +56,7 @@ export const errorMessages: Record<ErrorCode, ErrorMessage> = {
   },
   TENANT_MISMATCH: {
     title: 'Access Denied',
-    detail: 'You do not have permission to access data for this tenant.',
+    detail: 'Only team members with specific permissions can access this.',
   },
   VALIDATION_ERROR: {
     title: 'Check Your Inputs',
@@ -64,6 +64,6 @@ export const errorMessages: Record<ErrorCode, ErrorMessage> = {
   },
   UNKNOWN_ERROR: {
     title: 'Unexpected Error',
-    detail: 'Something went wrong on our end. Please try again or contact support.',
+    detail: 'We ran into an issue. Please refresh the page, or contact support if the issue persists.',
   },
 };
