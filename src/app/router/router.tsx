@@ -152,7 +152,7 @@ export const router = createBrowserRouter([
           {
             path: '/disputes',
             element: (
-              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
+              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER', 'CUSTOMER']}>
                 <DisputesPage />
               </ProtectedRoute>
             )
