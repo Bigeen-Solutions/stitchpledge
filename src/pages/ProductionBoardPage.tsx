@@ -588,19 +588,12 @@ export function ProductionBoardPage() {
     <Box sx={{ p: { xs: 2.5, md: 4, lg: 6 }, maxWidth: 1600, mx: 'auto', pb: 12 }}>
 
       {/* 1. Page Header (Sticky Control strip) */}
-      <Box sx={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-        bgcolor: alpha('#f8f9fa', 0.9),
-        backdropFilter: 'blur(20px)',
+      <Box className="sticky-header" sx={{
         mx: { xs: -2.5, md: -4, lg: -6 },
         px: { xs: 2.5, md: 4, lg: 6 },
         pt: 2,
         pb: 3,
         mb: 4,
-        borderBottom: '1px solid',
-        borderColor: 'divider'
       }}>
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'center' }} spacing={3}>
           <Box>

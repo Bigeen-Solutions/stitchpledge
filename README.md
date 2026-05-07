@@ -38,6 +38,8 @@ StitchFYN is designed to be a premium, "Trust-First" tool for modern workshops.
 - **Group Order Coordination**: Unified cluster monitoring for large-scale "Aso-Ebi" and uniform bookings.
 - **Event Countdown Mode**: Automatic daily-digest tracking and urgent timeline escalation visualization.
 - **Immutable Audit Trail**: Full-screen "Show Proof" views for objective truth resolution.
+- **Analytics Dashboard**: REQ-027 compliant BI center projecting revenue, velocity, and audit activity.
+- **Transparency Portal**: High-fidelity guardian status indicators for workshop health (Trust, Capacity, Forensics).
 
 ---
 

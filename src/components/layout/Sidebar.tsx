@@ -35,7 +35,7 @@ interface SidebarProps {
   toggleSidebar: () => void;
 }
 
-const SIDEBAR_WIDTH = 240;
+const SIDEBAR_WIDTH = 'var(--sidebar-width)';
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['OWNER', 'MANAGER', 'TAILOR', 'CUSTOMER'] },
@@ -80,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
       </Box>
 
       {/* Navigation */}
-      <List sx={{ flexGrow: 1, px: 0 }}>
+      <List sx={{ px: 0 }}>
         {filteredNavItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -137,14 +137,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
       {/* Bottom Actions */}
       <Box sx={{ mt: 'auto' }}>
         {(user?.role === 'OWNER' || user?.role === 'MANAGER') && (
-          <List sx={{ px: 0, pb: 2 }}>
+          <List sx={{ px: 0, pb: 1 }}>
             <ListItem disablePadding>
               <ListItemButton
                 onClick={() => handleNavigation('/settings')}
                 sx={{
-                  py: 1.5,
+                  py: 1.2,
                   px: 2,
                   bgcolor: location.pathname === '/settings' ? alpha('#ffffff', 0.1) : 'transparent',
+                  borderLeft: location.pathname === '/settings' ? '3px solid var(--color-primary)' : '3px solid transparent',
                   '&:hover': { bgcolor: alpha('#ffffff', 0.07) },
                 }}
               >
@@ -157,7 +158,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
                 <ListItemText
                   primary="Settings"
                   primaryTypographyProps={{
-                    fontSize: '14px',
+                    fontSize: '13px',
                     fontWeight: location.pathname === '/settings' ? 600 : 400,
                     color: location.pathname === '/settings' ? 'white' : alpha('#ffffff', 0.6)
                   }}

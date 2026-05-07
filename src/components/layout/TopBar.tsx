@@ -14,6 +14,7 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  alpha,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -23,9 +24,12 @@ import {
   Download,
   Logout as LogOut,
   Person as User,
+  Search,
 } from '@mui/icons-material';
 import { useAuthStore } from '../../features/auth/auth.store';
 import { useLogout } from '../../features/auth/hooks/useAuth';
+import { Breadcrumbs } from '../navigation/Breadcrumbs';
+import { InputAdornment, TextField } from '@mui/material';
 
 interface TopBarProps {
   toggleSidebar: () => void;
@@ -59,13 +63,13 @@ export const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isSidebarOpen }) 
       className="top-bar"
       sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        width: { 
-          xs: '100%', 
-          sm: isSidebarOpen ? 'calc(100% - 240px)' : '100%' 
+        width: {
+          xs: '100%',
+          sm: isSidebarOpen ? 'calc(100% - var(--sidebar-width))' : '100%'
         },
-        ml: { 
-          xs: 0, 
-          sm: isSidebarOpen ? '240px' : 0 
+        ml: {
+          xs: 0,
+          sm: isSidebarOpen ? 'var(--sidebar-width)' : 0
         },
       }}
     >
@@ -80,19 +84,45 @@ export const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isSidebarOpen }) 
           </IconButton>
         )}
 
-        <Typography variant="h6" sx={{ fontWeight: 800, flexGrow: 1, letterSpacing: '-0.5px' }}>
-          Dashboard
-        </Typography>
+        <Box sx={{ flexGrow: 1 }}>
+          <Breadcrumbs />
+          <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: '-0.5px', color: 'var(--color-text-primary)' }}>
+            Dashboard
+          </Typography>
+        </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 } }}>
+          <TextField
+            placeholder="Search anything..."
+            size="small"
+            sx={{
+              display: { xs: 'none', md: 'flex' },
+              width: 240,
+              '& .MuiOutlinedInput-root': {
+                height: 36,
+                borderRadius: '8px',
+                bgcolor: alpha('#000', 0.03),
+                '& fieldset': { border: 'none' },
+                '&:hover fieldset': { border: 'none' },
+                '&.Mui-focused fieldset': { border: 'none' },
+              }
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search sx={{ fontSize: 18, color: 'text.disabled' }} />
+                </InputAdornment>
+              ),
+            }}
+          />
           {isAdmin && (
             <Chip
               icon={<Calendar sx={{ fontSize: 16, color: 'var(--color-warning) !important' }} />}
-              label={new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                month: 'long', 
-                day: 'numeric', 
-                year: 'numeric' 
+              label={new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
               })}
               variant="outlined"
               sx={{
