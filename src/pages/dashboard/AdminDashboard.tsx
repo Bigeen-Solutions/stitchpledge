@@ -305,9 +305,8 @@ export const AdminDashboard: React.FC = () => {
         </Stack>
       </Box>
 
-      {/* KPI Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
           {isLoading ? (
             <Skeleton variant="rectangular" height={160} sx={{ borderRadius: '24px' }} />
           ) : (
@@ -329,7 +328,21 @@ export const AdminDashboard: React.FC = () => {
             </Card>
           )}
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
+          {isLoading ? (
+            <Skeleton variant="rectangular" height={160} sx={{ borderRadius: '24px' }} />
+          ) : (
+            <KPICard
+              label="ACTIVE ORDERS"
+              value={stats.activeOrders}
+              icon={ClipboardList}
+              trend={{ value: 'Live', type: 'positive' }}
+              delay="50ms"
+              variant="emerald"
+            />
+          )}
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
           {isLoading ? (
             <Skeleton variant="rectangular" height={160} sx={{ borderRadius: '24px' }} />
           ) : (
@@ -343,7 +356,7 @@ export const AdminDashboard: React.FC = () => {
             />
           )}
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
           {isLoading ? (
             <Skeleton variant="rectangular" height={160} sx={{ borderRadius: '24px' }} />
           ) : (
@@ -357,7 +370,7 @@ export const AdminDashboard: React.FC = () => {
             />
           )}
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
           {isLoading ? (
             <Skeleton variant="rectangular" height={160} sx={{ borderRadius: '24px' }} />
           ) : (
@@ -372,6 +385,84 @@ export const AdminDashboard: React.FC = () => {
           )}
         </Grid>
       </Grid>
+
+      {/* Store Load Distribution [REQ-028] */}
+      <Box sx={{ mb: 6, animation: `${fadeIn} 0.6s ease-out both 400ms` }}>
+        <Typography variant="h6" sx={{ fontWeight: 800, color: '#1a2340', mb: 3, px: 1 }}>
+          Store Load Distribution
+        </Typography>
+        <Grid container spacing={3}>
+          {(analytics?.storeDistribution || []).map((store: any, index: number) => {
+            const statusColor = store.uiHint === 'RED' ? '#EF4444' : store.uiHint === 'AMBER' ? '#F59E0B' : '#10B981';
+            return (
+              <Grid key={store.storeId} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Card
+                  sx={{
+                    p: 3,
+                    borderRadius: '20px',
+                    border: '1px solid rgba(255, 255, 255, 0.4)',
+                    bgcolor: 'rgba(255, 255, 255, 0.5)',
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                    transition: 'all 0.2s',
+                    '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 8px 24px rgba(0,0,0,0.05)' }
+                  }}
+                >
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="body1" sx={{ fontWeight: 800, color: '#1a2340' }}>
+                      {store.storeName}
+                    </Typography>
+                    <Chip 
+                      label={store.uiHint === 'RED' ? 'OVERLOADED' : store.uiHint === 'AMBER' ? 'HEAVY LOAD' : 'OPTIMAL'} 
+                      size="small"
+                      sx={{ 
+                        height: 20, 
+                        fontSize: '9px', 
+                        fontWeight: 900, 
+                        bgcolor: alpha(statusColor, 0.1), 
+                        color: statusColor,
+                        borderRadius: '6px'
+                      }}
+                    />
+                  </Box>
+                  <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
+                    <Box>
+                      <Typography variant="h4" sx={{ fontWeight: 800, color: '#1a2340' }}>
+                        {store.activeOrderCount}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#6b7280', fontWeight: 700, letterSpacing: '0.05em' }}>
+                        ACTIVE ORDERS
+                      </Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 800, color: statusColor }}>
+                        {store.capacityUtilization}%
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#6b7280', fontWeight: 700, letterSpacing: '0.05em' }}>
+                        CAPACITY
+                      </Typography>
+                    </Box>
+                  </Stack>
+                  <LinearProgress
+                    variant="determinate"
+                    value={Math.min(store.capacityUtilization, 100)}
+                    sx={{
+                      mt: 1.5,
+                      height: 4,
+                      borderRadius: 2,
+                      bgcolor: 'rgba(0,0,0,0.03)',
+                      '& .MuiLinearProgress-bar': {
+                        bgcolor: statusColor,
+                        borderRadius: 2
+                      },
+                    }}
+                  />
+                </Card>
+              </Grid>
+            );
+          })}
+        </Grid>
+      </Box>
 
       <Grid container spacing={4}>
         {/* Left Column */}
