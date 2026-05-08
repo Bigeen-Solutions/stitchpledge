@@ -19,25 +19,38 @@ import {
   Card,
   CircularProgress
 } from '@mui/material';
-import { 
+import {
   Add as AddIcon,
   Inventory as InventoryIcon,
-  LocalShipping as ShippingIcon
+  LocalShipping as ShippingIcon,
+  PhotoCamera as PhotoCameraIcon,
 } from '@mui/icons-material';
-import { useInventory, useReceiveShipment, useRegisterMaterial } from '../features/inventory/useInventory';
+import { useInventory, useReceiveShipment, useRegisterMaterial, useUpdateMaterialImage } from '../features/inventory/useInventory';
 import { ErrorState } from '../components/feedback/ErrorState';
 
 export function InventoryPage() {
   const { data: inventory, isLoading, isError, error, refetch } = useInventory();
   const receiveMutation = useReceiveShipment();
   const registerMutation = useRegisterMaterial();
- 
+  const updateImageMutation = useUpdateMaterialImage();
+
   const [selectedMaterial, setSelectedMaterial] = useState<{ id: string, name: string } | null>(null);
   const [receiveData, setReceiveData] = useState({ quantity: '', notes: '' });
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [newMaterial, setNewMaterial] = useState({ name: '', sku: '', canonicalUnit: 'Yards' });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const handleUpdatePhoto = (materialId: string) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) updateImageMutation.mutate({ materialId, file });
+    };
+    input.click();
+  };
 
   const handleOpenReceive = (material: { materialId: string, name: string }) => {
     setSelectedMaterial({ id: material.materialId, name: material.name });
@@ -228,9 +241,9 @@ export function InventoryPage() {
                   </Box>
 
                   {/* Actions */}
-                  <Box sx={{ mt: { xs: 1, md: 0 }, minWidth: { md: 180 } }}>
-                    <Button 
-                      variant="outlined" 
+                  <Stack spacing={1} sx={{ mt: { xs: 1, md: 0 }, minWidth: { md: 180 } }}>
+                    <Button
+                      variant="outlined"
                       fullWidth
                       startIcon={<ShippingIcon />}
                       onClick={() => handleOpenReceive(item)}
@@ -238,7 +251,18 @@ export function InventoryPage() {
                     >
                       Receive Stock
                     </Button>
-                  </Box>
+                    <Button
+                      variant="text"
+                      fullWidth
+                      size="small"
+                      startIcon={<PhotoCameraIcon sx={{ fontSize: 14 }} />}
+                      onClick={() => handleUpdatePhoto(item.materialId)}
+                      disabled={updateImageMutation.isPending}
+                      sx={{ borderRadius: '12px', fontWeight: 700, fontSize: '11px', color: 'text.secondary', '&:hover': { color: '#1e5c3a' } }}
+                    >
+                      {updateImageMutation.isPending ? 'Uploading...' : 'Update Photo'}
+                    </Button>
+                  </Stack>
                 </ListItem>
                 {index < inventory.length - 1 && <Box sx={{ height: '1px', bgcolor: 'divider', ml: { xs: 2.5, sm: 3 }, mr: { xs: 2.5, sm: 3 } }} />}
               </Box>

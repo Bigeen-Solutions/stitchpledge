@@ -24,9 +24,12 @@ import {
   History as HistoryIcon,
   Edit as EditIcon,
   ArrowBack as ArrowBackIcon,
-  ShoppingBag as OrderIcon
+  ShoppingBag as OrderIcon,
+  Lock as LockIcon,
 } from '@mui/icons-material';
+import { Chip } from '@mui/material';
 import { useCustomerProfile, useUpdateMeasurements } from '../features/customers/hooks/useCustomerProfile';
+import { useLockMeasurement } from '../features/measurements/hooks/useMeasurementMutation';
 import { ErrorState } from '../components/feedback/ErrorState';
 import { useToastStore } from '../components/feedback/Toast';
 import { truncateId, safeFormatDistanceToNow, safeLocaleDate } from '../utils/format';
@@ -45,6 +48,7 @@ export function ClientProfilePage() {
   const showToast = useToastStore((state) => state.showToast);
   const { data: profile, isLoading, isError, error, refetch } = useCustomerProfile(id!);
   const updateMutation = useUpdateMeasurements(id!);
+  const lockMutation = useLockMeasurement(id!);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formValues, setFormValues] = useState<Record<string, number>>({});
@@ -277,9 +281,28 @@ export function ClientProfilePage() {
             )}
             
             {latestMeasurement && (
-              <Typography variant="caption" sx={{ display: 'block', mt: 4, textAlign: 'right', color: 'text.secondary', fontWeight: 500 }}>
-                Last updated: {safeLocaleDate(latestMeasurement.createdAt)}
-              </Typography>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 4 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                  Last updated: {safeLocaleDate(latestMeasurement.createdAt)}
+                </Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<LockIcon sx={{ fontSize: 14 }} />}
+                  onClick={() => lockMutation.mutate(latestMeasurement.id)}
+                  disabled={lockMutation.isPending}
+                  sx={{
+                    borderRadius: '10px',
+                    fontWeight: 700,
+                    fontSize: '11px',
+                    borderColor: alpha('#1e5c3a', 0.3),
+                    color: '#1e5c3a',
+                    '&:hover': { borderColor: '#1e5c3a', bgcolor: alpha('#1e5c3a', 0.04) },
+                  }}
+                >
+                  {lockMutation.isPending ? 'Locking...' : 'Lock & Seal Version'}
+                </Button>
+              </Stack>
             )}
           </Card>
         </Grid>
@@ -327,14 +350,30 @@ export function ClientProfilePage() {
                   actor="System Recorder"
                   timestamp={safeFormatDistanceToNow(v.createdAt)}
                   action={
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                        Version {v.versionNumber} Committed
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                        {Object.keys(v.measurements).length} precision points recorded
-                      </Typography>
-                    </Box>
+                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                          Version {v.versionNumber} Committed
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                          {Object.keys((v as any).measurements || {}).length} precision points recorded
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label={(v as any).status === 'complete' ? 'SEALED' : 'DRAFT'}
+                        size="small"
+                        icon={<LockIcon sx={{ fontSize: '10px !important' }} />}
+                        sx={{
+                          height: 20,
+                          fontSize: '9px',
+                          fontWeight: 800,
+                          borderRadius: '4px',
+                          bgcolor: (v as any).status === 'complete' ? alpha('#1e5c3a', 0.1) : alpha('#d97706', 0.1),
+                          color: (v as any).status === 'complete' ? '#1e5c3a' : '#d97706',
+                          '& .MuiChip-icon': { color: 'inherit', ml: '4px' },
+                        }}
+                      />
+                    </Stack>
                   }
                 />
               ))}

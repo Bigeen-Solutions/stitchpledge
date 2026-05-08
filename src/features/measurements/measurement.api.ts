@@ -18,6 +18,11 @@ export const measurementApi = {
   recordMeasurement: async (customerId: string, measurements: Record<string, number>, status?: 'draft' | 'complete'): Promise<MeasurementVersion> => {
     const { data } = await apiClient.post<MeasurementVersion>(`/customers/${customerId}/measurements`, { measurements, status });
     return data;
-  }
+  },
+
+  completeMeasurement: async (measurementId: string): Promise<MeasurementVersion> => {
+    const { data } = await apiClient.post<MeasurementVersion>(`/measurements/${measurementId}/complete`);
+    return data;
+  },
 };
 

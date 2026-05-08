@@ -30,6 +30,9 @@ import { DesignSystemPage } from '../../pages/DesignSystemPage.tsx';
 
 import { SplashScreen } from '../../pages/SplashScreen.tsx';
 import { GroupCoordinatorDashboard } from '../../features/group-order/GroupCoordinatorDashboard.tsx';
+import { WorkflowTemplatesPage } from '../../pages/WorkflowTemplatesPage.tsx';
+import { GroupOrdersPage } from '../../pages/GroupOrdersPage.tsx';
+import { StitchScoreDetailPage } from '../../pages/StitchScoreDetailPage.tsx';
 
 const AxiosInterceptorHandler = () => {
   useAxiosInterceptors();
@@ -168,10 +171,32 @@ export const router = createBrowserRouter([
           {
             path: '/groups/:token',
             element: (
-              // JWT guard (outer ProtectedRoute) is already enforced by the parent wrapper.
-              // Capability guard ensures only users with MANAGE_ORDERS can view group dashboards.
               <ProtectedRoute requiredPermission="MANAGE_ORDERS">
                 <GroupCoordinatorDashboard />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/group-orders',
+            element: (
+              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
+                <GroupOrdersPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/workflow-templates',
+            element: (
+              <ProtectedRoute allowedRoles={['OWNER']}>
+                <WorkflowTemplatesPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/stitch-score',
+            element: (
+              <ProtectedRoute allowedRoles={['OWNER']}>
+                <StitchScoreDetailPage />
               </ProtectedRoute>
             ),
           },

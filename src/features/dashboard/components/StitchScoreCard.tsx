@@ -1,10 +1,12 @@
 import React from 'react';
-import { Box, Card, Typography, CircularProgress, Stack, LinearProgress, alpha, Grid } from '@mui/material';
-import { WorkspacePremium as WorkspacePremiumIcon } from '@mui/icons-material';
+import { Box, Card, Typography, CircularProgress, Stack, LinearProgress, alpha, Grid, Button } from '@mui/material';
+import { WorkspacePremium as WorkspacePremiumIcon, OpenInNew as OpenInNewIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useStitchScore } from '../useStitchScore';
 
 export const StitchScoreCard: React.FC = () => {
   const { data, isLoading, isError } = useStitchScore();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -139,6 +141,14 @@ export const StitchScoreCard: React.FC = () => {
             <MetricBar label="On-Time Delivery Rate" value={(breakdown.onTimeRate || 0) * 100} color="#1e5c3a" />
             <MetricBar label="Zero-Dispute Integrity" value={(breakdown.integrityRate || 0) * 100} color="#0369a1" />
             <MetricBar label="Client Loyalty Rate" value={(breakdown.loyaltyRate || 0) * 100} color="#6d28d9" />
+            <Button
+              size="small"
+              endIcon={<OpenInNewIcon sx={{ fontSize: 14 }} />}
+              onClick={() => navigate('/stitch-score')}
+              sx={{ alignSelf: 'flex-start', color: '#1e5c3a', fontWeight: 700, textTransform: 'none', fontSize: '12px', p: 0 }}
+            >
+              View Full Report
+            </Button>
           </Stack>
         </Grid>
       </Grid>

@@ -28,3 +28,20 @@ export function useRecordMeasurement(customerId: string) {
     }
   });
 }
+
+export function useLockMeasurement(customerId: string) {
+  const showToast = useToastStore((state) => state.showToast);
+  const { handleError } = useDomainError();
+
+  return useMutation({
+    mutationFn: (measurementId: string) => measurementApi.completeMeasurement(measurementId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.measurements.list(customerId) });
+      queryClient.invalidateQueries({ queryKey: keys.customers.detail(customerId) });
+      showToast('Measurement Locked', 'Version sealed. Ready for order attachment.');
+    },
+    onError: (err: any) => {
+      handleError(err);
+    }
+  });
+}

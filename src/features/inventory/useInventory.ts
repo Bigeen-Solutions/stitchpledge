@@ -36,6 +36,26 @@ export const useReceiveShipment = () => {
 };
 
 /**
+ * Mutation hook to update the fabric photo for an existing material.
+ */
+export const useUpdateMaterialImage = () => {
+  const queryClient = useQueryClient();
+  const showToast = useToastStore((state) => state.showToast);
+
+  return useMutation({
+    mutationFn: ({ materialId, file }: { materialId: string; file: File }) =>
+      inventoryApi.updateMaterialImage(materialId, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.inventory.overview });
+      showToast('Photo Updated', 'Material fabric reference has been replaced.', 'success');
+    },
+    onError: (error: any) => {
+      showToast('Error', error.message || 'Failed to update material image', 'error');
+    }
+  });
+};
+
+/**
  * Mutation hook to register a brand new material record.
  */
 export const useRegisterMaterial = () => {

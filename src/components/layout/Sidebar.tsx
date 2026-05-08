@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -14,6 +14,9 @@ import {
   Avatar,
   useMediaQuery,
   alpha,
+  Select,
+  MenuItem,
+  CircularProgress,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -27,8 +30,13 @@ import {
   Settings,
   Add as Plus,
   Gavel as GavelIcon,
+  AccountTree as WorkflowIcon,
+  Groups as GroupsIcon,
+  Store as StoreIcon,
 } from '@mui/icons-material';
+import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../features/auth/auth.store';
+import { getTenantsApi, switchTenantApi } from '../../features/auth/auth.api';
 
 interface SidebarProps {
   open: boolean;
@@ -46,7 +54,9 @@ const navItems = [
   { label: 'Customers', icon: Users, path: '/customers', roles: ['OWNER', 'MANAGER'] },
   { label: 'Inventory', icon: ClipboardList, path: '/inventory', roles: ['OWNER', 'MANAGER'] },
   { label: 'Disputes', icon: GavelIcon, path: '/disputes', roles: ['OWNER', 'MANAGER'] },
+  { label: 'Group Orders', icon: GroupsIcon, path: '/group-orders', roles: ['OWNER', 'MANAGER'] },
   { label: 'Payments', icon: CreditCard, path: '/payments', roles: ['OWNER', 'MANAGER'], isBeta: true },
+  { label: 'Workflow Templates', icon: WorkflowIcon, path: '/workflow-templates', roles: ['OWNER'] },
   { label: 'Staff Management', icon: UserCog, path: '/staff', roles: ['OWNER'] },
   { label: 'Reports', icon: BarChart2, path: '/reports', roles: ['OWNER', 'MANAGER'] },
 ];
@@ -55,7 +65,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width:768px)');
-  const { user } = useAuthStore();
+  const { user, setAuth } = useAuthStore();
+  const [isSwitching, setIsSwitching] = useState(false);
+
+  const { data: tenants = [] } = useQuery({
+    queryKey: ['auth', 'tenants'],
+    queryFn: getTenantsApi,
+    enabled: !!user && (user.role === 'OWNER' || user.role === 'MANAGER'),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const handleSwitchTenant = async (storeId: string) => {
+    if (storeId === user?.storeId) return;
+    setIsSwitching(true);
+    try {
+      const result = await switchTenantApi(storeId);
+      setAuth(result.accessToken, result.user);
+      navigate('/dashboard');
+    } finally {
+      setIsSwitching(false);
+    }
+  };
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -168,6 +198,42 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
               </ListItemButton>
             </ListItem>
           </List>
+        )}
+
+        {/* Store Switcher — shown only when user has access to multiple tenants */}
+        {tenants.length > 1 && (
+          <Box sx={{ px: 2, pb: 1 }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+              <StoreIcon sx={{ fontSize: 12, color: alpha('#ffffff', 0.4) }} />
+              <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.4), fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>
+                Active Store
+              </Typography>
+              {isSwitching && <CircularProgress size={10} sx={{ color: 'white' }} />}
+            </Stack>
+            <Select
+              value={user?.storeId ?? ''}
+              onChange={(e) => handleSwitchTenant(e.target.value as string)}
+              size="small"
+              fullWidth
+              disabled={isSwitching}
+              sx={{
+                color: 'white',
+                fontSize: '12px',
+                fontWeight: 600,
+                '.MuiOutlinedInput-notchedOutline': { borderColor: alpha('#ffffff', 0.2) },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: alpha('#ffffff', 0.4) },
+                '.MuiSvgIcon-root': { color: alpha('#ffffff', 0.5) },
+                bgcolor: alpha('#ffffff', 0.05),
+                borderRadius: '8px',
+              }}
+            >
+              {tenants.map((t) => (
+                <MenuItem key={t.storeId} value={t.storeId} sx={{ fontSize: '12px' }}>
+                  {t.storeName}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
         )}
 
         {/* User Card */}

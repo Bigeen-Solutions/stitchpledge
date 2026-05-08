@@ -49,3 +49,37 @@ export async function refreshApi(): Promise<AuthResponse> {
 export async function logoutApi(): Promise<void> {
   await apiClient.post("/auth/logout")
 }
+
+export interface TenantDTO {
+  storeId: string;
+  storeName: string;
+  companyId: string;
+  role: string;
+}
+
+/**
+ * List all tenants (store contexts) the current user can access.
+ */
+export async function getTenantsApi(): Promise<TenantDTO[]> {
+  const response = await apiClient.get("/auth/tenants")
+  return response.data
+}
+
+/**
+ * Switch the active store context. Returns a fresh token pair.
+ */
+export async function switchTenantApi(storeId: string): Promise<AuthResponse> {
+  const response = await apiClient.post("/auth/switch-tenant", { storeId })
+  const raw = response.data
+  return {
+    accessToken: raw.accessToken,
+    user: {
+      id: raw.user.id ?? raw.user.userId,
+      companyId: raw.user.companyId,
+      email: raw.user.email,
+      fullName: raw.user.fullName,
+      role: raw.user.role,
+      capabilities: raw.user.capabilities ?? raw.user.permissions ?? [],
+    },
+  }
+}

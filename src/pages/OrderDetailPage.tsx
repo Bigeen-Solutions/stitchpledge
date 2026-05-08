@@ -6,6 +6,7 @@ import { ordersApi } from '../features/orders/orders.api.ts';
 import { useAuthStore } from '../features/auth/auth.store.ts';
 import { useToastStore } from '../components/feedback/Toast.tsx';
 import { WorkflowGraph } from '../features/workflow/components/WorkflowGraph.tsx';
+import { WorkflowStageTimeline } from '../features/workflow/components/WorkflowStageTimeline.tsx';
 import { MeasurementHistory } from '../features/measurements/components/MeasurementHistory.tsx';
 import { RecordMeasurementForm } from '../features/measurements/components/RecordMeasurementForm.tsx';
 import {
@@ -20,11 +21,16 @@ import {
   Avatar,
   Stack,
   Box,
-  Chip
+  Chip,
+  Tabs,
+  Tab,
+  alpha,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SettingsIcon from '@mui/icons-material/Settings';
+import TimelineIcon from '@mui/icons-material/Timeline';
 import { RiskBadge } from '../components/ui/RiskBadge.tsx';
+import { useAvailableTransitions, useAttemptTransition } from '../features/production/hooks/useProductionMutation.ts';
 import { EditOrderModal } from '../features/orders/components/EditOrderModal.tsx';
 import { AuditTrailTimeline } from '../features/audit/components/AuditTrailTimeline.tsx';
 import { DisputePortal } from '../features/dispute/components/DisputePortal.tsx';
@@ -47,8 +53,11 @@ export function OrderDetailPage() {
   });
   const [selectedGarmentId, setSelectedGarmentId] = useState<string | null>(null);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [workflowTab, setWorkflowTab] = useState<'graph' | 'timeline'>('graph');
 
   const tailors = staff?.filter(s => s.role === 'TAILOR') || [];
+  const { data: availableTransitions = [] } = useAvailableTransitions(selectedGarmentId ?? '');
+  const attemptTransition = useAttemptTransition();
 
   useEffect(() => {
     if (garments && garments.length > 0 && !selectedGarmentId) {
@@ -265,6 +274,36 @@ export function OrderDetailPage() {
                   </FormControl>
                 </Box>
               )}
+              {selectedGarment && isCompanyAdminOrManager && availableTransitions.length > 0 && (
+                <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
+                    Status Transitions
+                  </Typography>
+                  <Stack spacing={1}>
+                    {availableTransitions.map((status: string) => (
+                      <Button
+                        key={status}
+                        fullWidth
+                        size="small"
+                        variant="outlined"
+                        disabled={attemptTransition.isPending}
+                        onClick={() => attemptTransition.mutate({ garmentId: selectedGarment.id, targetStatus: status })}
+                        sx={{
+                          borderRadius: 2,
+                          fontWeight: 700,
+                          fontSize: '11px',
+                          textTransform: 'none',
+                          borderColor: alpha('#1e5c3a', 0.3),
+                          color: '#1e5c3a',
+                          '&:hover': { borderColor: '#1e5c3a', bgcolor: alpha('#1e5c3a', 0.04) },
+                        }}
+                      >
+                        → {status.replace(/_/g, ' ')}
+                      </Button>
+                    ))}
+                  </Stack>
+                </Box>
+              )}
             </Card>
 
             {/* Component C: Quick Actions */}
@@ -413,12 +452,30 @@ export function OrderDetailPage() {
 
             {/* Component B: Production Workflow */}
             <Card className="sf-card" sx={{ p: 0, borderRadius: 3, overflow: 'hidden' }}>
-              <Box sx={{ p: 3, bgcolor: 'rgba(0,0,0,0.01)', borderBottom: '1px solid', borderColor: 'divider' }}>
-                <Typography variant="h6" fontWeight={800}>Production Workflow</Typography>
+              <Box sx={{ px: 3, pt: 3, pb: 0, bgcolor: 'rgba(0,0,0,0.01)', borderBottom: '1px solid', borderColor: 'divider' }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
+                  <Typography variant="h6" fontWeight={800}>Production Workflow</Typography>
+                </Stack>
+                {selectedGarmentId && (
+                  <Tabs
+                    value={workflowTab}
+                    onChange={(_, v) => setWorkflowTab(v)}
+                    sx={{
+                      minHeight: 36,
+                      '& .MuiTab-root': { minHeight: 36, fontSize: '12px', fontWeight: 700, textTransform: 'none', py: 0.5 },
+                      '& .MuiTabs-indicator': { bgcolor: 'primary.main', height: 2 },
+                    }}
+                  >
+                    <Tab label="DAG View" value="graph" />
+                    <Tab label={<Stack direction="row" spacing={0.5} alignItems="center"><TimelineIcon sx={{ fontSize: 14 }} /><span>Stage Timeline</span></Stack>} value="timeline" />
+                  </Tabs>
+                )}
               </Box>
-              <Box sx={{ p: 2 }}>
+              <Box sx={{ p: 3 }}>
                 {selectedGarmentId ? (
-                  <WorkflowGraph garmentId={selectedGarmentId} orderId={order.id} />
+                  workflowTab === 'graph'
+                    ? <WorkflowGraph garmentId={selectedGarmentId} orderId={order.id} />
+                    : <WorkflowStageTimeline garmentId={selectedGarmentId} />
                 ) : (
                   <Box sx={{ p: 4, textAlign: 'center' }}>
                     <Typography color="text.secondary">Select a garment to view production graph</Typography>

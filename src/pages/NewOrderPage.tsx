@@ -53,6 +53,7 @@ import { useWorkflowTemplates } from "../features/workflow/hooks/useWorkflowTemp
 import { useAuthStore } from "../features/auth/auth.store";
 import { useStores, useStaffList } from "../features/auth/hooks/useStaff";
 import { ordersApi } from "../features/orders/orders.api";
+import { storesApi } from "../features/stores/stores.api";
 import { useToastStore } from "../components/feedback/Toast";
 import { useInventory } from "../features/inventory/useInventory";
 import { truncateId, safeLocaleDate } from "../utils/format";
@@ -348,6 +349,20 @@ export function NewOrderPage() {
       if (!finalStoreId) {
         showToast("Store Assignment Required", "Store assignment is required. Please contact admin.", "error");
         return;
+      }
+
+      // Capacity pre-flight: warn if store is over capacity (non-blocking — OWNER can override)
+      try {
+        const capacityCheck = await storesApi.checkCapacity(finalStoreId);
+        if (!capacityCheck.canAccept) {
+          showToast(
+            "Capacity Warning",
+            `Store at ${capacityCheck.utilizationPercent ?? '?'}% load. ${capacityCheck.message || 'Accepting order above capacity limit.'}`,
+            "warning"
+          );
+        }
+      } catch {
+        // Capacity check is advisory — never block order creation if the endpoint fails
       }
 
       showToast("Finalizing order & calculating risk...", "Almost there.", "success");

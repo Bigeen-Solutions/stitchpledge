@@ -44,4 +44,10 @@ export const keys = {
     list: (page: number, limit: number) => ['disputes', 'list', { page, limit }] as const,
     projection: (orderId: string) => ['disputes', 'projection', orderId] as const,
   },
+  groupOrders: {
+    list: (page: number, limit: number) => ['groupOrders', 'list', { page, limit }] as const,
+  },
+  stitchScore: {
+    detail: (companyId: string) => ['stitchScore', companyId] as const,
+  },
 };
