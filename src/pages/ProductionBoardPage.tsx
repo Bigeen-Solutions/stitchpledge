@@ -143,45 +143,36 @@ function KPICard({ title, value, icon, gradient }: KPICardProps) {
   );
 }
 
-// ─── Quick Update Modal ──────────────────────────────────────────
-interface QuickUpdateModalProps {
-  task: ActiveFloorTask | null;
-  onClose: () => void;
-}
+import { useAvailableTransitions, useAttemptTransition } from '../features/production/hooks/useProductionMutation';
 
 function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
-  const { data: workflow, isLoading: isWorkflowLoading } = useGarmentWorkflow(task?.garmentId || '');
-  const { data: staff, isLoading: isStaffLoading, isError: isStaffError } = useStaffList({
-    storeId: task?.storeId,
-    enabled: !!task && !!task.storeId
-  });
-  const updateMutation = useUpdateGarmentStage(task?.garmentId || '');
+  const { data: transitions = [], isLoading: isTransitionsLoading } = useAvailableTransitions(task?.garmentId || '');
+  const transitionMutation = useAttemptTransition();
 
-  const [selectedStageId, setSelectedStageId] = useState<string>('');
-  const [selectedTailorId, setSelectedTailorId] = useState<string | null>(null);
-
-  // Sync initial state when task changes or workflow data arrives
-  useMemo(() => {
-    if (task) {
-      setSelectedStageId(task.stageId);
-      setSelectedTailorId(task.assignedTailorId || null);
-    }
-  }, [task]);
+  const [selectedTarget, setSelectedTarget] = useState<string>('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   if (!task) return null;
 
-  const isStoreIdMissing = !task.storeId;
-
   const handleSave = async () => {
-    await updateMutation.mutateAsync({
-      stageId: selectedStageId,
-      assignedTailorId: selectedTailorId,
-    });
-    onClose();
-  };
+    setErrorMsg(null);
+    if (!selectedTarget) return;
 
-  const stages = workflow?.stages || [];
-  const tailors = staff?.filter(s => s.role === 'TAILOR') || [];
+    try {
+      const result = await transitionMutation.mutateAsync({
+        garmentId: task.garmentId,
+        targetStatus: selectedTarget,
+      });
+
+      if (!result.success) {
+        setErrorMsg(result.rejectionBundle?.message || 'Transition failed');
+      } else {
+        onClose();
+      }
+    } catch (e: any) {
+      setErrorMsg(e.response?.data?.message || 'An unexpected error occurred');
+    }
+  };
 
   return (
     <Dialog
@@ -202,82 +193,48 @@ function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
     >
       <DialogTitle sx={{ pb: 1, pt: 3 }}>
         <Typography variant="h6" fontWeight={800} color="text.primary">
-          Update Garment Status
+          Advance Production Stage
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {task.garmentName} — {task.customerName}
+          {task.garmentName} — Currently: <strong>{task.stageName}</strong>
         </Typography>
       </DialogTitle>
       <DialogContent sx={{ pt: 2, pb: 1 }}>
         <Stack spacing={3} sx={{ mt: 1 }}>
-          <Box>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 1, display: 'block' }}>
-              Workflow Status
-            </Typography>
-            <FormControl fullWidth size="small">
-              <Select
-                value={selectedStageId}
-                onChange={(e) => setSelectedStageId(e.target.value)}
-                disabled={isWorkflowLoading}
-                sx={{ borderRadius: 2, bgcolor: 'background.paper' }}
-                displayEmpty
-              >
-                {isWorkflowLoading ? (
-                  <MenuItem disabled value="">
-                    <CircularProgress size={20} sx={{ mr: 1 }} /> Loading Stages...
-                  </MenuItem>
-                ) : (
-                  stages.map((s) => (
-                    <MenuItem key={s.stageId} value={s.stageId}>
-                      {s.stageId.charAt(0).toUpperCase() + s.stageId.slice(1)}
-                    </MenuItem>
-                  ))
-                )}
-                {stages.length === 0 && !isWorkflowLoading && (
-                  <MenuItem disabled value="">No stages found</MenuItem>
-                )}
-              </Select>
-            </FormControl>
-          </Box>
+          {errorMsg && (
+            <Alert severity="error" sx={{ borderRadius: 2 }}>
+              <AlertTitle sx={{ fontWeight: 700 }}>Operation Blocked</AlertTitle>
+              {errorMsg}
+            </Alert>
+          )}
 
           <Box>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', mb: 1, display: 'block' }}>
-              Assigned Tailor
+              Select Next Action
             </Typography>
-            <FormControl fullWidth size="small" error={isStoreIdMissing || isStaffError}>
+            <FormControl fullWidth size="small">
               <Select
-                value={selectedTailorId || ''}
-                onChange={(e) => setSelectedTailorId(e.target.value || null)}
-                disabled={isStaffLoading || isStoreIdMissing}
+                value={selectedTarget}
+                onChange={(e) => setSelectedTarget(e.target.value)}
+                disabled={isTransitionsLoading}
                 sx={{ borderRadius: 2, bgcolor: 'background.paper' }}
                 displayEmpty
               >
-                {isStoreIdMissing ? (
-                   <MenuItem disabled value="">
-                    Store ID Missing - Contact Admin
+                {isTransitionsLoading ? (
+                  <MenuItem disabled value="">
+                    <CircularProgress size={20} sx={{ mr: 1 }} /> Loading Next Actions...
                   </MenuItem>
                 ) : (
-                  <>
-                    <MenuItem value=""><em>Unassigned</em></MenuItem>
-                    {isStaffLoading ? (
-                      <MenuItem disabled value="">
-                        <CircularProgress size={20} sx={{ mr: 1 }} /> Loading Staff...
-                      </MenuItem>
-                    ) : (
-                      tailors.map((s) => (
-                        <MenuItem key={s.id} value={s.id}>
-                          {s.email.split('@')[0]}
-                        </MenuItem>
-                      ))
-                    )}
-                  </>
+                  transitions.map((t) => (
+                    <MenuItem key={t} value={t}>
+                      {t === 'CANCELLED' ? '❌ Cancel Order' : `➡️ Move to ${t}`}
+                    </MenuItem>
+                  ))
+                )}
+                {transitions.length === 0 && !isTransitionsLoading && (
+                  <MenuItem disabled value="">No valid next actions available</MenuItem>
                 )}
               </Select>
-              {isStoreIdMissing && (
-                <Typography variant="caption" color="error" sx={{ mt: 0.5, fontWeight: 600 }}>
-                  Critical: This task is missing a store assignment.
-                </Typography>
-              )}
             </FormControl>
           </Box>
         </Stack>
@@ -287,12 +244,12 @@ function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
           onClick={onClose}
           sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 600 }}
         >
-          Cancel
+          Close
         </Button>
         <Button
           variant="contained"
           onClick={handleSave}
-          disabled={updateMutation.isPending || isWorkflowLoading}
+          disabled={transitionMutation.isPending || isTransitionsLoading || !selectedTarget}
           sx={{
             bgcolor: 'primary.main',
             borderRadius: 2,
@@ -302,7 +259,7 @@ function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
           }}
         >
-          {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+          {transitionMutation.isPending ? 'Processing...' : 'Confirm Action'}
         </Button>
       </DialogActions>
     </Dialog>
