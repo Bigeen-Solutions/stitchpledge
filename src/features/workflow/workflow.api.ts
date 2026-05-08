@@ -7,6 +7,16 @@ export interface WorkflowTemplate {
   description?: string;
   requiredMeasurements: string[];
   createdAt: string;
+  versions?: WorkflowTemplateVersion[];
+}
+
+export interface WorkflowTemplateVersion {
+  id: string;
+  templateId: string;
+  versionNumber: number;
+  graphDefinition: WorkflowGraph;
+  activeGarments?: number;
+  createdAt: string;
 }
 
 export interface StageInstance {

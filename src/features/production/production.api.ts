@@ -1,4 +1,4 @@
-import { axiosInstance } from '../../infrastructure/api/axios-instance';
+import { apiClient } from "../../infrastructure/http/axios.client";
 
 export interface TransitionResult {
   success: boolean;
@@ -12,16 +12,16 @@ export interface TransitionResult {
 
 export const productionApi = {
   getAvailableTransitions: async (garmentId: string): Promise<string[]> => {
-    const response = await axiosInstance.get(`/production/garments/${garmentId}/transitions`);
+    const response = await apiClient.get(`/production/garments/${garmentId}/transitions`);
     return response.data;
   },
 
   attemptTransition: async (
-    garmentId: string, 
-    targetStatus: string, 
+    garmentId: string,
+    targetStatus: string,
     idempotencyKey: string
   ): Promise<TransitionResult> => {
-    const response = await axiosInstance.patch(`/production/garments/${garmentId}/status`, {
+    const response = await apiClient.patch(`/production/garments/${garmentId}/status`, {
       targetStatus,
       idempotencyKey
     });
