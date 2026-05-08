@@ -10,11 +10,11 @@ export type Capability =
   | 'VIEW_AUDIT_LOGS'
   | 'SUSPEND_ACCOUNT';
 
-export type StitchFynRole = 'OWNER' | 'MANAGER' | 'TAILOR' | 'FRONT_DESK' | 'CUSTOMER';
+export type StitchFynRole = 'OWNER' | 'MANAGER' | 'TAILOR' | 'FRONT_DESK' | 'CUSTOMER' | 'SYSTEM_ADMIN';
 
 export interface AuthUser {
   id: string;
-  companyId: string;
+  companyId: string | null;
   storeId?: string;
   email: string;
   fullName: string;

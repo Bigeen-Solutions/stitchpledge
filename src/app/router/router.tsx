@@ -33,6 +33,14 @@ import { GroupCoordinatorDashboard } from '../../features/group-order/GroupCoord
 import { WorkflowTemplatesPage } from '../../pages/WorkflowTemplatesPage.tsx';
 import { GroupOrdersPage } from '../../pages/GroupOrdersPage.tsx';
 import { StitchScoreDetailPage } from '../../pages/StitchScoreDetailPage.tsx';
+import { SystemAdminGuard } from '../../features/system-admin/guards/SystemAdminGuard.tsx';
+import { SystemAdminLayout } from '../../features/system-admin/layouts/SystemAdminLayout.tsx';
+import { SystemAdminOverview } from '../../features/system-admin/pages/SystemAdminOverview.tsx';
+import { CompanyList } from '../../features/system-admin/pages/CompanyList.tsx';
+import { CreateCompany } from '../../features/system-admin/pages/CreateCompany.tsx';
+import { CompanyDetail } from '../../features/system-admin/pages/CompanyDetail.tsx';
+import { UserList } from '../../features/system-admin/pages/UserList.tsx';
+import { UserDetail } from '../../features/system-admin/pages/UserDetail.tsx';
 
 const AxiosInterceptorHandler = () => {
   useAxiosInterceptors();
@@ -200,6 +208,23 @@ export const router = createBrowserRouter([
               </ProtectedRoute>
             ),
           },
+        ],
+      },
+      {
+        element: (
+          <ProtectedRoute>
+            <SystemAdminGuard>
+              <SystemAdminLayout />
+            </SystemAdminGuard>
+          </ProtectedRoute>
+        ),
+        children: [
+          { path: '/system-admin', element: <SystemAdminOverview /> },
+          { path: '/system-admin/companies', element: <CompanyList /> },
+          { path: '/system-admin/companies/new', element: <CreateCompany /> },
+          { path: '/system-admin/companies/:id', element: <CompanyDetail /> },
+          { path: '/system-admin/users', element: <UserList /> },
+          { path: '/system-admin/users/:id', element: <UserDetail /> },
         ],
       },
       {
