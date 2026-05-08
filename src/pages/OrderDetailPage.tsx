@@ -25,10 +25,15 @@ import {
   Tabs,
   Tab,
   alpha,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SettingsIcon from '@mui/icons-material/Settings';
 import TimelineIcon from '@mui/icons-material/Timeline';
+import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import { RiskBadge } from '../components/ui/RiskBadge.tsx';
 import { useAvailableTransitions, useAttemptTransition } from '../features/production/hooks/useProductionMutation.ts';
 import { EditOrderModal } from '../features/orders/components/EditOrderModal.tsx';
@@ -54,6 +59,7 @@ export function OrderDetailPage() {
   const [selectedGarmentId, setSelectedGarmentId] = useState<string | null>(null);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [workflowTab, setWorkflowTab] = useState<'graph' | 'timeline'>('graph');
+  const [showForensicProof, setShowForensicProof] = useState(false);
 
   const tailors = staff?.filter(s => s.role === 'TAILOR') || [];
   const { data: availableTransitions = [] } = useAvailableTransitions(selectedGarmentId ?? '');
@@ -143,12 +149,29 @@ export function OrderDetailPage() {
           </Stack>
           <Stack alignItems="flex-end" spacing={1}>
             <Stack direction="row" spacing={2} alignItems="center">
+              {isCompanyAdminOrManager && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<FingerprintIcon />}
+                  onClick={() => setShowForensicProof(true)}
+                  sx={{
+                    borderRadius: 2,
+                    borderColor: alpha('#1e5c3a', 0.4),
+                    color: '#1e5c3a',
+                    fontWeight: 700,
+                    '&:hover': { borderColor: '#1e5c3a', bgcolor: alpha('#1e5c3a', 0.04) },
+                  }}
+                >
+                  Forensic Proof
+                </Button>
+              )}
               {!isOrderCompleted && isCompanyAdminOrManager && (
-                <Button 
-                  size="small" 
-                  variant="outlined" 
-                  color="inherit" 
-                  startIcon={<SettingsIcon />} 
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="inherit"
+                  startIcon={<SettingsIcon />}
                   onClick={() => setEditModalOpen(true)}
                   sx={{ borderRadius: 2 }}
                 >
@@ -501,12 +524,62 @@ export function OrderDetailPage() {
       </Grid>
 
       {isCompanyAdminOrManager && (
-        <EditOrderModal 
-          open={isEditModalOpen} 
-          onClose={() => setEditModalOpen(false)} 
-          order={order} 
+        <EditOrderModal
+          open={isEditModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          order={order}
         />
       )}
+
+      {/* Forensic Proof Dialog */}
+      <Dialog
+        open={showForensicProof}
+        onClose={() => setShowForensicProof(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.4)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Box sx={{
+              p: 1,
+              borderRadius: '10px',
+              bgcolor: alpha('#1e5c3a', 0.08),
+              display: 'flex',
+              alignItems: 'center',
+            }}>
+              <FingerprintIcon sx={{ fontSize: 20, color: '#1e5c3a' }} />
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: '#1a2340', lineHeight: 1.2 }}>
+                Forensic Proof
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#6b7280', fontWeight: 500 }}>
+                Immutable audit trail for #{truncateId(order.id).toUpperCase()}
+              </Typography>
+            </Box>
+          </Stack>
+        </DialogTitle>
+        <DialogContent dividers sx={{ p: 3 }}>
+          <AuditTrailTimeline targetId={order.id} />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            onClick={() => setShowForensicProof(false)}
+            variant="outlined"
+            sx={{ borderRadius: 2, fontWeight: 700 }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

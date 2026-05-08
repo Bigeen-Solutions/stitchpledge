@@ -33,6 +33,9 @@ import {
   AccountTree as WorkflowIcon,
   Groups as GroupsIcon,
   Store as StoreIcon,
+  Security as SecurityShieldIcon,
+  Article as ArticleIcon,
+  Grade as GradeIcon,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../features/auth/auth.store';
@@ -59,6 +62,12 @@ const navItems = [
   { label: 'Workflow Templates', icon: WorkflowIcon, path: '/workflow-templates', roles: ['OWNER'] },
   { label: 'Staff Management', icon: UserCog, path: '/staff', roles: ['OWNER'] },
   { label: 'Reports', icon: BarChart2, path: '/reports', roles: ['OWNER', 'MANAGER'] },
+  { label: 'StitchScore', icon: GradeIcon, path: '/stitch-score', roles: ['OWNER', 'MANAGER'] },
+];
+
+const forensicNavItems = [
+  { label: 'Audit Log', icon: ArticleIcon, path: '/reports/audit' },
+  { label: 'Security Audit', icon: SecurityShieldIcon, path: '/reports/security-audit' },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }) => {
@@ -165,6 +174,57 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
           );
         })}
       </List>
+
+      {/* Forensic Center — OWNER only */}
+      {user?.role === 'OWNER' && (
+        <Box>
+          <Box sx={{ px: 2, pt: 2, pb: 0.5 }}>
+            <Typography sx={{
+              fontSize: '9px',
+              fontWeight: 900,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: alpha('#ffffff', 0.3),
+            }}>
+              Forensic Center
+            </Typography>
+          </Box>
+          <List sx={{ px: 0, pb: 0 }}>
+            {forensicNavItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <ListItem key={item.label} disablePadding>
+                  <ListItemButton
+                    onClick={() => handleNavigation(item.path)}
+                    sx={{
+                      py: 1.2,
+                      px: 2,
+                      bgcolor: isActive ? alpha('#1e5c3a', 0.15) : 'transparent',
+                      borderLeft: isActive ? '3px solid var(--color-primary)' : '3px solid transparent',
+                      '&:hover': { bgcolor: alpha('#ffffff', 0.07) },
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 40, color: isActive ? 'white' : alpha('#ffffff', 0.6) }}>
+                      <item.icon sx={{ fontSize: 20 }} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Typography sx={{
+                          fontSize: '13px',
+                          fontWeight: isActive ? 600 : 400,
+                          color: isActive ? 'white' : alpha('#ffffff', 0.6),
+                        }}>
+                          {item.label}
+                        </Typography>
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
+          </List>
+        </Box>
+      )}
 
       {/* Bottom Actions */}
       <Box sx={{ mt: 'auto' }}>
