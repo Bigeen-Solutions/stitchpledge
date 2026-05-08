@@ -28,7 +28,7 @@ export interface DeadlineIntelligenceDTO {
 }
 
 export const getDeadlineInfo = async (orderId: string): Promise<DeadlineIntelligenceDTO> => {
-  const response = await apiClient.get(`/deadline/${orderId}`);
+  const response = await apiClient.get(`/deadlines/${orderId}`);
   return response.data;
 };
 

@@ -68,7 +68,12 @@ export function LoginPage() {
     try {
       const { accessToken, user } = await loginApi({ email, password });
       setAuth(accessToken, user);
-      navigate('/dashboard', { replace: true });
+      
+      if (user.role === 'SYSTEM_ADMIN') {
+        navigate('/system-admin', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     } catch (err: any) {
       if (!err.response) {
         setError('Network error. Please check your connection.');

@@ -211,6 +211,7 @@ export const AdminDashboard: React.FC = () => {
     else if (percentage <= 70) color = '#ff9800'; // Orange
 
     return {
+      materialId: item.materialId,
       name: item.name,
       level: percentage,
       color
@@ -656,7 +657,7 @@ export const AdminDashboard: React.FC = () => {
               </Typography>
               <Stack spacing={2.5} sx={{ mb: 4 }}>
                 {stocks.map((stock) => (
-                  <Box key={stock.name}>
+                  <Box key={stock.materialId}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
                       <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '13px' }}>{stock.name}</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 800, color: 'white', fontSize: '13px' }}>{stock.level}%</Typography>

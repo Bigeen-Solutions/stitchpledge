@@ -17,6 +17,7 @@ export interface ActivityItem {
 }
 
 export interface MaterialStock {
+  materialId: string;
   name: string;
   level: number;
   color: string;

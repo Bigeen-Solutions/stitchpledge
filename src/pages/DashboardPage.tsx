@@ -1,4 +1,5 @@
 import React from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '../features/auth/auth.store';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '../features/dashboard/analytics.api';
@@ -13,6 +14,10 @@ import { Box, CircularProgress } from '@mui/material';
 export const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
   const role = user?.role;
+
+  if (role === 'SYSTEM_ADMIN') {
+    return <Navigate to="/system-admin" replace />;
+  }
 
   const { data, isLoading } = useQuery({
     queryKey: keys.analytics.overview,

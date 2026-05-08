@@ -287,8 +287,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
                 borderRadius: '8px',
               }}
             >
-              {tenants.map((t) => (
-                <MenuItem key={t.storeId} value={t.storeId} sx={{ fontSize: '12px' }}>
+              {tenants.map((t, idx) => (
+                <MenuItem key={`${t.storeId}-${idx}`} value={t.storeId} sx={{ fontSize: '12px' }}>
                   {t.storeName}
                 </MenuItem>
               ))}
