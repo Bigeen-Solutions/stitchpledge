@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useSystemAdminStats } from '../hooks/useStats'
 import { ChangeStatusModal } from '../components/ChangeStatusModal'
 import { useCompany } from '../hooks/useCompanies'
-import type { CompanyRecord } from '../types'
 
 function StatCard({ label, value }: { label: string; value: number | undefined }) {
   return (

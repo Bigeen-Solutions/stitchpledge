@@ -393,7 +393,7 @@ export const AdminDashboard: React.FC = () => {
           Store Load Distribution
         </Typography>
         <Grid container spacing={3}>
-          {(analytics?.storeDistribution || []).map((store: any, index: number) => {
+          {(analytics?.storeDistribution || []).map((store: any) => {
             const statusColor = store.uiHint === 'RED' ? '#EF4444' : store.uiHint === 'AMBER' ? '#F59E0B' : '#10B981';
             return (
               <Grid key={store.storeId} size={{ xs: 12, sm: 6, md: 4 }}>

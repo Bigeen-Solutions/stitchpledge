@@ -49,8 +49,6 @@ import { isPast, differenceInHours, format } from 'date-fns';
 import { useActiveTasks, useMarkStageComplete } from '../features/workflow/hooks/useProductionBoard';
 import type { ActiveFloorTask } from '../features/workflow/workflow.api';
 import { WorkflowGraph } from '../features/workflow/components/WorkflowGraph';
-import { useStaffList } from '../features/auth/hooks/useStaff';
-import { useGarmentWorkflow, useUpdateGarmentStage } from '../features/workflow/hooks/useWorkflowMutation';
 import '../design-system/layout.css'; // Ensure sf-glass is available
 
 // ─── Constants & Helpers ────────────────────────────────────────
@@ -144,6 +142,11 @@ function KPICard({ title, value, icon, gradient }: KPICardProps) {
 }
 
 import { useAvailableTransitions, useAttemptTransition } from '../features/production/hooks/useProductionMutation';
+
+interface QuickUpdateModalProps {
+  task: ActiveFloorTask | null;
+  onClose: () => void;
+}
 
 function QuickUpdateModal({ task, onClose }: QuickUpdateModalProps) {
   const { data: transitions = [], isLoading: isTransitionsLoading } = useAvailableTransitions(task?.garmentId || '');

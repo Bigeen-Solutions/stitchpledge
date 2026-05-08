@@ -37,7 +37,11 @@ export function CustomersPage() {
     
     try {
       const newCustomer = await createMutation.mutateAsync(newCustomerForm);
-      showToast("Client Created", `${newCustomerForm.name} has been added to the system.`, "success");
+      showToast(
+        "Client Created",
+        `${newCustomerForm.name} has been added${newCustomerForm.email ? `. A welcome email with login credentials has been sent to ${newCustomerForm.email}` : ' to the system'}.`,
+        "success"
+      );
       setIsAddModalOpen(false);
       setNewCustomerForm({ name: '', phone: '', email: '' });
       navigate(`/customers/${newCustomer.id}`);

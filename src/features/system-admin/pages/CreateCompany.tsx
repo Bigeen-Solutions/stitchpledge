@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCreateCompany } from '../hooks/useCompanies'
 import { TemporaryPasswordDisclosure } from '../components/TemporaryPasswordDisclosure'
-import type { CreateCompanyDTO, SubscriptionTier, CompanyProvisionResult } from '../types'
+import type { CreateCompanyDTO, CompanyProvisionResult } from '../types'
 
 export function CreateCompany() {
   const navigate = useNavigate()
