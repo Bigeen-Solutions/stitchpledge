@@ -69,7 +69,7 @@ export function CompanyDetail() {
             <MetaRow label="Country" value={company.country} />
             <MetaRow label="Trial Ends" value={company.trialEndsAt ? new Date(company.trialEndsAt).toLocaleDateString() : '—'} />
             <MetaRow label="Deactivated" value={company.deactivatedAt ? new Date(company.deactivatedAt).toLocaleDateString() : '—'} />
-            <MetaRow label="Created" value={new Date(company.createdAt).toLocaleDateString()} />
+            <MetaRow label="Created" value={company.createdAt ? new Date(company.createdAt).toLocaleDateString() : '—'} />
             {company.internalNotes && (
               <div>
                 <span style={{ fontWeight: 600, color: '#374151' }}>Notes</span>
@@ -195,7 +195,7 @@ export function CompanyDetail() {
                   ) : stores.map((s) => (
                     <tr key={s.id} style={{ borderTop: '1px solid #f1f5f9' }}>
                       <td style={{ ...tdStyle, fontWeight: 500 }}>{s.name}</td>
-                      <td style={{ ...tdStyle, color: '#94a3b8' }}>{new Date(s.createdAt).toLocaleDateString()}</td>
+                      <td style={{ ...tdStyle, color: '#94a3b8' }}>{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : '—'}</td>
                     </tr>
                   ))}
                 </tbody>

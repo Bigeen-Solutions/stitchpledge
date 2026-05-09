@@ -23,7 +23,7 @@ export function SystemAdminLayout() {
         boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
       }}>
         <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.01em', opacity: 0.9 }}>
-          StitchFlow Admin
+          StitchFyn Admin
         </span>
         <nav style={{ display: 'flex', gap: '4px' }}>
           {NAV_LINKS.map(({ to, label, exact }) => {

@@ -91,7 +91,7 @@ export function SystemAdminOverview() {
                 {stats.expiringTrials.map((t) => (
                   <tr key={t.companyId} style={{ borderTop: '1px solid #f1f5f9' }}>
                     <td style={tdStyle}>{t.companyName}</td>
-                    <td style={tdStyle}>{new Date(t.trialEndsAt).toLocaleDateString()}</td>
+                    <td style={tdStyle}>{t.trialEndsAt ? new Date(t.trialEndsAt).toLocaleDateString() : '—'}</td>
                     <td style={tdStyle}>
                       <span style={{
                         display: 'inline-block', padding: '2px 8px', borderRadius: '12px',

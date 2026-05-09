@@ -48,7 +48,7 @@ export function UserDetail() {
           <InfoRow label="Role" value={user.role} />
           <InfoRow label="Company" value={user.companyName ?? 'None'} />
           <InfoRow label="Company ID" value={user.companyId ?? '—'} />
-          <InfoRow label="Joined" value={new Date(user.createdAt).toLocaleDateString()} />
+          <InfoRow label="Joined" value={user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—'} />
         </div>
       </div>
 

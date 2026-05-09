@@ -94,7 +94,7 @@ export function CompanyList() {
                   </td>
                   <td style={tdStyle}>{c.storeCount}</td>
                   <td style={tdStyle}>{c.userCount}</td>
-                  <td style={{ ...tdStyle, color: '#94a3b8' }}>{new Date(c.createdAt).toLocaleDateString()}</td>
+                  <td style={{ ...tdStyle, color: '#94a3b8' }}>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}</td>
                   <td style={tdStyle}>
                     <button
                       onClick={() => navigate(`/system-admin/companies/${c.id}`)}
