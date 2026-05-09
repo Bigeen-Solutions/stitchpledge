@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { apiClient } from '../../infrastructure/http/axios.client';
 
 // Align with backend DTOs
 export interface RaiseDisputeDTO {
@@ -6,7 +6,10 @@ export interface RaiseDisputeDTO {
   category: 'MATERIAL' | 'MEASUREMENT' | 'FINANCIAL' | 'AESTHETIC';
   severity: 'CRITICAL' | 'WARNING';
   description: string;
-  initiatedBy: 'CUSTOMER' | 'STAFF';
+  initiator: {
+    userId: string;
+    role: string;
+  };
   evidenceArtifacts?: string[];
 }
 
@@ -55,30 +58,30 @@ export interface DisputesListResponse {
   totalPages: number;
 }
 
-const API_BASE = '/api/disputes';
+const API_BASE = '/disputes';
 
 export const disputeApi = {
   raiseDispute: async (dto: RaiseDisputeDTO) => {
-    const response = await axios.post(`${API_BASE}`, dto);
+    const response = await apiClient.post(`${API_BASE}`, dto);
     return response.data;
   },
 
   submitEvidence: async (dto: SubmitEvidenceDTO) => {
-    await axios.post(`${API_BASE}/${dto.disputeId}/evidence`, dto);
+    await apiClient.post(`${API_BASE}/${dto.disputeId}/evidence`, dto);
   },
 
   resolveDispute: async (dto: ResolveDisputeDTO) => {
-    const response = await axios.post(`${API_BASE}/${dto.disputeId}/resolve`, dto);
+    const response = await apiClient.post(`${API_BASE}/${dto.disputeId}/resolve`, dto);
     return response.data;
   },
 
   getProjection: async (orderId: string): Promise<DisputeStandoffDTO> => {
-    const response = await axios.get(`${API_BASE}/order/${orderId}/projection`);
+    const response = await apiClient.get(`${API_BASE}/order/${orderId}/projection`);
     return response.data;
   },
 
   listDisputes: async (page = 1, limit = 10): Promise<DisputesListResponse> => {
-    const response = await axios.get(`${API_BASE}`, { params: { page, limit } });
+    const response = await apiClient.get(`${API_BASE}`, { params: { page, limit } });
     return response.data;
   },
 };

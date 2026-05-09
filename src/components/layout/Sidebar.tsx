@@ -327,6 +327,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
           width: SIDEBAR_WIDTH,
           boxSizing: 'border-box',
           borderRight: 'none',
+          bgcolor: '#163d28',
+          color: 'white',
         },
       }}
     >

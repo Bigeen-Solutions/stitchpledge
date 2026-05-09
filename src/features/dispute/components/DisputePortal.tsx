@@ -72,7 +72,7 @@ export const DisputePortal: React.FC<DisputePortalProps> = ({ orderId }) => {
 
         <Box>
           <Typography variant="caption" color="text.secondary">
-            Days in Standoff: {projection.daysInStandoff} | Last Activity: {new Date(projection.lastActivityAt).toLocaleString()}
+            Days in Standoff: {projection.daysInStandoff} | Last Activity: {projection.lastActivityAt && projection.lastActivityAt !== 'Invalid Date' ? new Date(projection.lastActivityAt).toLocaleString() : 'Recently updated'}
           </Typography>
         </Box>
 

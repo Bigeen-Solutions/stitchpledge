@@ -557,9 +557,9 @@ export const AdminDashboard: React.FC = () => {
                     No active orders found in the production projection.
                   </Typography>
                 ) : (
-                  recentOrders.map((order: any) => (
+                  recentOrders.map((order: any, index: number) => (
                     <OrderEntryItem
-                      key={order.id}
+                      key={`${order.id}-${index}`}
                       order={order}
                       onClick={() => navigate(`/orders/${order.id}`)}
                     />

@@ -92,12 +92,11 @@ function hasCapability(capabilities: Capability[], cap: Capability): boolean {
 interface RaiseDisputeDialogProps {
   open: boolean;
   onClose: () => void;
-  initiatedBy: 'CUSTOMER' | 'STAFF';
 }
 
-const RaiseDisputeDialog: React.FC<RaiseDisputeDialogProps> = ({ open, onClose, initiatedBy }) => {
+const RaiseDisputeDialog: React.FC<RaiseDisputeDialogProps> = ({ open, onClose }) => {
   const raiseDispute = useRaiseDispute();
-  const [form, setForm] = useState<Omit<RaiseDisputeDTO, 'initiatedBy'>>({
+  const [form, setForm] = useState<Omit<RaiseDisputeDTO, 'initiator'>>({
     orderId: '',
     category: 'MATERIAL',
     severity: 'WARNING',
@@ -108,9 +107,19 @@ const RaiseDisputeDialog: React.FC<RaiseDisputeDialogProps> = ({ open, onClose, 
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
+  const { user } = useAuthStore();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await raiseDispute.mutateAsync({ ...form, initiatedBy });
+    if (!user) return;
+    
+    await raiseDispute.mutateAsync({ 
+      ...form, 
+      initiator: {
+        userId: user.id,
+        role: user.role
+      }
+    });
     setForm({ orderId: '', category: 'MATERIAL', severity: 'WARNING', description: '' });
     onClose();
   };
@@ -822,7 +831,6 @@ const CustomerEvidencePortal: React.FC = () => {
         <RaiseDisputeDialog
           open={raiseOpen}
           onClose={() => setRaiseOpen(false)}
-          initiatedBy="CUSTOMER"
         />
       )}
     </Box>
@@ -1026,7 +1034,6 @@ const ManagementDisputeView: React.FC<{
         <RaiseDisputeDialog
           open={raiseOpen}
           onClose={() => setRaiseOpen(false)}
-          initiatedBy="STAFF"
         />
       )}
     </Box>
