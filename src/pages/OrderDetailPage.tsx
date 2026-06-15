@@ -48,6 +48,8 @@ import { DisputePortal } from '../features/dispute/components/DisputePortal.tsx'
 
 import { truncateId } from '../utils/format.ts';
 import { PaymentPanel } from '../features/orders/components/PaymentPanel.tsx';
+import { DesignBriefPanel } from '../features/orders/components/DesignBriefPanel.tsx';
+import { FabricSealPanel } from '../features/orders/components/FabricSealPanel.tsx';
 import { MobileHeader } from '../components/layout/MobileHeader.tsx';
 
 export function OrderDetailPage() {
@@ -494,6 +496,19 @@ export function OrderDetailPage() {
                       </Box>
                     </Grid>
                   </Grid>
+
+                  {/* Fabric Safety Seal */}
+                  <FabricSealPanel
+                    orderId={order.id}
+                    garmentId={selectedGarment.id}
+                  />
+
+                  {/* Design Brief */}
+                  <DesignBriefPanel
+                    orderId={order.id}
+                    garmentId={selectedGarment.id}
+                    garmentTier={order.garmentTier ?? 'STANDARD'}
+                  />
 
                   {/* Measurements Grid - Dense Key/Value format as requested */}
                   <Box>

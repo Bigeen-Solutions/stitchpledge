@@ -19,6 +19,7 @@ export interface Order {
   measurements?: Record<string, number>
   storeId?: string
   unverifiedFlags?: ActivationFlag[]
+  garmentTier?: 'STANDARD' | 'COMPLEX' | 'BESPOKE'
 }
 
 export interface OrderDeadlineProjection {

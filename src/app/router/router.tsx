@@ -29,6 +29,7 @@ import { useAxiosInterceptors } from '../../infrastructure/http/use-axios-interc
 import { DesignSystemPage } from '../../pages/DesignSystemPage.tsx';
 
 import { SplashScreen } from '../../pages/SplashScreen.tsx';
+import { SealVerificationPage } from '../../pages/SealVerificationPage.tsx';
 import { GroupCoordinatorDashboard } from '../../features/group-order/GroupCoordinatorDashboard.tsx';
 import { WorkflowTemplatesPage } from '../../pages/WorkflowTemplatesPage.tsx';
 import { GroupOrdersPage } from '../../pages/GroupOrdersPage.tsx';
@@ -57,6 +58,7 @@ export const router = createBrowserRouter([
           { path: '/', element: <SplashScreen /> },
           { path: '/login', element: <LoginPage /> },
           { path: '/track/:slug', element: <TrackingPage /> },
+          { path: '/public/seals/:code', element: <SealVerificationPage /> },
           ...(import.meta.env.DEV ? [{ path: '/design-system', element: <DesignSystemPage /> }] : []),
         ],
       },
