@@ -47,6 +47,7 @@ import { AuditTrailTimeline } from '../features/audit/components/AuditTrailTimel
 import { DisputePortal } from '../features/dispute/components/DisputePortal.tsx';
 
 import { truncateId } from '../utils/format.ts';
+import { PaymentPanel } from '../features/orders/components/PaymentPanel.tsx';
 import { MobileHeader } from '../components/layout/MobileHeader.tsx';
 
 export function OrderDetailPage() {
@@ -238,6 +239,11 @@ export function OrderDetailPage() {
                 </Box>
               </Stack>
             </Card>
+
+            {/* Payment Ledger — OWNER / MANAGER only */}
+            {isCompanyAdminOrManager && (
+              <PaymentPanel orderId={order.id} />
+            )}
 
             {/* Component B: Garment Selector */}
             <Card className="sf-card" sx={{ p: 3, borderRadius: 3 }}>
