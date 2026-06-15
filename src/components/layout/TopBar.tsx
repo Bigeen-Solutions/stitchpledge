@@ -8,7 +8,6 @@ import {
   Button,
   Avatar,
   Chip,
-  Badge,
   Menu,
   MenuItem,
   ListItemIcon,
@@ -19,7 +18,6 @@ import {
 import {
   Menu as MenuIcon,
   CalendarMonth as Calendar,
-  Notifications as Bell,
   HelpOutline as HelpCircle,
   Download,
   Logout as LogOut,
@@ -30,6 +28,7 @@ import { useAuthStore } from '../../features/auth/auth.store';
 import { useLogout } from '../../features/auth/hooks/useAuth';
 import { Breadcrumbs } from '../navigation/Breadcrumbs';
 import { InputAdornment, TextField } from '@mui/material';
+import { NotificationBell } from '../../features/notifications/components/NotificationBell';
 
 interface TopBarProps {
   toggleSidebar: () => void;
@@ -136,11 +135,7 @@ export const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isSidebarOpen }) 
             />
           )}
 
-          <IconButton size="small" sx={{ color: 'var(--color-text-secondary)' }}>
-            <Badge variant="dot" color="error">
-              <Bell sx={{ fontSize: 20 }} />
-            </Badge>
-          </IconButton>
+          <NotificationBell />
 
           <IconButton size="small" sx={{ color: 'var(--color-text-secondary)', display: { xs: 'none', sm: 'flex' } }}>
             <HelpCircle sx={{ fontSize: 20 }} />

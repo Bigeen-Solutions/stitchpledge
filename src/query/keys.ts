@@ -50,6 +50,9 @@ export const keys = {
   stitchScore: {
     detail: (companyId: string) => ['stitchScore', companyId] as const,
   },
+  notifications: {
+    list: ['notifications', 'list'] as const,
+  },
   systemAdmin: {
     stats: ['system-admin', 'stats'] as const,
     companies: {
