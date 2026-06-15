@@ -10,15 +10,17 @@ import {
   useTheme,
   useMediaQuery
 } from '@mui/material';
-import { 
+import {
   Settings as SettingsIcon,
   Business as GeneralIcon,
   AccountTree as WorkshopIcon,
-  DataUsage as CapacityIcon
+  DataUsage as CapacityIcon,
+  Shield as ShieldIcon
 } from '@mui/icons-material';
 import { WorkshopConfiguration } from '../features/workflow/components/WorkshopConfiguration';
 import { GeneralProfileSettings } from '../features/settings/components/GeneralProfileSettings';
 import { CapacitySettingsPanel } from '../features/capacity/components/CapacitySettingsPanel';
+import { RolePermissionsMatrix } from '../features/settings/components/RolePermissionsMatrix';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -155,10 +157,15 @@ export const SettingsPage: React.FC = () => {
               iconPosition="start" 
               label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Capacity Management</Typography>} 
             />
-            <Tab 
-              icon={<GeneralIcon sx={{ mr: 1.5, fontSize: 20 }} />} 
-              iconPosition="start" 
-              label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>General Profile</Typography>} 
+            <Tab
+              icon={<GeneralIcon sx={{ mr: 1.5, fontSize: 20 }} />}
+              iconPosition="start"
+              label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>General Profile</Typography>}
+            />
+            <Tab
+              icon={<ShieldIcon sx={{ mr: 1.5, fontSize: 20 }} />}
+              iconPosition="start"
+              label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Role Permissions</Typography>}
             />
           </Tabs>
         </Box>
@@ -173,6 +180,9 @@ export const SettingsPage: React.FC = () => {
           </CustomTabPanel>
           <CustomTabPanel value={activeTab} index={2}>
             <GeneralProfileSettings />
+          </CustomTabPanel>
+          <CustomTabPanel value={activeTab} index={3}>
+            <RolePermissionsMatrix />
           </CustomTabPanel>
         </Box>
       </Paper>

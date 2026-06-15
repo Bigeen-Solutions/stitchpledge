@@ -14,9 +14,9 @@ export function useAttemptTransition() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ garmentId, targetStatus }: { garmentId: string, targetStatus: string }) => {
+    mutationFn: ({ garmentId, targetStatus, bypassReason }: { garmentId: string; targetStatus: string; bypassReason?: string }) => {
       const idempotencyKey = uuidv4();
-      return productionApi.attemptTransition(garmentId, targetStatus, idempotencyKey);
+      return productionApi.attemptTransition(garmentId, targetStatus, idempotencyKey, bypassReason);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['workflow', 'active-tasks'] });

@@ -19,11 +19,13 @@ export const productionApi = {
   attemptTransition: async (
     garmentId: string,
     targetStatus: string,
-    idempotencyKey: string
+    idempotencyKey: string,
+    bypassReason?: string,
   ): Promise<TransitionResult> => {
     const response = await apiClient.patch(`/production/garments/${garmentId}/status`, {
       targetStatus,
-      idempotencyKey
+      idempotencyKey,
+      ...(bypassReason ? { bypass_reason: bypassReason } : {}),
     });
     return response.data;
   }

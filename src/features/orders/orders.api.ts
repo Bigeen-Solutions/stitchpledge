@@ -1,5 +1,7 @@
 import { apiClient } from "../../infrastructure/http/axios.client"
 
+export type ActivationFlag = 'payment' | 'fabric' | 'design'
+
 export interface Order {
   id: string
   garmentId: string
@@ -16,6 +18,7 @@ export interface Order {
   isUrgent: boolean
   measurements?: Record<string, number>
   storeId?: string
+  unverifiedFlags?: ActivationFlag[]
 }
 
 export interface OrderDeadlineProjection {

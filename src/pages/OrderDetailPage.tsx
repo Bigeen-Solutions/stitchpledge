@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useOrderDetail, useOrderGarments } from '../features/orders/hooks/useOrderDetail.ts';
 import { useStaffList } from '../features/auth/hooks/useStaff.ts';
@@ -29,11 +29,17 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Tooltip,
+  TextField,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SettingsIcon from '@mui/icons-material/Settings';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import ContentCutOutlinedIcon from '@mui/icons-material/ContentCutOutlined';
+import DesignServicesOutlinedIcon from '@mui/icons-material/DesignServicesOutlined';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { RiskBadge } from '../components/ui/RiskBadge.tsx';
 import { useAvailableTransitions, useAttemptTransition } from '../features/production/hooks/useProductionMutation.ts';
 import { EditOrderModal } from '../features/orders/components/EditOrderModal.tsx';
@@ -60,6 +66,8 @@ export function OrderDetailPage() {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [workflowTab, setWorkflowTab] = useState<'graph' | 'timeline'>('graph');
   const [showForensicProof, setShowForensicProof] = useState(false);
+  const [bypassModal, setBypassModal] = useState<{ open: boolean; targetStatus: string } | null>(null);
+  const [bypassReason, setBypassReason] = useState('');
 
   const tailors = staff?.filter(s => s.role === 'TAILOR') || [];
   const { data: availableTransitions = [] } = useAvailableTransitions(selectedGarmentId ?? '');
@@ -297,36 +305,100 @@ export function OrderDetailPage() {
                   </FormControl>
                 </Box>
               )}
-              {selectedGarment && isCompanyAdminOrManager && availableTransitions.length > 0 && (
-                <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
-                    Status Transitions
-                  </Typography>
-                  <Stack spacing={1}>
-                    {availableTransitions.map((status: string) => (
-                      <Button
-                        key={status}
-                        fullWidth
-                        size="small"
-                        variant="outlined"
-                        disabled={attemptTransition.isPending}
-                        onClick={() => attemptTransition.mutate({ garmentId: selectedGarment.id, targetStatus: status })}
-                        sx={{
-                          borderRadius: 2,
-                          fontWeight: 700,
-                          fontSize: '11px',
-                          textTransform: 'none',
-                          borderColor: alpha('#1e5c3a', 0.3),
-                          color: '#1e5c3a',
-                          '&:hover': { borderColor: '#1e5c3a', bgcolor: alpha('#1e5c3a', 0.04) },
-                        }}
-                      >
-                        → {status.replace(/_/g, ' ')}
-                      </Button>
-                    ))}
-                  </Stack>
-                </Box>
-              )}
+              {selectedGarment && isCompanyAdminOrManager && availableTransitions.length > 0 && (() => {
+                const flags = order.unverifiedFlags ?? [];
+                const isBlocked = flags.length > 0;
+                const isOwner = user?.role === 'OWNER';
+
+                const FLAG_META: Record<string, { icon: React.ReactElement; label: string }> = {
+                  payment: { icon: <PaymentsOutlinedIcon sx={{ fontSize: 14 }} />, label: 'Deposit required' },
+                  fabric:  { icon: <ContentCutOutlinedIcon sx={{ fontSize: 14 }} />, label: 'Fabric unconfirmed' },
+                  design:  { icon: <DesignServicesOutlinedIcon sx={{ fontSize: 14 }} />, label: 'Design pending' },
+                };
+
+                return (
+                  <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
+                      Status Transitions
+                    </Typography>
+
+                    {isBlocked && (
+                      <Stack direction="row" spacing={0.5} sx={{ mb: 1.5, flexWrap: 'wrap', gap: 0.5 }}>
+                        {flags.map(f => (
+                          <Chip
+                            key={f}
+                            icon={FLAG_META[f]?.icon}
+                            label={FLAG_META[f]?.label ?? f}
+                            size="small"
+                            sx={{
+                              height: 20,
+                              fontSize: '9px',
+                              fontWeight: 800,
+                              borderRadius: '4px',
+                              bgcolor: 'rgba(196, 154, 26, 0.1)',
+                              color: '#8a6d1a',
+                              border: '1px solid rgba(196, 154, 26, 0.25)',
+                              '& .MuiChip-icon': { color: '#8a6d1a', marginLeft: '4px' },
+                              '& .MuiChip-label': { px: 0.75 },
+                            }}
+                          />
+                        ))}
+                      </Stack>
+                    )}
+
+                    <Stack spacing={1}>
+                      {availableTransitions.map((status: string) => {
+                        const buttonDisabled = attemptTransition.isPending || (isBlocked && !isOwner);
+                        const showOwnerBypass = isBlocked && isOwner;
+
+                        const btn = (
+                          <Button
+                            key={status}
+                            fullWidth
+                            size="small"
+                            variant="outlined"
+                            disabled={buttonDisabled}
+                            onClick={() => {
+                              if (showOwnerBypass) {
+                                setBypassReason('');
+                                setBypassModal({ open: true, targetStatus: status });
+                              } else {
+                                attemptTransition.mutate({ garmentId: selectedGarment.id, targetStatus: status });
+                              }
+                            }}
+                            sx={{
+                              borderRadius: 2,
+                              fontWeight: 700,
+                              fontSize: '11px',
+                              textTransform: 'none',
+                              borderColor: isBlocked && !isOwner ? alpha('#9e9e9e', 0.4) : alpha('#1e5c3a', 0.3),
+                              color: isBlocked && !isOwner ? 'text.disabled' : '#1e5c3a',
+                              '&:hover': { borderColor: '#1e5c3a', bgcolor: alpha('#1e5c3a', 0.04) },
+                              '&.Mui-disabled': { borderColor: alpha('#9e9e9e', 0.3), color: 'text.disabled' },
+                            }}
+                          >
+                            → {status.replace(/_/g, ' ')}
+                          </Button>
+                        );
+
+                        if (isBlocked && !isOwner) {
+                          return (
+                            <Tooltip
+                              key={status}
+                              title="Complete the activation checklist to advance production"
+                              placement="top"
+                            >
+                              {/* span needed so Tooltip works on disabled button */}
+                              <span style={{ display: 'block' }}>{btn}</span>
+                            </Tooltip>
+                          );
+                        }
+                        return btn;
+                      })}
+                    </Stack>
+                  </Box>
+                );
+              })()}
             </Card>
 
             {/* Component C: Quick Actions */}
@@ -529,6 +601,108 @@ export function OrderDetailPage() {
           onClose={() => setEditModalOpen(false)}
           order={order}
         />
+      )}
+
+      {/* Owner Activation Bypass Dialog */}
+      {bypassModal && selectedGarment && (
+        <Dialog
+          open={bypassModal.open}
+          onClose={() => setBypassModal(null)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: '20px',
+              background: 'rgba(255, 255, 255, 0.97)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.4)',
+            },
+          }}
+        >
+          <DialogTitle sx={{ pb: 1 }}>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Box sx={{ p: 1, borderRadius: '10px', bgcolor: alpha('#e67e22', 0.1), display: 'flex', alignItems: 'center' }}>
+                <WarningAmberIcon sx={{ fontSize: 20, color: '#e67e22' }} />
+              </Box>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
+                  Owner Bypass
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                  Advance to <strong>{bypassModal.targetStatus.replace(/_/g, ' ')}</strong> despite pending activation items
+                </Typography>
+              </Box>
+            </Stack>
+          </DialogTitle>
+          <DialogContent dividers sx={{ pt: 2 }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+              The following activation items are still pending for this order:
+            </Typography>
+            <Stack spacing={1} sx={{ mb: 3 }}>
+              {(order.unverifiedFlags ?? []).map(f => {
+                const icons: Record<string, React.ReactElement> = {
+                  payment: <PaymentsOutlinedIcon sx={{ fontSize: 16, color: '#8a6d1a' }} />,
+                  fabric:  <ContentCutOutlinedIcon sx={{ fontSize: 16, color: '#8a6d1a' }} />,
+                  design:  <DesignServicesOutlinedIcon sx={{ fontSize: 16, color: '#8a6d1a' }} />,
+                };
+                const labels: Record<string, string> = {
+                  payment: 'Deposit required',
+                  fabric:  'Fabric unconfirmed',
+                  design:  'Design pending',
+                };
+                return (
+                  <Stack key={f} direction="row" spacing={1} alignItems="center" sx={{
+                    px: 2, py: 1, borderRadius: 2,
+                    bgcolor: 'rgba(196, 154, 26, 0.06)',
+                    border: '1px solid rgba(196, 154, 26, 0.2)',
+                  }}>
+                    {icons[f]}
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#8a6d1a' }}>
+                      {labels[f] ?? f}
+                    </Typography>
+                  </Stack>
+                );
+              })}
+            </Stack>
+            <TextField
+              fullWidth
+              multiline
+              minRows={3}
+              label="Bypass reason (required)"
+              placeholder="Explain why production is advancing despite pending activation items…"
+              value={bypassReason}
+              onChange={e => setBypassReason(e.target.value)}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+            />
+          </DialogContent>
+          <DialogActions sx={{ px: 3, py: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={() => setBypassModal(null)}
+              sx={{ borderRadius: 2, fontWeight: 700 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              disabled={!bypassReason.trim() || attemptTransition.isPending}
+              onClick={() => {
+                attemptTransition.mutate(
+                  { garmentId: selectedGarment.id, targetStatus: bypassModal.targetStatus, bypassReason: bypassReason.trim() },
+                  { onSuccess: () => setBypassModal(null) },
+                );
+              }}
+              sx={{
+                borderRadius: 2,
+                fontWeight: 700,
+                bgcolor: '#e67e22',
+                '&:hover': { bgcolor: '#d35400' },
+              }}
+            >
+              Bypass &amp; Advance
+            </Button>
+          </DialogActions>
+        </Dialog>
       )}
 
       {/* Forensic Proof Dialog */}
