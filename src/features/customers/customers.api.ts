@@ -22,6 +22,7 @@ export interface CreateCustomerRequest {
   name: string;
   phone?: string;
   email?: string;
+  notification_channel?: 'whatsapp' | 'sms' | 'email';
 }
 
 export interface MeasurementSummary {

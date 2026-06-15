@@ -26,7 +26,12 @@ import {
   ListItemIcon,
   ListItemAvatar,
   ListItemText,
-  Avatar
+  Avatar,
+  Alert,
+  RadioGroup,
+  Radio,
+  FormControlLabel,
+  FormLabel,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -100,7 +105,7 @@ export function NewOrderPage() {
 
   // Form State
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-  const [newCustomer, setNewCustomer] = useState({ name: "", email: "", phone: "" });
+  const [newCustomer, setNewCustomer] = useState<{ name: string; email: string; phone: string; notificationChannel: "whatsapp" | "sms" | "email" }>({ name: "", email: "", phone: "", notificationChannel: "whatsapp" });
   const [measurementEntries, setMeasurementEntries] = useState<{
     id: string;
     label: string;
@@ -117,6 +122,10 @@ export function NewOrderPage() {
   const [selectedStoreId, setSelectedStoreId] = useState("");
   const [selectedMaterialId, setSelectedMaterialId] = useState("");
   const [materialQuantity, setMaterialQuantity] = useState<number | "">("");
+  const [eventOccasion, setEventOccasion] = useState("");
+  const [garmentCategory, setGarmentCategory] = useState("");
+  const [garmentTier, setGarmentTier] = useState<"STANDARD" | "COMPLEX" | "BESPOKE">("STANDARD");
+  const [paymentIntentType, setPaymentIntentType] = useState("");
 
   const { data: inventory } = useInventory();
   const effectiveStoreId = role === 'OWNER' ? selectedStoreId : userStoreId || undefined;
@@ -313,7 +322,12 @@ export function NewOrderPage() {
       if (!finalCustomerId) {
         if (!newCustomer.name.trim()) throw new Error("Customer identification is required.");
         showToast("Creating new customer profile...", "Processing intake data.", "success");
-        const c = await createCustomer.mutateAsync(newCustomer);
+        const c = await createCustomer.mutateAsync({
+          name: newCustomer.name,
+          email: newCustomer.email,
+          phone: newCustomer.phone,
+          notification_channel: newCustomer.notificationChannel,
+        });
         finalCustomerId = c.id;
         finalCustomerName = c.name;
       }
@@ -371,6 +385,10 @@ export function NewOrderPage() {
         storeId: finalStoreId,
         eventDate: eventDate ? eventDate.toISOString() : new Date().toISOString(),
         lockedMeasurementVersionId: finalMeasurementVersionId,
+        event_occasion: eventOccasion || undefined,
+        garment_category: garmentCategory || undefined,
+        garment_tier: garmentTier,
+        payment_intent_type: paymentIntentType || undefined,
         garments: orderItems.map(g => ({
           workflowTemplateId: g.templateId,
           assignedTailorId: g.assignedTailorId || null,
@@ -646,6 +664,22 @@ export function NewOrderPage() {
                       InputProps={{ disableUnderline: true, sx: { fontSize: '1rem', fontWeight: 600 } }}
                       sx={{ '& .MuiInputLabel-root': { fontSize: '0.875rem' } }}
                     />
+                  </Box>
+                  <Box sx={{ p: 2.5 }}>
+                    <FormControl component="fieldset">
+                      <FormLabel component="legend" sx={{ fontSize: '0.875rem', fontWeight: 700, color: 'text.secondary', mb: 1 }}>
+                        Preferred Notification Channel
+                      </FormLabel>
+                      <RadioGroup
+                        row
+                        value={newCustomer.notificationChannel}
+                        onChange={(e) => setNewCustomer({ ...newCustomer, notificationChannel: e.target.value as "whatsapp" | "sms" | "email" })}
+                      >
+                        <FormControlLabel value="whatsapp" control={<Radio size="small" color="primary" />} label={<Typography variant="body2" sx={{ fontWeight: 600 }}>WhatsApp (recommended)</Typography>} />
+                        <FormControlLabel value="sms" control={<Radio size="small" color="primary" />} label={<Typography variant="body2" sx={{ fontWeight: 600 }}>SMS</Typography>} />
+                        <FormControlLabel value="email" control={<Radio size="small" color="primary" />} label={<Typography variant="body2" sx={{ fontWeight: 600 }}>Email</Typography>} />
+                      </RadioGroup>
+                    </FormControl>
                   </Box>
                 </Stack>
               </Card>
@@ -980,7 +1014,7 @@ export function NewOrderPage() {
                 </Button>
                 <Button
                   variant="contained"
-                  disabled={orderItems.length === 0 || !eventDate}
+                  disabled={orderItems.length === 0 || !eventDate || !eventOccasion || !garmentCategory || !paymentIntentType}
                   onClick={() => setStep("FABRIC_DETAILS")}
                   sx={{
                     bgcolor: 'secondary.main',
@@ -995,6 +1029,151 @@ export function NewOrderPage() {
                   Configure Material
                 </Button>
               </Stack>
+
+              {/* ORDER CLASSIFICATION */}
+              <Box sx={{ mt: 5 }}>
+                <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
+                  ORDER CLASSIFICATION
+                </Typography>
+                <Card sx={{ borderRadius: '24px', boxShadow: 'none', border: '1px solid', borderColor: 'divider', p: 3 }}>
+                  <Grid container spacing={3}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <FormControl fullWidth required>
+                        <InputLabel>Occasion</InputLabel>
+                        <Select
+                          value={eventOccasion}
+                          label="Occasion"
+                          onChange={(e) => setEventOccasion(e.target.value)}
+                          sx={{ borderRadius: '12px', bgcolor: 'background.default' }}
+                        >
+                          {[
+                            ['wedding', 'Wedding'],
+                            ['burial', 'Burial'],
+                            ['owambe', 'Owambe'],
+                            ['graduation', 'Graduation'],
+                            ['corporate', 'Corporate'],
+                            ['naming_ceremony', 'Naming Ceremony'],
+                            ['engagement', 'Engagement'],
+                            ['birthday', 'Birthday'],
+                            ['religious', 'Religious'],
+                            ['convocation', 'Convocation'],
+                            ['other', 'Other'],
+                          ].map(([value, label]) => (
+                            <MenuItem key={value} value={value}>{label}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <FormControl fullWidth required>
+                        <InputLabel>Garment Category</InputLabel>
+                        <Select
+                          value={garmentCategory}
+                          label="Garment Category"
+                          onChange={(e) => setGarmentCategory(e.target.value)}
+                          sx={{ borderRadius: '12px', bgcolor: 'background.default' }}
+                        >
+                          {[
+                            ['agbada_set', 'Agbada Set'],
+                            ['native_senator', 'Native Senator'],
+                            ['ankara_gown', 'Ankara Gown'],
+                            ['kaftan', 'Kaftan'],
+                            ['suit', 'Suit'],
+                            ['corporate_dress', 'Corporate Dress'],
+                            ['lace_gown', 'Lace Gown'],
+                            ['aso_oke_set', 'Aso-Oke Set'],
+                            ['skirt_and_blouse', 'Skirt & Blouse'],
+                            ['jumpsuit', 'Jumpsuit'],
+                            ['childrens_wear', "Children's Wear"],
+                            ['other', 'Other'],
+                          ].map(([value, label]) => (
+                            <MenuItem key={value} value={value}>{label}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <FormControl fullWidth required>
+                        <InputLabel>Payment Structure</InputLabel>
+                        <Select
+                          value={paymentIntentType}
+                          label="Payment Structure"
+                          onChange={(e) => setPaymentIntentType(e.target.value)}
+                          sx={{ borderRadius: '12px', bgcolor: 'background.default' }}
+                        >
+                          {[
+                            ['deposit_then_balance', 'Deposit then Balance'],
+                            ['full_upfront', 'Full Upfront'],
+                            ['installments', 'Installments'],
+                            ['on_collection', 'On Collection'],
+                          ].map(([value, label]) => (
+                            <MenuItem key={value} value={value}>{label}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid size={{ xs: 12 }}>
+                      <FormControl component="fieldset" fullWidth>
+                        <FormLabel component="legend" sx={{ fontSize: '0.75rem', fontWeight: 800, color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 1, mb: 1.5 }}>
+                          Construction Tier
+                        </FormLabel>
+                        <RadioGroup
+                          row
+                          value={garmentTier}
+                          onChange={(e) => setGarmentTier(e.target.value as "STANDARD" | "COMPLEX" | "BESPOKE")}
+                          sx={{ gap: 1 }}
+                        >
+                          {([
+                            ['STANDARD', 'Standard', 'Straightforward construction, fixed design'],
+                            ['COMPLEX', 'Complex', 'Multi-piece or detailed construction'],
+                            ['BESPOKE', 'Bespoke', 'Fully custom. Requires fitting appointments.'],
+                          ] as const).map(([value, label, description]) => (
+                            <Box
+                              key={value}
+                              onClick={() => setGarmentTier(value)}
+                              sx={{
+                                flex: 1,
+                                minWidth: 140,
+                                p: 1.5,
+                                borderRadius: '12px',
+                                border: '1px solid',
+                                borderColor: garmentTier === value ? 'primary.main' : 'divider',
+                                bgcolor: garmentTier === value ? alpha('#1e5c3a', 0.04) : 'background.paper',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease',
+                                '&:hover': { borderColor: 'primary.light', bgcolor: alpha('#1e5c3a', 0.02) },
+                              }}
+                            >
+                              <FormControlLabel
+                                value={value}
+                                control={<Radio size="small" color="primary" sx={{ p: 0.5 }} />}
+                                label={
+                                  <Box>
+                                    <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{label}</Typography>
+                                    <Typography variant="caption" sx={{ color: 'text.secondary', lineHeight: 1.3, display: 'block', mt: 0.25 }}>{description}</Typography>
+                                  </Box>
+                                }
+                                sx={{ m: 0, alignItems: 'flex-start', gap: 0.5 }}
+                              />
+                            </Box>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                      {garmentTier === 'BESPOKE' && (
+                        <Alert
+                          severity="info"
+                          sx={{ mt: 2, borderRadius: '10px', border: '1px solid', borderColor: 'info.light' }}
+                        >
+                          Bespoke orders require fitting appointments before the finishing stage.
+                        </Alert>
+                      )}
+                    </Grid>
+                  </Grid>
+                </Card>
+              </Box>
 
               {/* MOBILE TAILOR PICKER DRAWER */}
               <SwipeableDrawer
