@@ -5,6 +5,7 @@ import { RiskBadge } from '../../../components/ui/RiskBadge';
 import { StageStepper } from '../../../components/ui/StageStepper';
 import { PortalPaymentSummary } from '../../portal/components/PortalPaymentSummary';
 import { PortalMessageThread } from '../../portal/components/PortalMessageThread';
+import { PortalCollectionSignoff } from '../../portal/components/PortalCollectionSignoff';
 
 export function CustomerOrderPage() {
   const { id } = useParams<{ id: string }>();
@@ -73,6 +74,8 @@ export function CustomerOrderPage() {
           </div>
         </div>
       </div>
+
+      <PortalCollectionSignoff portalToken={id || ''} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-xl" style={{ marginTop: 0 }}>
         <PortalPaymentSummary portalToken={id || ''} />

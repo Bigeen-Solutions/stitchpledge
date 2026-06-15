@@ -31,6 +31,9 @@ import {
   DialogActions,
   Tooltip,
   TextField,
+  Snackbar,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -40,6 +43,7 @@ import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import ContentCutOutlinedIcon from '@mui/icons-material/ContentCutOutlined';
 import DesignServicesOutlinedIcon from '@mui/icons-material/DesignServicesOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import { RiskBadge } from '../components/ui/RiskBadge.tsx';
 import { useAvailableTransitions, useAttemptTransition } from '../features/production/hooks/useProductionMutation.ts';
 import { EditOrderModal } from '../features/orders/components/EditOrderModal.tsx';
@@ -50,6 +54,8 @@ import { truncateId } from '../utils/format.ts';
 import { PaymentPanel } from '../features/orders/components/PaymentPanel.tsx';
 import { DesignBriefPanel } from '../features/orders/components/DesignBriefPanel.tsx';
 import { FabricSealPanel } from '../features/orders/components/FabricSealPanel.tsx';
+import { CollectionChecklistPanel } from '../features/orders/components/CollectionChecklistPanel.tsx';
+import { FittingsPanel } from '../features/orders/components/FittingsPanel.tsx';
 import { MobileHeader } from '../components/layout/MobileHeader.tsx';
 
 export function OrderDetailPage() {
@@ -71,6 +77,8 @@ export function OrderDetailPage() {
   const [showForensicProof, setShowForensicProof] = useState(false);
   const [bypassModal, setBypassModal] = useState<{ open: boolean; targetStatus: string } | null>(null);
   const [bypassReason, setBypassReason] = useState('');
+  const [pdfExporting, setPdfExporting] = useState(false);
+  const [pdfSnackbar, setPdfSnackbar] = useState<{ open: boolean; severity: 'error' | 'warning'; message: string } | null>(null);
 
   const tailors = staff?.filter(s => s.role === 'TAILOR') || [];
   const { data: availableTransitions = [] } = useAvailableTransitions(selectedGarmentId ?? '');
@@ -95,6 +103,7 @@ export function OrderDetailPage() {
   const { order, projection } = detail;
   const selectedGarment = garments?.find(g => g.id === selectedGarmentId);
   const isOrderCompleted = garments && garments.length > 0 && garments.every((g: any) => g.status === 'COMPLETED');
+  const isOrderLocked = !!order.lockedAt;
 
   const handleAssignTailor = async (tailorId: string) => {
     if (!selectedGarmentId) return;
@@ -104,6 +113,29 @@ export function OrderDetailPage() {
       refetchGarments();
     } catch (err) {
       showToast("Failed to update assignment", "error");
+    }
+  };
+
+  const handleExportEvidence = async () => {
+    if (!order.id) return;
+    setPdfExporting(true);
+    try {
+      const blob = await ordersApi.exportEvidencePdf(order.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `evidence-${order.id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      if (err?.response?.status === 409) {
+        const text = await err.response.data?.text?.() ?? 'Confirm fabric intake before exporting evidence';
+        setPdfSnackbar({ open: true, severity: 'warning', message: text });
+      } else {
+        setPdfSnackbar({ open: true, severity: 'error', message: 'Failed to export evidence PDF. Please try again.' });
+      }
+    } finally {
+      setPdfExporting(false);
     }
   };
 
@@ -160,6 +192,30 @@ export function OrderDetailPage() {
           </Stack>
           <Stack alignItems="flex-end" spacing={1}>
             <Stack direction="row" spacing={2} alignItems="center">
+              {isCompanyAdminOrManager && (() => {
+                const fabricBlocked = order.unverifiedFlags?.includes('fabric') ?? false;
+                return (
+                  <Tooltip title={fabricBlocked ? 'Confirm fabric intake before exporting' : ''} arrow>
+                    <span>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={pdfExporting ? <CircularProgress size={14} color="inherit" /> : <PictureAsPdfOutlinedIcon />}
+                        onClick={handleExportEvidence}
+                        disabled={fabricBlocked || pdfExporting}
+                        sx={{
+                          borderRadius: 2,
+                          fontWeight: 700,
+                          fontSize: '12px',
+                          textTransform: 'none',
+                        }}
+                      >
+                        Export Evidence
+                      </Button>
+                    </span>
+                  </Tooltip>
+                );
+              })()}
               {isCompanyAdminOrManager && (
                 <Button
                   size="small"
@@ -177,7 +233,7 @@ export function OrderDetailPage() {
                   Forensic Proof
                 </Button>
               )}
-              {!isOrderCompleted && isCompanyAdminOrManager && (
+              {!isOrderCompleted && !isOrderLocked && isCompanyAdminOrManager && (
                 <Button
                   size="small"
                   variant="outlined"
@@ -207,11 +263,11 @@ export function OrderDetailPage() {
         <div className={`badge ${riskBadgeClass} py-1 px-3 text-xs font-bold shadow-sm`} style={{ borderRadius: '6px' }}>
           {projection.riskLevel.replace('_', ' ')}
         </div>
-        {!isOrderCompleted && isCompanyAdminOrManager && (
-          <Button 
-            size="small" 
-            variant="text" 
-            startIcon={<SettingsIcon />} 
+        {!isOrderCompleted && !isOrderLocked && isCompanyAdminOrManager && (
+          <Button
+            size="small"
+            variant="text"
+            startIcon={<SettingsIcon />}
             onClick={() => setEditModalOpen(true)}
           >
             Edit
@@ -289,7 +345,7 @@ export function OrderDetailPage() {
                 ))}
               </Stack>
 
-              {selectedGarment && isCompanyAdminOrManager && (
+              {selectedGarment && isCompanyAdminOrManager && !isOrderLocked && (
                 <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
                   <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
                     Production Assignment
@@ -313,7 +369,7 @@ export function OrderDetailPage() {
                   </FormControl>
                 </Box>
               )}
-              {selectedGarment && isCompanyAdminOrManager && availableTransitions.length > 0 && (() => {
+              {selectedGarment && isCompanyAdminOrManager && !isOrderLocked && availableTransitions.length > 0 && (() => {
                 const flags = order.unverifiedFlags ?? [];
                 const isBlocked = flags.length > 0;
                 const isOwner = user?.role === 'OWNER';
@@ -510,6 +566,16 @@ export function OrderDetailPage() {
                     garmentTier={order.garmentTier ?? 'STANDARD'}
                   />
 
+                  {/* Fitting Appointments — BESPOKE orders only */}
+                  {order.garmentTier === 'BESPOKE' && garments && (
+                    <FittingsPanel
+                      orderId={order.id}
+                      garments={garments}
+                      isOrderCompleted={!!isOrderCompleted}
+                      hasAvailableTransitions={availableTransitions.length > 0}
+                    />
+                  )}
+
                   {/* Measurements Grid - Dense Key/Value format as requested */}
                   <Box>
                     <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 2, display: 'block' }}>
@@ -615,6 +681,18 @@ export function OrderDetailPage() {
           </Stack>
         </Grid>
       </Grid>
+
+      {/* Collection Checklist — full-width below main grid */}
+      <Card className="sf-card" sx={{ p: 3, borderRadius: 3, mt: 4 }}>
+        <CollectionChecklistPanel
+          orderId={order.id}
+          isOrderCompleted={!!isOrderCompleted}
+          lockedAt={order.lockedAt}
+          canInitiate={
+            user?.role === 'OWNER' || user?.role === 'MANAGER' || user?.role === 'TAILOR'
+          }
+        />
+      </Card>
 
       {isCompanyAdminOrManager && (
         <EditOrderModal
@@ -775,6 +853,21 @@ export function OrderDetailPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={pdfSnackbar?.open ?? false}
+        autoHideDuration={6000}
+        onClose={() => setPdfSnackbar(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          severity={pdfSnackbar?.severity ?? 'error'}
+          onClose={() => setPdfSnackbar(null)}
+          sx={{ fontWeight: 600 }}
+        >
+          {pdfSnackbar?.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

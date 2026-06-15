@@ -15,12 +15,14 @@ import {
   Business as GeneralIcon,
   AccountTree as WorkshopIcon,
   DataUsage as CapacityIcon,
-  Shield as ShieldIcon
+  Shield as ShieldIcon,
+  EventRepeat as SeasonalIcon,
 } from '@mui/icons-material';
 import { WorkshopConfiguration } from '../features/workflow/components/WorkshopConfiguration';
 import { GeneralProfileSettings } from '../features/settings/components/GeneralProfileSettings';
 import { CapacitySettingsPanel } from '../features/capacity/components/CapacitySettingsPanel';
 import { RolePermissionsMatrix } from '../features/settings/components/RolePermissionsMatrix';
+import { SeasonalOverridesPanel } from '../features/capacity/components/SeasonalOverridesPanel';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -167,6 +169,11 @@ export const SettingsPage: React.FC = () => {
               iconPosition="start"
               label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Role Permissions</Typography>}
             />
+            <Tab
+              icon={<SeasonalIcon sx={{ mr: 1.5, fontSize: 20 }} />}
+              iconPosition="start"
+              label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Seasonal Overrides</Typography>}
+            />
           </Tabs>
         </Box>
 
@@ -183,6 +190,9 @@ export const SettingsPage: React.FC = () => {
           </CustomTabPanel>
           <CustomTabPanel value={activeTab} index={3}>
             <RolePermissionsMatrix />
+          </CustomTabPanel>
+          <CustomTabPanel value={activeTab} index={4}>
+            <SeasonalOverridesPanel />
           </CustomTabPanel>
         </Box>
       </Paper>

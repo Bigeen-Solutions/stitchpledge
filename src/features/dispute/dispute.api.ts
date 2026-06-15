@@ -49,6 +49,11 @@ export interface DisputeListItem {
   daysInStandoff: number;
   createdAt: string;
   updatedAt: string;
+  referenceNumber?: string;
+  raisedByRole?: string;
+  resolutionMethod?: string | null;
+  customerConfirmedResolvedAt?: string | null;
+  tailorConfirmedResolvedAt?: string | null;
 }
 
 export interface DisputesListResponse {
@@ -83,5 +88,9 @@ export const disputeApi = {
   listDisputes: async (page = 1, limit = 10): Promise<DisputesListResponse> => {
     const response = await apiClient.get(`${API_BASE}`, { params: { page, limit } });
     return response.data;
+  },
+
+  tailorResolve: async (disputeId: string): Promise<void> => {
+    await apiClient.post(`${API_BASE}/${disputeId}/resolve/tailor`);
   },
 };

@@ -22,6 +22,7 @@ import {
   MenuItem,
   Divider,
   InputAdornment,
+  CircularProgress,
 } from '@mui/material';
 import {
   Gavel as GavelIcon,
@@ -33,6 +34,7 @@ import {
   CloudUpload as CloudUploadIcon,
   VerifiedUser as VerifiedUserIcon,
   HourglassBottom as HourglassBottomIcon,
+  Handshake as HandshakeIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -40,6 +42,7 @@ import {
   useRaiseDispute,
   useSubmitEvidence,
   useResolveDispute,
+  useTailorResolve,
   type DisputeListItem,
   type DisputeStatus,
 } from '../features/dispute/dispute.hooks';
@@ -445,11 +448,13 @@ interface DisputeCardProps {
   onViewOrder: (orderId: string) => void;
   canSubmitEvidence: boolean;
   canResolve: boolean;
+  canConfirmResolution: boolean;
 }
 
-const DisputeCard: React.FC<DisputeCardProps> = ({ dispute, onViewOrder, canSubmitEvidence, canResolve }) => {
+const DisputeCard: React.FC<DisputeCardProps> = ({ dispute, onViewOrder, canSubmitEvidence, canResolve, canConfirmResolution }) => {
   const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [resolveOpen, setResolveOpen] = useState(false);
+  const tailorResolve = useTailorResolve(dispute.orderId);
 
   const statusConfig = getStatusConfig(dispute.status);
   const isActive = ACTIVE_STATUSES.includes(dispute.status);
@@ -526,6 +531,19 @@ const DisputeCard: React.FC<DisputeCardProps> = ({ dispute, onViewOrder, canSubm
               />
             </Stack>
 
+            {/* Reference number */}
+            {dispute.referenceNumber && (
+              <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mb: 1.25 }}>
+                <GavelIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                <Typography
+                  variant="caption"
+                  sx={{ fontFamily: 'monospace', fontSize: '1rem', fontWeight: 700, color: '#374151', letterSpacing: '0.02em' }}
+                >
+                  {dispute.referenceNumber}
+                </Typography>
+              </Stack>
+            )}
+
             {/* Description */}
             <Typography
               variant="body2"
@@ -541,6 +559,42 @@ const DisputeCard: React.FC<DisputeCardProps> = ({ dispute, onViewOrder, canSubm
             >
               {dispute.description}
             </Typography>
+
+            {/* Bilateral resolution confirmation state */}
+            <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 1 }}>
+              <Chip
+                size="small"
+                icon={dispute.tailorConfirmedResolvedAt
+                  ? <CheckCircleIcon sx={{ fontSize: 12 }} />
+                  : <HourglassBottomIcon sx={{ fontSize: 12 }} />}
+                label={dispute.tailorConfirmedResolvedAt ? 'Tailor confirmed' : 'Tailor: pending'}
+                sx={{
+                  height: 22,
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  borderRadius: '6px',
+                  bgcolor: dispute.tailorConfirmedResolvedAt ? alpha('#16a34a', 0.1) : alpha('#6b7280', 0.08),
+                  color: dispute.tailorConfirmedResolvedAt ? '#16a34a' : '#6b7280',
+                  '& .MuiChip-icon': { color: 'inherit', ml: '5px' },
+                }}
+              />
+              <Chip
+                size="small"
+                icon={dispute.customerConfirmedResolvedAt
+                  ? <CheckCircleIcon sx={{ fontSize: 12 }} />
+                  : <HourglassBottomIcon sx={{ fontSize: 12 }} />}
+                label={dispute.customerConfirmedResolvedAt ? 'Customer confirmed' : 'Customer: pending'}
+                sx={{
+                  height: 22,
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  borderRadius: '6px',
+                  bgcolor: dispute.customerConfirmedResolvedAt ? alpha('#16a34a', 0.1) : alpha('#6b7280', 0.08),
+                  color: dispute.customerConfirmedResolvedAt ? '#16a34a' : '#6b7280',
+                  '& .MuiChip-icon': { color: 'inherit', ml: '5px' },
+                }}
+              />
+            </Stack>
 
             {/* Meta row */}
             <Stack direction="row" spacing={2} flexWrap="wrap">
@@ -638,6 +692,34 @@ const DisputeCard: React.FC<DisputeCardProps> = ({ dispute, onViewOrder, canSubm
                 Resolution Dashboard
               </Button>
             )}
+
+            {/* Confirm Resolution (bilateral tailor sign-off) */}
+            {canConfirmResolution &&
+              (dispute.status === 'OPEN' || dispute.status === 'UNDER_REVIEW') &&
+              !dispute.tailorConfirmedResolvedAt && (
+                <Button
+                  size="small"
+                  startIcon={tailorResolve.isPending
+                    ? <CircularProgress size={12} color="inherit" />
+                    : <HandshakeIcon sx={{ fontSize: 14 }} />}
+                  onClick={() => tailorResolve.mutate(dispute.id)}
+                  disabled={tailorResolve.isPending}
+                  sx={{
+                    color: '#2563eb',
+                    fontWeight: 700,
+                    fontSize: '12px',
+                    textTransform: 'none',
+                    borderRadius: '10px',
+                    px: 2,
+                    py: 0.8,
+                    bgcolor: alpha('#2563eb', 0.06),
+                    '&:hover': { bgcolor: alpha('#2563eb', 0.12) },
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Confirm Resolution
+                </Button>
+              )}
           </Stack>
         </Stack>
       </Card>
@@ -1011,6 +1093,7 @@ const ManagementDisputeView: React.FC<{
               onViewOrder={(orderId) => onNavigate(`/orders/${orderId}`)}
               canSubmitEvidence={canRaise}
               canResolve={canResolve}
+              canConfirmResolution={canResolve}
             />
           ))}
         </Stack>

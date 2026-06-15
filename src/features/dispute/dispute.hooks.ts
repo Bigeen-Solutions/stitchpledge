@@ -75,6 +75,28 @@ export function useSubmitEvidence(orderId: string) {
 }
 
 /**
+ * useTailorResolve
+ *
+ * Records the tailor's bilateral resolution confirmation.
+ */
+export function useTailorResolve(orderId: string) {
+  const queryClient = useQueryClient();
+  const showToast = useToastStore((state) => state.showToast);
+
+  return useMutation({
+    mutationFn: (disputeId: string) => disputeApi.tailorResolve(disputeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.disputes.list(1, 10) });
+      queryClient.invalidateQueries({ queryKey: keys.disputes.projection(orderId) });
+      showToast('Resolution confirmation recorded.', 'success');
+    },
+    onError: (error: any) => {
+      showToast(error.response?.data?.message || 'Failed to record confirmation', 'error');
+    },
+  });
+}
+
+/**
  * useResolveDispute
  */
 export function useResolveDispute(orderId: string) {
