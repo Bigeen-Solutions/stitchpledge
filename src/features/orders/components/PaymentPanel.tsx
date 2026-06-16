@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -24,7 +24,6 @@ import {
   paymentsApi,
   formatNaira,
   nairaToKobo,
-  kobotoNaira,
   type PaymentMethod,
   type PaymentIntent,
 } from '../payments.api';

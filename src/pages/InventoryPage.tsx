@@ -290,7 +290,7 @@ export function InventoryPage() {
         <DialogContent>
           <Box sx={{ py: 1 }}>
             <Typography variant="subtitle2" sx={{ mb: 2 }}>
-              Logging incoming stock for: <strong style={{ color: 'var(--color-primary)' }}>{selectedMaterial?.name}</strong>
+              Logging incoming stock for: <strong style={{ color: 'var(--sf-green)' }}>{selectedMaterial?.name}</strong>
             </Typography>
             
             <Stack spacing={3}>
@@ -352,14 +352,14 @@ export function InventoryPage() {
             <Stack spacing={2.5}>
               <Box sx={{ mb: 1 }}>
                 <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', display: 'block', mb: 1 }}>
-                  Visual Verification <span style={{ color: 'var(--color-error)' }}>*</span>
+                  Visual Verification <span style={{ color: '#ef4444' }}>*</span>
                 </Typography>
                 <Stack spacing={2} alignItems="center">
                   {imagePreview ? (
                     <Box 
                       component="img" 
                       src={imagePreview} 
-                      sx={{ width: '100%', height: 160, borderRadius: '16px', objectFit: 'cover', border: '1px solid var(--color-border)' }} 
+                      sx={{ width: '100%', height: 160, borderRadius: '16px', objectFit: 'cover', border: '1px solid var(--sf-border, rgba(0,0,0,0.12))' }}
                     />
                   ) : (
                     <Box sx={{ 

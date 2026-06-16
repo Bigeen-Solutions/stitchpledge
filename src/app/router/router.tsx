@@ -18,7 +18,6 @@ import { ForbiddenPage } from '../../pages/error/ForbiddenPage.tsx';
 import ReportsPage from '../../pages/ReportsPage.tsx';
 import { TrackingPage } from '../../pages/TrackingPage.tsx';
 import { DisputesPage } from '../../pages/DisputesPage.tsx';
-import { SecurityAuditPage } from '../../pages/SecurityAuditPage.tsx';
 import { BetaFeatureGuard } from '../../components/feedback/BetaFeatureGuard.tsx';
 
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';

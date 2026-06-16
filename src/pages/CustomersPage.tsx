@@ -254,7 +254,7 @@ export function CustomersPage() {
           </button>
           <Box sx={{ display: 'flex', alignItems: 'center', px: 2 }}>
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {page} <span style={{ color: 'var(--color-text-disabled)', fontWeight: 400 }}>/ {totalPages}</span>
+              {page} <span style={{ color: 'var(--sf-text-muted, #9ca3af)', fontWeight: 400 }}>/ {totalPages}</span>
             </Typography>
           </Box>
           <button 
