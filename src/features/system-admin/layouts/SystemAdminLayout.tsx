@@ -4,6 +4,7 @@ const NAV_LINKS = [
   { to: '/system-admin', label: 'Overview', exact: true },
   { to: '/system-admin/companies', label: 'Companies' },
   { to: '/system-admin/users', label: 'Users' },
+  { to: '/system-admin/audit-log', label: 'Audit Log' },
 ]
 
 export function SystemAdminLayout() {

@@ -27,4 +27,8 @@ export const usersApi = {
   updateStatus: async (userId: string, status: 'ACTIVE' | 'SUSPENDED'): Promise<void> => {
     await apiClient.patch(`/system-admin/users/${userId}/status`, { status })
   },
+
+  changeRole: async (userId: string, role: string): Promise<void> => {
+    await apiClient.patch(`/system-admin/users/${userId}/role`, { role })
+  },
 }

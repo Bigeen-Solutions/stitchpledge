@@ -56,3 +56,21 @@ export function useUpdateUserStatus() {
     },
   })
 }
+
+export function useChangeUserRole() {
+  const queryClient = useQueryClient()
+  const showToast = useToastStore((s) => s.showToast)
+
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: string }) =>
+      usersApi.changeRole(userId, role),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: keys.systemAdmin.users.detail(variables.userId) })
+      queryClient.invalidateQueries({ queryKey: keys.systemAdmin.users.all })
+      showToast('Role Updated', `Role changed to ${variables.role}.`, 'success')
+    },
+    onError: (error: any) => {
+      showToast('Error', error.response?.data?.message || 'Failed to change role', 'error')
+    },
+  })
+}

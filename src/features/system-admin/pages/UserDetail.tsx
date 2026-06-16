@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useUser } from '../hooks/useUsers'
-import { useUpdateUserStatus, useRevokeAccess } from '../hooks/useUsers'
+import { useUpdateUserStatus, useRevokeAccess, useChangeUserRole } from '../hooks/useUsers'
+
+const ROLES = ['OWNER', 'MANAGER', 'TAILOR'] as const
 
 export function UserDetail() {
   const { id = '' } = useParams<{ id: string }>()
@@ -10,9 +12,12 @@ export function UserDetail() {
   const { data: user, isLoading } = useUser(id)
   const updateStatus = useUpdateUserStatus()
   const revokeAccess = useRevokeAccess()
+  const changeRole = useChangeUserRole()
 
   const [revokeOpen, setRevokeOpen] = useState(false)
   const [revokeNotes, setRevokeNotes] = useState('')
+  const [roleOpen, setRoleOpen] = useState(false)
+  const [selectedRole, setSelectedRole] = useState('')
 
   if (isLoading) return <p style={{ color: '#94a3b8' }}>Loading...</p>
   if (!user) return <p style={{ color: '#94a3b8' }}>User not found.</p>
@@ -76,7 +81,46 @@ export function UserDetail() {
             Revoke Company Access
           </button>
         )}
+
+        <button
+          onClick={() => { setSelectedRole(user.role); setRoleOpen(true) }}
+          style={outlineBtnStyle}
+        >
+          Change Role
+        </button>
       </div>
+
+      {roleOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1300 }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '28px', width: '360px' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700 }}>Change Role</h3>
+            <p style={{ margin: '0 0 16px', fontSize: '0.85rem', color: '#64748b' }}>
+              Changing {user.fullName}'s role will send them an email notification.
+            </p>
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #e2e8f0', fontSize: '0.875rem', marginBottom: '16px', fontFamily: 'inherit' }}
+            >
+              {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setRoleOpen(false)} style={outlineBtnStyle}>Cancel</button>
+              <button
+                onClick={() => {
+                  changeRole.mutate({ userId: id, role: selectedRole }, {
+                    onSuccess: () => setRoleOpen(false),
+                  })
+                }}
+                disabled={selectedRole === user.role || changeRole.isPending}
+                style={primaryBtnStyle}
+              >
+                {changeRole.isPending ? 'Saving...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {revokeOpen && (
         <div style={{

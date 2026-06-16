@@ -95,3 +95,15 @@ export interface AddStoreDTO {
   isDefault?: boolean
   address?: string
 }
+
+export interface AdminAuditEntry {
+  id: string
+  actorId: string
+  action: string
+  targetType: string
+  targetId: string
+  previousState: Record<string, unknown> | null
+  nextState: Record<string, unknown> | null
+  notes: string | null
+  createdAt: string
+}

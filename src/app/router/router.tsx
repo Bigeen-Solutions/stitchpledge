@@ -42,6 +42,7 @@ import { CreateCompany } from '../../features/system-admin/pages/CreateCompany.t
 import { CompanyDetail } from '../../features/system-admin/pages/CompanyDetail.tsx';
 import { UserList } from '../../features/system-admin/pages/UserList.tsx';
 import { UserDetail } from '../../features/system-admin/pages/UserDetail.tsx';
+import { AdminAuditLog } from '../../features/system-admin/pages/AdminAuditLog.tsx';
 
 const AxiosInterceptorHandler = () => {
   useAxiosInterceptors();
@@ -227,6 +228,7 @@ export const router = createBrowserRouter([
           { path: '/system-admin/companies/:id', element: <CompanyDetail /> },
           { path: '/system-admin/users', element: <UserList /> },
           { path: '/system-admin/users/:id', element: <UserDetail /> },
+          { path: '/system-admin/audit-log', element: <AdminAuditLog /> },
         ],
       },
       {
