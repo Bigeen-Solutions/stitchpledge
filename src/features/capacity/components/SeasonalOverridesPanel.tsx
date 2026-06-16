@@ -20,7 +20,7 @@ import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOu
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import EventRepeatOutlinedIcon from '@mui/icons-material/EventRepeatOutlined';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { seasonalOverridesApi, SeasonalOverride } from '../seasonal-overrides.api';
+import { seasonalOverridesApi, type SeasonalOverride } from '../seasonal-overrides.api';
 
 const QUERY_KEY = ['capacity', 'seasonal-overrides'] as const;
 

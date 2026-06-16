@@ -15,7 +15,7 @@ import HourglassEmptyOutlinedIcon from '@mui/icons-material/HourglassEmptyOutlin
 import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { collectionApi, ChecklistItem } from '../collection.api';
+import { collectionApi, type ChecklistItem } from '../collection.api';
 
 interface Props {
   orderId: string;

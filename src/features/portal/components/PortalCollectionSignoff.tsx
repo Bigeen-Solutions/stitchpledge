@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { portalCollectionApi, ChecklistItem } from '../../orders/collection.api';
+import { portalCollectionApi, type ChecklistItem } from '../../orders/collection.api';
 
 interface Props {
   portalToken: string;

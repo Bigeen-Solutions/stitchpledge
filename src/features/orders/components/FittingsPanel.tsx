@@ -22,7 +22,7 @@ import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fittingsApi, FittingOutcome, FittingAppointment } from '../fittings.api';
+import { fittingsApi, type FittingOutcome, type FittingAppointment } from '../fittings.api';
 import type { Garment } from '../orders.api';
 
 interface Props {

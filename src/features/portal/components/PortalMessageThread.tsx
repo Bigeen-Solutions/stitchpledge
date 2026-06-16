@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { portalApi, PortalMessage } from '../portal.api';
+import { portalApi, type PortalMessage } from '../portal.api';
 
 const MAX_CHARS = 1000;
 const COUNTDOWN_THRESHOLD = 800;
