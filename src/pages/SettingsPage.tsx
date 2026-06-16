@@ -23,6 +23,8 @@ import { GeneralProfileSettings } from '../features/settings/components/GeneralP
 import { CapacitySettingsPanel } from '../features/capacity/components/CapacitySettingsPanel';
 import { RolePermissionsMatrix } from '../features/settings/components/RolePermissionsMatrix';
 import { SeasonalOverridesPanel } from '../features/capacity/components/SeasonalOverridesPanel';
+import { ComingSoon } from '../components/feedback/ComingSoon';
+import { FEATURES } from '../config/features';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -183,10 +185,24 @@ export const SettingsPage: React.FC = () => {
             <WorkshopConfiguration />
           </CustomTabPanel>
           <CustomTabPanel value={activeTab} index={1}>
-            <CapacitySettingsPanel />
+            {FEATURES.capacitySettingsPanel ? (
+              <CapacitySettingsPanel />
+            ) : (
+              <ComingSoon
+                title="Capacity settings coming in v1.1"
+                description="Configure workshop slot limits, per-workflow capacity budgets, and real-time utilisation targets. Seasonal overrides are available now in the tab below."
+              />
+            )}
           </CustomTabPanel>
           <CustomTabPanel value={activeTab} index={2}>
-            <GeneralProfileSettings />
+            {FEATURES.generalProfileSettings ? (
+              <GeneralProfileSettings />
+            ) : (
+              <ComingSoon
+                title="Profile settings coming in v1.1"
+                description="Company name, timezone, and measurement unit preferences will be editable here once the settings persistence API is complete."
+              />
+            )}
           </CustomTabPanel>
           <CustomTabPanel value={activeTab} index={3}>
             <RolePermissionsMatrix />

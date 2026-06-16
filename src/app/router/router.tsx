@@ -165,7 +165,7 @@ export const router = createBrowserRouter([
             path: '/reports/security-audit',
             element: (
               <ProtectedRoute allowedRoles={['OWNER']}>
-                <SecurityAuditPage />
+                <BetaFeatureGuard featureName="Security Rejection Log" />
               </ProtectedRoute>
             )
           },

@@ -6,7 +6,7 @@ import type { ThemeOptions } from "@mui/material/styles"
  * This ensures high visibility for critical time-sensitive information.
  */
 export const typography: ThemeOptions["typography"] = {
-  fontFamily: "'Inter', 'Outfit', sans-serif",
+  fontFamily: "'Inter', system-ui, sans-serif",
   h1: {
     fontSize: "2.25rem",
     fontWeight: 700,

@@ -117,17 +117,26 @@ export function LoginPage() {
         >
           {/* Logo Lockup */}
           <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="center" sx={{ mb: 4 }}>
-            <ScissorsIcon sx={{ color: '#1e5c3a', fontSize: 28 }} />
-            <Typography variant="h5" sx={{ color: '#1e5c3a', fontWeight: 700, letterSpacing: -0.5 }}>
-              StitchFyn
+            <ScissorsIcon sx={{ color: '#1e5c3a', fontSize: 24 }} />
+            <Typography
+              sx={{
+                fontFamily: 'var(--sf-font-display)',
+                fontWeight: 600,
+                fontSize: '1.6rem',
+                letterSpacing: '0.01em',
+                color: '#1e5c3a',
+                lineHeight: 1,
+              }}
+            >
+              StitchFYN
             </Typography>
           </Stack>
 
-          <Typography variant="h4" sx={{ color: '#1a2340', fontWeight: 700, mb: 1, fontSize: '28px' }}>
+          <Typography variant="h4" sx={{ color: '#1a2340', fontWeight: 700, mb: 1, fontSize: '26px', fontFamily: 'var(--sf-font-heading)' }}>
             Welcome back.
           </Typography>
           <Typography variant="body2" sx={{ color: '#6b7280', mb: 3 }}>
-            Enter your details to continue.
+            Sign in to your workshop.
           </Typography>
 
           <Collapse in={!!error}>

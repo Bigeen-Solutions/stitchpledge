@@ -3,18 +3,17 @@ import { alpha, type Components, type Theme } from '@mui/material/styles';
 export const components: Components<Omit<Theme, 'components'>> = {
   MuiCssBaseline: {
     styleOverrides: `
-      @font-face {
-        font-family: 'Inter';
-        font-display: swap;
-      }
-      @font-face {
-        font-family: 'Outfit';
-        font-display: swap;
-      }
       html, body {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         background-color: #f5f4f0;
+      }
+      /* Reduced-motion: disable transitions for users who prefer it */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
       }
     `,
   },
@@ -22,6 +21,7 @@ export const components: Components<Omit<Theme, 'components'>> = {
     styleOverrides: {
       root: ({ theme }) => ({
         backgroundColor: theme.palette.background.paper,
+        backgroundImage: 'var(--sf-texture)',
         border: '1px solid #e5e4e0',
         borderRadius: '16px',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',

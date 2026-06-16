@@ -113,9 +113,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, toggleSidebar }
           <MenuIcon sx={{ fontSize: 24 }} />
         </IconButton>
         <Stack direction="row" spacing={1} alignItems="center">
-          <ScissorsIcon sx={{ color: 'var(--color-warning)', fontSize: 24 }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: -0.5 }}>
-            StitchFyn
+          <ScissorsIcon sx={{ color: '#c49a1a', fontSize: 22 }} />
+          <Typography
+            sx={{
+              fontFamily: 'var(--sf-font-display)',
+              fontWeight: 600,
+              fontSize: '1.35rem',
+              letterSpacing: '0.01em',
+              color: 'white',
+              lineHeight: 1,
+            }}
+          >
+            StitchFYN
           </Typography>
         </Stack>
       </Box>

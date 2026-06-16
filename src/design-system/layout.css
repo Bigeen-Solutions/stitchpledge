@@ -50,10 +50,28 @@
 .gap-md { gap: var(--space-md); }
 
 .sf-glass {
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--sf-glass-bg);
+  background-image: var(--sf-texture);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--sf-glass-border);
+}
+
+/* Inline card (non-paper) with fabric texture */
+.sf-card {
+  background: var(--sf-parchment);
+  background-image: var(--sf-texture);
+  border: 1px solid var(--sf-border);
+  border-radius: 16px;
+  padding: 20px 24px;
+}
+
+/* Glass card variant for panels inside glass containers */
+.sf-glass-card {
+  background: rgba(255, 255, 255, 0.6);
+  background-image: var(--sf-texture);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
 }
 
 /* Modal Responsiveness */
