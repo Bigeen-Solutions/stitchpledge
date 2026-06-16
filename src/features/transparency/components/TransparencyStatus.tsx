@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Typography, alpha, Tooltip } from '@mui/material';
 import { Security as SecurityIcon, Sync as SyncIcon } from '@mui/icons-material';
 import { useProjection } from '../hooks/useProjection';

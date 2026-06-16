@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Typography, LinearProgress, alpha } from '@mui/material';
 import { useProjection } from '../hooks/useProjection';
 

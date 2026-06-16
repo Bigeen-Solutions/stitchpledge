@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Card, Typography, CircularProgress, Stack, LinearProgress, alpha, Grid, Button } from '@mui/material';
 import { WorkspacePremium as WorkspacePremiumIcon, OpenInNew as OpenInNewIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -10,16 +9,16 @@ export const StitchScoreCard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Card sx={{ p: 4, borderRadius: '20px', minHeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <CircularProgress sx={{ color: '#1e5c3a' }} />
+      <Card sx={{ p: 4, borderRadius: '16px', backgroundImage: 'none', bgcolor: 'background.paper', minHeight: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress size={24} sx={{ color: 'var(--sf-green)' }} />
       </Card>
     );
   }
 
   if (isError || !data) {
     return (
-      <Card sx={{ p: 4, borderRadius: '20px', minHeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Typography color="error">Unable to load StitchScore</Typography>
+      <Card sx={{ p: 4, borderRadius: '16px', backgroundImage: 'none', bgcolor: 'background.paper', minHeight: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Typography variant="body2" color="text.secondary">Unable to load StitchScore</Typography>
       </Card>
     );
   }
@@ -28,14 +27,7 @@ export const StitchScoreCard: React.FC = () => {
 
   if (status === 'INSUFFICIENT_DATA' || status === 'QUALIFYING') {
     return (
-      <Card sx={{ 
-        p: { xs: 3, md: 4 }, 
-        borderRadius: '20px', 
-        border: '1px solid rgba(255, 255, 255, 0.3)',
-        bgcolor: 'rgba(255, 255, 255, 0.4)',
-        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-        backdropFilter: 'blur(10px)',
-      }}>
+      <Card sx={{ p: { xs: 3, md: 4 }, borderRadius: '16px', backgroundImage: 'none', bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
         <Stack spacing={3}>
           <Box>
             <Typography variant="h5" sx={{ fontWeight: 800, color: '#1a2340', mb: 1 }}>
@@ -73,16 +65,7 @@ export const StitchScoreCard: React.FC = () => {
 
   // ACTIVE State
   return (
-    <Card sx={{ 
-      p: { xs: 3, md: 4 }, 
-      borderRadius: '20px', 
-      border: '1px solid rgba(255, 255, 255, 0.3)',
-      bgcolor: 'rgba(255, 255, 255, 0.4)',
-      boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-      backdropFilter: 'blur(10px)',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
+    <Card sx={{ p: { xs: 3, md: 4 }, borderRadius: '16px', backgroundImage: 'none', bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', position: 'relative', overflow: 'hidden' }}>
       {isFoundingMember && (
         <Box sx={{ position: 'absolute', top: 20, right: 20, display: 'flex', alignItems: 'center', gap: 0.5, color: '#d97706' }}>
           <WorkspacePremiumIcon fontSize="small" />
@@ -138,9 +121,9 @@ export const StitchScoreCard: React.FC = () => {
         {/* Breakdowns */}
         <Grid size={{ xs: 12, md: 8 }}>
           <Stack spacing={3}>
-            <MetricBar label="On-Time Delivery Rate" value={(breakdown.onTimeRate || 0) * 100} color="#1e5c3a" />
-            <MetricBar label="Zero-Dispute Integrity" value={(breakdown.integrityRate || 0) * 100} color="#0369a1" />
-            <MetricBar label="Client Loyalty Rate" value={(breakdown.loyaltyRate || 0) * 100} color="#6d28d9" />
+            <MetricBar label="On-time delivery" value={(breakdown.onTimeRate || 0) * 100} color="var(--sf-green)" />
+            <MetricBar label="Zero-dispute integrity" value={(breakdown.integrityRate || 0) * 100} color="var(--sf-navy)" />
+            <MetricBar label="Client loyalty" value={(breakdown.loyaltyRate || 0) * 100} color="var(--sf-gold)" />
             <Button
               size="small"
               endIcon={<OpenInNewIcon sx={{ fontSize: 14 }} />}

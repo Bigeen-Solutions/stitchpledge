@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '../features/auth/auth.store';
 import { useQuery } from '@tanstack/react-query';
@@ -9,7 +8,8 @@ import { AdminDashboard } from './dashboard/AdminDashboard';
 import { TailorDashboard } from './dashboard/TailorDashboard';
 import { TailorDashboardEmpty } from './dashboard/TailorDashboardEmpty';
 import { ClientDashboard } from './dashboard/ClientDashboard';
-import { Box, CircularProgress } from '@mui/material';
+import { Box } from '@mui/material';
+import { QueryLoading } from '../components/feedback/QueryState';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -27,7 +27,7 @@ export const DashboardPage: React.FC = () => {
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-        <CircularProgress sx={{ color: '#1e5c3a' }} />
+        <QueryLoading label="Loading dashboard…" />
       </Box>
     );
   }
