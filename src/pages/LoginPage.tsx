@@ -68,8 +68,10 @@ export function LoginPage() {
     try {
       const { accessToken, user } = await loginApi({ email, password });
       setAuth(accessToken, user);
-      
-      if (user.role === 'SYSTEM_ADMIN') {
+
+      if (user.mustChangePassword) {
+        navigate('/change-password', { replace: true });
+      } else if (user.role === 'SYSTEM_ADMIN') {
         navigate('/system-admin', { replace: true });
       } else {
         navigate('/dashboard', { replace: true });
@@ -245,6 +247,15 @@ export function LoginPage() {
                     }
                   }}
                 />
+                <Box sx={{ textAlign: 'right', mt: -1 }}>
+                  <Link
+                    href="/forgot-password"
+                    underline="hover"
+                    sx={{ color: '#1e5c3a', fontSize: '13px', fontWeight: 500 }}
+                  >
+                    Forgot password?
+                  </Link>
+                </Box>
                 <Button
                   variant="contained"
                   fullWidth

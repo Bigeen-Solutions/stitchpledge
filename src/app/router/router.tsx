@@ -30,6 +30,9 @@ import { DesignSystemPage } from '../../pages/DesignSystemPage.tsx';
 
 import { SplashScreen } from '../../pages/SplashScreen.tsx';
 import { SealVerificationPage } from '../../pages/SealVerificationPage.tsx';
+import { ForgotPasswordPage } from '../../pages/ForgotPasswordPage.tsx';
+import { ResetPasswordPage } from '../../pages/ResetPasswordPage.tsx';
+import { ChangePasswordPage } from '../../pages/ChangePasswordPage.tsx';
 import { GroupCoordinatorDashboard } from '../../features/group-order/GroupCoordinatorDashboard.tsx';
 import { WorkflowTemplatesPage } from '../../pages/WorkflowTemplatesPage.tsx';
 import { GroupOrdersPage } from '../../pages/GroupOrdersPage.tsx';
@@ -58,6 +61,8 @@ export const router = createBrowserRouter([
         children: [
           { path: '/', element: <SplashScreen /> },
           { path: '/login', element: <LoginPage /> },
+          { path: '/forgot-password', element: <ForgotPasswordPage /> },
+          { path: '/reset-password', element: <ResetPasswordPage /> },
           { path: '/track/:slug', element: <TrackingPage /> },
           { path: '/public/seals/:code', element: <SealVerificationPage /> },
           ...(import.meta.env.DEV ? [{ path: '/design-system', element: <DesignSystemPage /> }] : []),
@@ -71,6 +76,7 @@ export const router = createBrowserRouter([
         ),
         children: [
           { path: '/dashboard', element: <DashboardPage /> },
+          { path: '/change-password', element: <ChangePasswordPage /> },
           {
             path: '/orders',
             element: (

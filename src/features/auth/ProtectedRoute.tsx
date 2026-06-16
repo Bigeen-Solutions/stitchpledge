@@ -37,6 +37,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // 2.5. Authenticated but must change password — gate all other pages
+  if (user?.mustChangePassword && location.pathname !== '/change-password') {
+    return <Navigate to="/change-password" replace />;
+  }
+
   // 3. Authenticated but missing specific permission — treat as 404
   if (requiredPermission && !hasCapability(requiredPermission as any)) {
     return <Navigate to="/404" replace />;

@@ -21,6 +21,7 @@ export interface AuthUser {
   role: StitchFynRole;
   capabilities: Capability[]; // Atomic claims derived from backend calculus
   avatarUrl?: string;
+  mustChangePassword?: boolean;
 }
 
 export interface AuthState {

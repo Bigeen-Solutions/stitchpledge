@@ -18,6 +18,7 @@ export async function loginApi(dto: LoginDTO): Promise<AuthResponse> {
       fullName: raw.user.fullName,
       role: raw.user.role,
       capabilities: raw.user.capabilities ?? raw.user.permissions ?? [],
+      mustChangePassword: raw.user.mustChangePassword ?? false,
     },
   }
 }
@@ -48,6 +49,18 @@ export async function refreshApi(): Promise<AuthResponse> {
  */
 export async function logoutApi(): Promise<void> {
   await apiClient.post("/auth/logout")
+}
+
+export async function forgotPasswordApi(email: string): Promise<void> {
+  await apiClient.post("/auth/forgot-password", { email })
+}
+
+export async function resetPasswordApi(token: string, newPassword: string): Promise<void> {
+  await apiClient.post("/auth/reset-password", { token, newPassword })
+}
+
+export async function changePasswordApi(currentPassword: string, newPassword: string): Promise<void> {
+  await apiClient.post("/auth/change-password", { currentPassword, newPassword })
 }
 
 export interface TenantDTO {
