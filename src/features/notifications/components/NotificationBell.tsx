@@ -102,7 +102,7 @@ export function NotificationBell() {
   const { data, isLoading } = useQuery({
     queryKey: keys.notifications.list,
     queryFn: notificationsApi.list,
-    refetchInterval: 30_000,
+    refetchInterval: 60_000,
   });
 
   const markRead = useMutation({
