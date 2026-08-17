@@ -71,8 +71,8 @@ export const AuditTrailTimeline: React.FC<AuditTrailTimelineProps> = ({ targetId
       <Stack spacing={0}>
         {records.map((record, index) => {
           const styles = getActionStyles(record.action);
-          const witnessed = new Date(record.witnessed_at);
-          const occurred = new Date(record.occurred_at);
+          const witnessed = new Date(record.witnessedAt);
+          const occurred = new Date(record.occurredAt);
           
           // Temporal Drift Calculation: difference > 1 hour (3600000ms)
           const driftMs = Math.abs(witnessed.getTime() - occurred.getTime());
@@ -121,7 +121,7 @@ export const AuditTrailTimeline: React.FC<AuditTrailTimelineProps> = ({ targetId
                 </Stack>
 
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                  Actor: {record.actor_id || 'System'}
+                  Actor: {record.actorId || 'System'}
                 </Typography>
 
                 {/* Metadata Tags */}
