@@ -1,72 +1,56 @@
-# 🎨 StitchFYN Web Engine
+# stitchfyn-web
 
-The high-trust frontend projection layer for the StitchFYN workshop engine.
+The frontend for StitchFYN. It displays what the backend reports and computes nothing on its own — no stage math, no risk levels, no balances calculated in the browser.
 
-## 🏗️ Architecture: Pure Projection
+## How a mutation actually works
 
-Following the **API Consumption Doctrine**, this frontend performs zero business logic. It is a logic-less interface that projects the production reality defined by the Backend API.
+There's no optimistic UI here. Every change follows the same sequence:
 
-### 🔄 The "Pure Refresh" Sequence
-To maintain absolute synchronization with the workshop floor, we avoid optimistic UI updates. Every mutation follows a strict sequence:
-1. **Command**: Send `POST/PUT/DELETE` to the API.
-2. **Acknowledge**: Show success toast (acknowledging command receipt).
-3. **Invalidate**: Trigger TanStack Query cache invalidation.
-4. **Refetch**: Automatically fetch the updated projection from the SSOT (Single Source of Truth).
-5. **Render**: Display the actual state of the workshop.
+1. Send the `POST`/`PATCH`/`DELETE` to the API.
+2. Show a success toast acknowledging the request went through.
+3. Invalidate the relevant TanStack Query cache entries.
+4. Refetch from the server.
+5. Render whatever the server actually says now.
 
----
+If the UI shows something wrong, it's reflecting what the API returned — check the backend first.
 
-## 💎 Design System & Aesthetics
+## What's here
 
-StitchFYN is designed to be a premium, "Trust-First" tool for modern workshops.
-- **Premium Aesthetics**: Vibrant, curated color palettes, modern typography (Inter/Outfit), and subtle glassmorphism.
-- **Modular CSS**: A token-driven styling architecture ensuring consistency across high-density management views and large-target shop floor interfaces.
-- **Micro-animations**: Smooth transitions for stage completions and status changes to make the system feel responsive and "alive."
+- **Production dashboard** — deadline risk and workshop load at a glance
+- **Order detail** — full order view with the live workflow graph
+- **Intake wizard** — customer lookup, measurement capture, order creation
+- **Material vault** — stock levels, reservations, and the material ledger
+- **Measurement archive** — version history, nothing overwritten
+- **Customer portal** — read-only order status page for customers
+- **StitchScore** — workshop reputation and on-time delivery metrics
+- **Fabric safety flow** — intake photo verification and dispute handling
+- **Group order coordination** — multiple orders booked together for one event
+- **Deadline countdown** — daily digest and urgent-timeline escalation
+- **Audit trail viewer** — full evidence view for dispute resolution
+- **Analytics dashboard** — revenue, velocity, and activity reporting
+- **Transparency panel** — trust/capacity/audit-health indicators for staff
 
----
+## Tech stack
 
-## 🛠️ Features
+- [React 19](https://react.dev/) on Vite
+- [TanStack Query v5](https://tanstack.com/query/latest) for server state
+- [Zustand](https://zustand-demo.pmnd.rs/) for the small amount of client-only state (auth session, UI toggles)
+- Plain CSS with a shared design-token layer — no CSS framework
+- Axios, with silent token refresh on 401s
 
-- **Production Dashboard**: High-density view of workshop targets and deadline risks.
-- **Order Detail View**: Deep-drill view of specific orders with interactive Workflow Graphs.
-- **Intake Engine**: Multi-step wizard for customer lookup, measurement capture, and order creation.
-- **Material Vault**: Real-time stock reservation, immutable ledger views, and dynamic low-stock guards.
-- **Measurement Archives**: Version-controlled measurement logs with immutable history.
-- **Customer Portal**: A strictly read-only environment for production transparency.
-- **StitchScore Dashboard**: Real-time projection of workshop reputation and on-time performance metrics.
-- **Fabric Safety Protocol**: Visual intake verification flows and dispute standoffs.
-- **Group Order Coordination**: Unified cluster monitoring for large-scale "Aso-Ebi" and uniform bookings.
-- **Event Countdown Mode**: Automatic daily-digest tracking and urgent timeline escalation visualization.
-- **Immutable Audit Trail**: Full-screen "Show Proof" views for objective truth resolution.
-- **Analytics Dashboard**: REQ-027 compliant BI center projecting revenue, velocity, and audit activity.
-- **Transparency Portal**: High-fidelity guardian status indicators for workshop health (Trust, Capacity, Forensics).
+## Directory structure
 
----
+- `src/app` — routing and top-level providers
+- `src/components` — shared UI primitives (timelines, steppers, badges, data grids)
+- `src/features` — one folder per domain area (auth, orders, workflow, materials, etc.), mirroring the backend's module boundaries
+- `src/design-system` — design tokens and shared styling utilities
 
-## 🛠️ Tech Stack
-- **Framework**: [React 19](https://react.dev/) (Vite)
-- **Data Fetching**: [TanStack Query (v5)](https://tanstack.com/query/latest)
-- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/) (Minimal global state)
-- **Styling**: Modular Vanilla CSS with centralized Design Tokens.
-- **Networking**: Axios with "Silent Refresh" for JWT rotation.
+## Commands
 
----
-
-## 📂 Directory Structure
-- `src/app`: Routing and global provider configuration.
-- `src/components`: UI primitives (Timeline, Stepper, RiskBadges, DataGrid).
-- `src/features`: Domain-specific modules (Auth, Orders, Workflow, Materials).
-- `src/design-system`: The core tokens and utility layer of the visual engine.
-
----
-
-## 🚀 Commands
 ```bash
-npm install  # Install dependencies
-npm run dev   # Start Vite development server
-npm run build # Production build
-npm run lint  # ESLint check
+npm install
+npm run dev     # start the Vite dev server
+npm run build   # production build
+npm run lint    # ESLint
+npm test        # Vitest
 ```
-
----
-© 2026 Bigeen Solutions — Pure Projection Architecture.
