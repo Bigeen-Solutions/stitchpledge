@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Card, Typography, Stack, TextField, Button, CircularProgress, Alert, Collapse, Grow } from '@mui/material';
-import { ContentCut as ScissorsIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
 import { forgotPasswordApi } from '../features/auth/auth.api';
 
@@ -54,7 +54,7 @@ export function ForgotPasswordPage() {
           }}
         >
           <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="center" sx={{ mb: 4 }}>
-            <ScissorsIcon sx={{ color: '#1e5c3a', fontSize: 28 }} />
+            <Box component="img" src="/logo-icon.png" alt="" sx={{ height: 32, width: 'auto' }} />
             <Typography variant="h5" sx={{ color: '#1e5c3a', fontWeight: 700, letterSpacing: -0.5 }}>
               StitchFyn
             </Typography>

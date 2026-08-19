@@ -10,7 +10,6 @@ import {
   Grow
 } from '@mui/material';
 import {
-  ContentCut as ScissorsIcon,
   Straighten as RulerIcon,
   CalendarMonth as CalendarIcon,
   Groups as UsersIcon
@@ -68,10 +67,12 @@ export function SplashScreen() {
             justifyContent: 'center',
             gap: 2
           }}>
-            <ScissorsIcon sx={{ color: '#c49a1a', fontSize: 40 }} />
-            <Typography variant="h3" sx={{ color: 'white', fontWeight: 700, letterSpacing: -0.5 }}>
-              Stitchfyn
-            </Typography>
+            <Box
+              component="img"
+              src="/logo-full.png"
+              alt="StitchFyn"
+              sx={{ height: { xs: 36, md: 44 }, width: 'auto' }}
+            />
           </Box>
         </Fade>
 

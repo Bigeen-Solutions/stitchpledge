@@ -23,7 +23,8 @@ export function SystemAdminLayout() {
         gap: '32px',
         boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
       }}>
-        <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.01em', opacity: 0.9 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.01em', opacity: 0.9 }}>
+          <img src="/logo-icon.png" alt="" style={{ height: 22, width: 'auto' }} />
           StitchFyn Admin
         </span>
         <nav style={{ display: 'flex', gap: '4px' }}>

@@ -40,6 +40,7 @@ export const TrackingPage: React.FC = () => {
   return (
     <div className="portal-container">
       <header className="portal-header">
+        <img src="/logo-icon.png" alt="StitchFyn" className="portal-logo-icon" />
         <div className="portal-logo">STITCH<span>FYN</span></div>
         <p>Independent Transparency Mirror</p>
       </header>

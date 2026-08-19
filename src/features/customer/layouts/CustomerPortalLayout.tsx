@@ -5,7 +5,7 @@ export function CustomerPortalLayout() {
     <div className="customer-portal min-h-screen sf-bg-workshop">
       <nav className="sf-glass-nav flex justify-between items-center p-md mb-xl shadow-sm">
         <div className="flex items-center gap-md">
-          <div className="sf-logo-badge">SF</div>
+          <img src="/logo-icon.png" alt="" style={{ height: 32, width: 'auto' }} />
           <span className="text-h3 font-bold">Stitchfyn Portal</span>
         </div>
         <div className="flex items-center gap-lg">

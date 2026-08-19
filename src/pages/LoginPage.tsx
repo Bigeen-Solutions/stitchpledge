@@ -18,9 +18,8 @@ import {
   Alert,
   Collapse
 } from '@mui/material';
-import { 
-  ContentCut as ScissorsIcon, 
-  Phone as PhoneIcon, 
+import {
+  Phone as PhoneIcon,
   Mail as MailIcon, 
   Google as GoogleIcon, 
   Apple as AppleIcon, 
@@ -117,7 +116,7 @@ export function LoginPage() {
         >
           {/* Logo Lockup */}
           <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="center" sx={{ mb: 4 }}>
-            <ScissorsIcon sx={{ color: '#1e5c3a', fontSize: 24 }} />
+            <Box component="img" src="/logo-icon.png" alt="" sx={{ height: 28, width: 'auto' }} />
             <Typography
               sx={{
                 fontFamily: 'var(--sf-font-display)',

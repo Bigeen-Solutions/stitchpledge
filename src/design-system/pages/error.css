@@ -149,9 +149,8 @@
   position: absolute;
   bottom: var(--space-xl);
   left: var(--space-xl);
-  font-weight: 900;
-  font-size: 1.5rem;
-  letter-spacing: -1px;
+  height: 40px;
+  width: auto;
   opacity: 0.3;
 }
 

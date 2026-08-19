@@ -27,6 +27,13 @@
   animation: fadeInDown 0.8s ease-out;
 }
 
+.portal-logo-icon {
+  height: 36px;
+  width: auto;
+  margin: 0 auto 8px;
+  display: block;
+}
+
 .portal-logo {
   font-weight: 800;
   font-size: 1.5rem;
