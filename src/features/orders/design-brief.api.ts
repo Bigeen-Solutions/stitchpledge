@@ -66,3 +66,13 @@ export const designBriefApi = {
     return data;
   },
 };
+
+export const portalDesignBriefApi = {
+  confirm: async (portalToken: string, briefId: string): Promise<DesignBrief> => {
+    const { data } = await apiClient.post<DesignBrief>(
+      `/portal/orders/${portalToken}/design-briefs/${briefId}/confirm`,
+      { channel: 'portal' },
+    );
+    return data;
+  },
+};

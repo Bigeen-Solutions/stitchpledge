@@ -6,6 +6,8 @@ import { StageStepper } from '../../../components/ui/StageStepper';
 import { PortalPaymentSummary } from '../../portal/components/PortalPaymentSummary';
 import { PortalMessageThread } from '../../portal/components/PortalMessageThread';
 import { PortalCollectionSignoff } from '../../portal/components/PortalCollectionSignoff';
+import { PortalDesignBriefConfirm } from '../../portal/components/PortalDesignBriefConfirm';
+import { PortalDisputeSurface } from '../../portal/components/PortalDisputeSurface';
 
 export function CustomerOrderPage() {
   const { id } = useParams<{ id: string }>();
@@ -75,7 +77,13 @@ export function CustomerOrderPage() {
         </div>
       </div>
 
+      {order.designBriefs.map((brief) => (
+        <PortalDesignBriefConfirm key={brief.id} portalToken={id || ''} brief={brief} />
+      ))}
+
       <PortalCollectionSignoff portalToken={id || ''} />
+
+      <PortalDisputeSurface portalToken={id || ''} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-xl" style={{ marginTop: 0 }}>
         <PortalPaymentSummary portalToken={id || ''} />

@@ -18,6 +18,17 @@ export interface CustomerOrderProjection {
     isComplete: boolean;
     isActive: boolean;
   }[];
+  designBriefs: {
+    id: string;
+    garmentId: string;
+    briefType: string;
+    confirmedByCustomerAt: string | null;
+    silhouette: string | null;
+    neckline: string | null;
+    waistDetail: string | null;
+    backFinish: string | null;
+    additionalNotes: string | null;
+  }[];
 }
 
 export const customerApi = {

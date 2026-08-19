@@ -52,11 +52,6 @@ export interface Garment {
   requiredMeasurements?: string[]
 }
 
-export interface CapacityStatus {
-  isOverCapacity: boolean
-  message: string
-}
-
 export interface UrgentGarment {
   garmentId: string
   garmentName: string
@@ -82,13 +77,6 @@ export const ordersApi = {
     const { data } = await apiClient.get<OrdersResponse>("/orders", {
       params: { page, limit },
     })
-    return data
-  },
-
-  getCapacityStatus: async () => {
-    const { data } = await apiClient.get<CapacityStatus>(
-      "/orders/capacity-status",
-    )
     return data
   },
 

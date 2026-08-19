@@ -11,11 +11,3 @@ export function useOrders(page = 1, limit = 10) {
     placeholderData: keepPreviousData,
   });
 }
-
-export function useCapacityWarning() {
-  return useQuery({
-    queryKey: ['orders', 'capacity-warning'],
-    queryFn: ordersApi.getCapacityStatus,
-    refetchInterval: 1000 * 60 * 5, // Refresh every 5 minutes
-  });
-}

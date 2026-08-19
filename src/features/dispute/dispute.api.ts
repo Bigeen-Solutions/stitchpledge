@@ -94,3 +94,42 @@ export const disputeApi = {
     await apiClient.post(`${API_BASE}/${disputeId}/resolve/tailor`);
   },
 };
+
+export interface PortalRaiseDisputeDTO {
+  category: DisputeCategory;
+  severity: 'CRITICAL' | 'WARNING';
+  description: string;
+}
+
+export interface PortalSubmitEvidenceDTO {
+  evidenceType: 'PHOTO' | 'STATEMENT' | 'PAYMENT_PROOF';
+  artifactUrl: string;
+  metadata?: Record<string, any>;
+}
+
+// Customer-facing surface — portal-token authenticated, no staff JWT.
+export const portalDisputeApi = {
+  getProjection: async (portalToken: string): Promise<DisputeStandoffDTO | null> => {
+    try {
+      const response = await apiClient.get(`/portal/orders/${portalToken}/disputes`);
+      return response.data;
+    } catch (error: any) {
+      if (error?.response?.status === 404) return null;
+      throw error;
+    }
+  },
+
+  raiseDispute: async (portalToken: string, dto: PortalRaiseDisputeDTO) => {
+    const response = await apiClient.post(`/portal/orders/${portalToken}/disputes`, dto);
+    return response.data;
+  },
+
+  submitEvidence: async (portalToken: string, disputeId: string, dto: PortalSubmitEvidenceDTO): Promise<void> => {
+    await apiClient.post(`/portal/orders/${portalToken}/disputes/${disputeId}/evidence`, dto);
+  },
+
+  resolveMySide: async (portalToken: string, disputeId: string) => {
+    const response = await apiClient.post(`/portal/orders/${portalToken}/disputes/${disputeId}/resolve/customer`);
+    return response.data;
+  },
+};
