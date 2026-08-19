@@ -26,7 +26,12 @@ import {
   ListItemIcon,
   ListItemAvatar,
   ListItemText,
-  Avatar
+  Avatar,
+  Alert,
+  RadioGroup,
+  Radio,
+  FormControlLabel,
+  FormLabel,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -52,12 +57,13 @@ import { customersApi } from "../features/customers/customers.api";
 import { useWorkflowTemplates } from "../features/workflow/hooks/useWorkflowTemplates";
 import { useAuthStore } from "../features/auth/auth.store";
 import { useStores, useStaffList } from "../features/auth/hooks/useStaff";
-import { usePermissions } from "../features/auth/use-permissions";
 import { ordersApi } from "../features/orders/orders.api";
+import { storesApi } from "../features/stores/stores.api";
 import { useToastStore } from "../components/feedback/Toast";
 import { useInventory } from "../features/inventory/useInventory";
 import { truncateId, safeLocaleDate } from "../utils/format";
 import { NumberField } from "../components/inputs/NumberField";
+import { mapErrorCode } from "../utils/errorMapper";
 
 type Step = "CLIENT_SELECTION" | "CLIENT_DETAILS" | "GARMENTS_TIMELINE" | "FABRIC_DETAILS" | "MEASUREMENTS" | "SUMMARY";
 
@@ -82,9 +88,12 @@ export function NewOrderPage() {
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const showToast = useToastStore((state) => state.showToast);
-  const { role, isStoreManager, isTailor, storeId: userStoreId } = usePermissions();
   const user = useAuthStore((state) => state.user);
+  const role = user?.role;
   const { data: stores } = useStores();
+  const isStoreManager = role === 'MANAGER';
+  const isTailor = role === 'TAILOR';
+  const userStoreId = undefined; // storeId is not present on AuthUser currently
   const { data: templates } = useWorkflowTemplates();
   const createCustomer = useCreateCustomer();
   const createMeasurement = useCreateMeasurement();
@@ -96,7 +105,7 @@ export function NewOrderPage() {
 
   // Form State
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-  const [newCustomer, setNewCustomer] = useState({ name: "", email: "", phone: "" });
+  const [newCustomer, setNewCustomer] = useState<{ name: string; email: string; phone: string; notificationChannel: "whatsapp" | "sms" | "email" }>({ name: "", email: "", phone: "", notificationChannel: "whatsapp" });
   const [measurementEntries, setMeasurementEntries] = useState<{
     id: string;
     label: string;
@@ -113,12 +122,16 @@ export function NewOrderPage() {
   const [selectedStoreId, setSelectedStoreId] = useState("");
   const [selectedMaterialId, setSelectedMaterialId] = useState("");
   const [materialQuantity, setMaterialQuantity] = useState<number | "">("");
-  
+  const [eventOccasion, setEventOccasion] = useState("");
+  const [garmentCategory, setGarmentCategory] = useState("");
+  const [garmentTier, setGarmentTier] = useState<"STANDARD" | "COMPLEX" | "BESPOKE">("STANDARD");
+  const [paymentIntentType, setPaymentIntentType] = useState("");
+
   const { data: inventory } = useInventory();
-  const effectiveStoreId = role === 'COMPANY_ADMIN' ? selectedStoreId : userStoreId || undefined;
-  const { data: staff } = useStaffList({ 
+  const effectiveStoreId = role === 'OWNER' ? selectedStoreId : userStoreId || undefined;
+  const { data: staff } = useStaffList({
     storeId: effectiveStoreId,
-    enabled: !!effectiveStoreId || role === 'COMPANY_ADMIN' 
+    enabled: !!effectiveStoreId || role === 'OWNER'
   });
   const [orderItems, setOrderItems] = useState<{
     templateId: string;
@@ -126,11 +139,11 @@ export function NewOrderPage() {
     assignedTailorId?: string | null;
   }[]>([]);
   const [successOrder, setSuccessOrder] = useState<{ id: string } | null>(null);
-  
+
   // Mobile Tailor Drawer State
   const [isTailorDrawerOpen, setIsTailorDrawerOpen] = useState(false);
   const [itemIndexForAssignment, setItemIndexForAssignment] = useState<number | null>(null);
-  
+
   // Measurement Intelligence State
   const [autoSelectedMeasurement, setAutoSelectedMeasurement] = useState<{
     measurementId: string;
@@ -178,12 +191,12 @@ export function NewOrderPage() {
   // 2. Intelligence Gate: Check compatibility when template is selected
   const handleTemplateSelection = async (template: any) => {
     const templateId = template.id;
-    
+
     // Add to items
     setOrderItems([...orderItems, {
       templateId: template.id,
       estimatedTotalDurationHours: 24,
-      assignedTailorId: role === 'TAILOR' ? user?.userId : null
+      assignedTailorId: role === 'TAILOR' ? user?.id : null
     }]);
 
     // If we have a customer, check measurements for this template
@@ -195,11 +208,11 @@ export function NewOrderPage() {
          });
 
          const { isUsable, measurementId, takenAt } = profile.measurementCompatibility ?? {};
-         
+
          if (isUsable && measurementId) {
-           setAutoSelectedMeasurement({ 
-             measurementId, 
-             takenAt: takenAt ? takenAt.toString() : new Date().toISOString() 
+           setAutoSelectedMeasurement({
+             measurementId,
+             takenAt: takenAt ? takenAt.toString() : new Date().toISOString()
            });
            showToast("Measurement Intelligence", "Compatible existing measurements found and auto-selected.", "success");
          }
@@ -222,7 +235,7 @@ export function NewOrderPage() {
   const dynamicMeasurementFields = useMemo(() => {
     if (!templates || !orderItems || orderItems.length === 0) return [];
     const uniqueFields = new Set<string>();
-    
+
     orderItems.forEach(item => {
       const templateDef: any = templates.find((t: any) => t.id === item.templateId);
       if (templateDef) {
@@ -243,7 +256,7 @@ export function NewOrderPage() {
 
       // Seed from customer profile if available and not already in ledger
       const customerMeasurements = selectedCustomer?.latestMeasurement?.measurements || {};
-      
+
       // First, ensure all existing customer measurements are in the list if they are not already
       Object.entries(customerMeasurements).forEach(([label, value]) => {
         if (!existingLabels.has(label)) {
@@ -309,13 +322,18 @@ export function NewOrderPage() {
       if (!finalCustomerId) {
         if (!newCustomer.name.trim()) throw new Error("Customer identification is required.");
         showToast("Creating new customer profile...", "Processing intake data.", "success");
-        const c = await createCustomer.mutateAsync(newCustomer);
+        const c = await createCustomer.mutateAsync({
+          name: newCustomer.name,
+          email: newCustomer.email,
+          phone: newCustomer.phone,
+          notification_channel: newCustomer.notificationChannel,
+        });
         finalCustomerId = c.id;
         finalCustomerName = c.name;
       }
 
       let finalMeasurementVersionId = autoSelectedMeasurement?.measurementId;
-      
+
       if (!finalMeasurementVersionId) {
         // Validation: Verify at least one measurement is recorded
         const numericMeasurements: Record<string, number> = {};
@@ -336,15 +354,28 @@ export function NewOrderPage() {
           measurements: numericMeasurements,
           status: 'complete'
         });
-        
+
         if (!mv?.id) throw new Error("Critical: Measurement version ID not returned by system.");
         finalMeasurementVersionId = mv.id;
       }
 
-      const finalStoreId = role === 'COMPANY_ADMIN' ? selectedStoreId : userStoreId;
+      const finalStoreId = role === 'OWNER' ? selectedStoreId : userStoreId;
       if (!finalStoreId) {
         showToast("Store Assignment Required", "Store assignment is required. Please contact admin.", "error");
         return;
+      }
+
+      // Capacity pre-flight: warn if store is over capacity (non-blocking — OWNER can override)
+      try {
+        const capacityCheck = await storesApi.checkCapacity(finalStoreId);
+        if (!capacityCheck.canAccept) {
+          showToast(
+            "Capacity Warning",
+            `Store at ${capacityCheck.utilizationPercent ?? '?'}% load. ${capacityCheck.message || 'Accepting order above capacity limit.'}`,
+          );
+        }
+      } catch {
+        // Capacity check is advisory — never block order creation if the endpoint fails
       }
 
       showToast("Finalizing order & calculating risk...", "Almost there.", "success");
@@ -354,6 +385,10 @@ export function NewOrderPage() {
         storeId: finalStoreId,
         eventDate: eventDate ? eventDate.toISOString() : new Date().toISOString(),
         lockedMeasurementVersionId: finalMeasurementVersionId,
+        event_occasion: eventOccasion || undefined,
+        garment_category: garmentCategory || undefined,
+        garment_tier: garmentTier,
+        payment_intent_type: paymentIntentType || undefined,
         garments: orderItems.map(g => ({
           workflowTemplateId: g.templateId,
           assignedTailorId: g.assignedTailorId || null,
@@ -374,12 +409,16 @@ export function NewOrderPage() {
       console.error("[Intake Engine Error]", err);
       const errorData = err.response?.data;
       let errorMessage = errorData?.message || err.message || "Failed to finalize order";
-      
-      // The UI Guardrail: Specific handling for material failures
-      if (errorData?.code === 'INSUFFICIENT_STOCK') {
-        errorMessage = `Material Vault Error: ${errorMessage}`;
+
+      // The UI Guardrail: Use centralized mapping for dignified error feedback
+      if (errorData?.code) {
+        errorMessage = mapErrorCode(errorData.code);
+
+        if (errorData.code === 'INSUFFICIENT_STOCK') {
+          errorMessage = `Material Vault Error: ${errorMessage}`;
+        }
       }
-      
+
       showToast("Intake Error", errorMessage, "error");
     }
   };
@@ -550,10 +589,10 @@ export function NewOrderPage() {
           {step === "CLIENT_DETAILS" && (
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
               <Box sx={{ mb: 4 }}>
-                <Typography 
-                  variant="h3" 
+                <Typography
+                  variant="h3"
                   className="mobile-page-title md:text-h2"
-                  sx={{ 
+                  sx={{
                     fontSize: { xs: '1.75rem', md: 'clamp(1.5rem, 4vw, 2.25rem)' },
                     fontWeight: 800,
                     lineHeight: 1.2,
@@ -566,18 +605,18 @@ export function NewOrderPage() {
                 <Typography variant="body2" sx={{ color: 'text.secondary', display: { xs: 'block', md: 'none' } }}>
                   Contact details for production enrollment
                 </Typography>
-                <Typography 
-                  variant="h5" 
+                <Typography
+                  variant="h5"
                   sx={{ mb: 4, fontWeight: 700, color: 'text.primary', display: { xs: 'none', md: 'block' } }}
                 >
                   1. Identifying Primary Boutique
                 </Typography>
               </Box>
 
-              <Card sx={{ 
-                borderRadius: '24px', 
-                boxShadow: '0 8px 32px rgba(0,0,0,0.04)', 
-                border: '1px solid', 
+              <Card sx={{
+                borderRadius: '24px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.04)',
+                border: '1px solid',
                 borderColor: 'divider',
                 overflow: 'hidden'
               }}>
@@ -626,16 +665,32 @@ export function NewOrderPage() {
                       sx={{ '& .MuiInputLabel-root': { fontSize: '0.875rem' } }}
                     />
                   </Box>
+                  <Box sx={{ p: 2.5 }}>
+                    <FormControl component="fieldset">
+                      <FormLabel component="legend" sx={{ fontSize: '0.875rem', fontWeight: 700, color: 'text.secondary', mb: 1 }}>
+                        Preferred Notification Channel
+                      </FormLabel>
+                      <RadioGroup
+                        row
+                        value={newCustomer.notificationChannel}
+                        onChange={(e) => setNewCustomer({ ...newCustomer, notificationChannel: e.target.value as "whatsapp" | "sms" | "email" })}
+                      >
+                        <FormControlLabel value="whatsapp" control={<Radio size="small" color="primary" />} label={<Typography variant="body2" sx={{ fontWeight: 600 }}>WhatsApp (recommended)</Typography>} />
+                        <FormControlLabel value="sms" control={<Radio size="small" color="primary" />} label={<Typography variant="body2" sx={{ fontWeight: 600 }}>SMS</Typography>} />
+                        <FormControlLabel value="email" control={<Radio size="small" color="primary" />} label={<Typography variant="body2" sx={{ fontWeight: 600 }}>Email</Typography>} />
+                      </RadioGroup>
+                    </FormControl>
+                  </Box>
                 </Stack>
               </Card>
 
               <Divider sx={{ my: 4 }} />
 
-              <Stack 
-                direction="row" 
-                spacing={2} 
-                justifyContent="space-between" 
-                sx={{ 
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="space-between"
+                sx={{
                   pt: 8,
                   position: { xs: 'fixed', md: 'static' },
                   bottom: { xs: 'calc(64px + env(safe-area-inset-bottom, 0px))', md: 0 },
@@ -666,10 +721,10 @@ export function NewOrderPage() {
           {step === "GARMENTS_TIMELINE" && (
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
               <Box sx={{ mb: 4 }}>
-                <Typography 
-                  variant="h3" 
+                <Typography
+                  variant="h3"
                   className="mobile-page-title md:text-h2"
-                  sx={{ 
+                  sx={{
                     fontSize: { xs: '1.75rem', md: 'clamp(1.5rem, 4vw, 2.25rem)' },
                     fontWeight: 800,
                     lineHeight: 1.2,
@@ -682,8 +737,8 @@ export function NewOrderPage() {
                 <Typography variant="body2" sx={{ color: 'text.secondary', display: { xs: 'block', md: 'none' } }}>
                   Defining items and deadlines
                 </Typography>
-                <Typography 
-                  variant="h5" 
+                <Typography
+                  variant="h5"
                   sx={{ mb: 4, fontWeight: 700, color: 'text.primary', display: { xs: 'none', md: 'block' } }}
                 >
                   2. Defining Production Blueprint
@@ -700,7 +755,7 @@ export function NewOrderPage() {
                       const isGeneral = !template.companyId;
                       const displayName = isGeneral ? "General / Other" : template.name;
                       const subtitle = isGeneral ? "For garments without a specific production template." : "";
-                      
+
                       return (
                         <Grid size={{ xs: 6, sm: 4 }} key={template.id}>
                           <Card
@@ -754,17 +809,17 @@ export function NewOrderPage() {
                     <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
                       ORDER ITEMS LEDGER
                     </Typography>
-                    
+
                     <Card sx={{ borderRadius: '24px', boxShadow: 'none', border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
                       <List sx={{ p: 0 }}>
                         {orderItems.map((g, idx) => {
                           const template = templates?.find(t => t.id === g.templateId);
                           const assignedTailor = staff?.find(s => s.id === g.assignedTailorId);
-                          
+
                           return (
                             <Box key={idx}>
-                              <ListItem 
-                                sx={{ 
+                              <ListItem
+                                sx={{
                                   p: { xs: 2, sm: 3 },
                                   display: 'flex',
                                   flexDirection: { xs: 'column', sm: 'row' },
@@ -794,9 +849,9 @@ export function NewOrderPage() {
                                         setItemIndexForAssignment(idx);
                                         setIsTailorDrawerOpen(true);
                                       }}
-                                      sx={{ 
-                                        borderRadius: '12px', 
-                                        height: 44, 
+                                      sx={{
+                                        borderRadius: '12px',
+                                        height: 44,
                                         justifyContent: 'space-between',
                                         px: 2,
                                         borderColor: alpha('#000', 0.1),
@@ -839,13 +894,13 @@ export function NewOrderPage() {
                                     </FormControl>
                                   </Box>
 
-                                  <IconButton 
-                                    size="small" 
+                                  <IconButton
+                                    size="small"
                                     onClick={() => setOrderItems(orderItems.filter((_, i) => i !== idx))}
-                                    sx={{ 
+                                    sx={{
                                       bgcolor: alpha('#d32f2f', 0.05),
-                                      color: 'error.main', 
-                                      '&:hover': { bgcolor: alpha('#d32f2f', 0.1) } 
+                                      color: 'error.main',
+                                      '&:hover': { bgcolor: alpha('#d32f2f', 0.1) }
                                     }}
                                   >
                                     <DeleteIcon fontSize="small" />
@@ -908,7 +963,7 @@ export function NewOrderPage() {
                     </Typography>
                   </Box>
 
-                  {role === 'COMPANY_ADMIN' && !isStoreManager && !isTailor && (
+                  {role === 'OWNER' && !isStoreManager && !isTailor && (
                     <Box sx={{ mt: 4 }}>
                       <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
                         STORE ASSIGNMENT
@@ -933,11 +988,11 @@ export function NewOrderPage() {
 
               <Divider sx={{ my: 4 }} />
 
-              <Stack 
-                direction="row" 
-                spacing={2} 
-                justifyContent="space-between" 
-                sx={{ 
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="space-between"
+                sx={{
                   pt: 8,
                   position: { xs: 'fixed', md: 'static' },
                   bottom: { xs: 'calc(64px + env(safe-area-inset-bottom, 0px))', md: 0 },
@@ -959,7 +1014,7 @@ export function NewOrderPage() {
                 </Button>
                 <Button
                   variant="contained"
-                  disabled={orderItems.length === 0 || !eventDate}
+                  disabled={orderItems.length === 0 || !eventDate || !eventOccasion || !garmentCategory || !paymentIntentType}
                   onClick={() => setStep("FABRIC_DETAILS")}
                   sx={{
                     bgcolor: 'secondary.main',
@@ -974,6 +1029,151 @@ export function NewOrderPage() {
                   Configure Material
                 </Button>
               </Stack>
+
+              {/* ORDER CLASSIFICATION */}
+              <Box sx={{ mt: 5 }}>
+                <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
+                  ORDER CLASSIFICATION
+                </Typography>
+                <Card sx={{ borderRadius: '24px', boxShadow: 'none', border: '1px solid', borderColor: 'divider', p: 3 }}>
+                  <Grid container spacing={3}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <FormControl fullWidth required>
+                        <InputLabel>Occasion</InputLabel>
+                        <Select
+                          value={eventOccasion}
+                          label="Occasion"
+                          onChange={(e) => setEventOccasion(e.target.value)}
+                          sx={{ borderRadius: '12px', bgcolor: 'background.default' }}
+                        >
+                          {[
+                            ['wedding', 'Wedding'],
+                            ['burial', 'Burial'],
+                            ['owambe', 'Owambe'],
+                            ['graduation', 'Graduation'],
+                            ['corporate', 'Corporate'],
+                            ['naming_ceremony', 'Naming Ceremony'],
+                            ['engagement', 'Engagement'],
+                            ['birthday', 'Birthday'],
+                            ['religious', 'Religious'],
+                            ['convocation', 'Convocation'],
+                            ['other', 'Other'],
+                          ].map(([value, label]) => (
+                            <MenuItem key={value} value={value}>{label}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <FormControl fullWidth required>
+                        <InputLabel>Garment Category</InputLabel>
+                        <Select
+                          value={garmentCategory}
+                          label="Garment Category"
+                          onChange={(e) => setGarmentCategory(e.target.value)}
+                          sx={{ borderRadius: '12px', bgcolor: 'background.default' }}
+                        >
+                          {[
+                            ['agbada_set', 'Agbada Set'],
+                            ['native_senator', 'Native Senator'],
+                            ['ankara_gown', 'Ankara Gown'],
+                            ['kaftan', 'Kaftan'],
+                            ['suit', 'Suit'],
+                            ['corporate_dress', 'Corporate Dress'],
+                            ['lace_gown', 'Lace Gown'],
+                            ['aso_oke_set', 'Aso-Oke Set'],
+                            ['skirt_and_blouse', 'Skirt & Blouse'],
+                            ['jumpsuit', 'Jumpsuit'],
+                            ['childrens_wear', "Children's Wear"],
+                            ['other', 'Other'],
+                          ].map(([value, label]) => (
+                            <MenuItem key={value} value={value}>{label}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <FormControl fullWidth required>
+                        <InputLabel>Payment Structure</InputLabel>
+                        <Select
+                          value={paymentIntentType}
+                          label="Payment Structure"
+                          onChange={(e) => setPaymentIntentType(e.target.value)}
+                          sx={{ borderRadius: '12px', bgcolor: 'background.default' }}
+                        >
+                          {[
+                            ['deposit_then_balance', 'Deposit then Balance'],
+                            ['full_upfront', 'Full Upfront'],
+                            ['installments', 'Installments'],
+                            ['on_collection', 'On Collection'],
+                          ].map(([value, label]) => (
+                            <MenuItem key={value} value={value}>{label}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid size={{ xs: 12 }}>
+                      <FormControl component="fieldset" fullWidth>
+                        <FormLabel component="legend" sx={{ fontSize: '0.75rem', fontWeight: 800, color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 1, mb: 1.5 }}>
+                          Construction Tier
+                        </FormLabel>
+                        <RadioGroup
+                          row
+                          value={garmentTier}
+                          onChange={(e) => setGarmentTier(e.target.value as "STANDARD" | "COMPLEX" | "BESPOKE")}
+                          sx={{ gap: 1 }}
+                        >
+                          {([
+                            ['STANDARD', 'Standard', 'Straightforward construction, fixed design'],
+                            ['COMPLEX', 'Complex', 'Multi-piece or detailed construction'],
+                            ['BESPOKE', 'Bespoke', 'Fully custom. Requires fitting appointments.'],
+                          ] as const).map(([value, label, description]) => (
+                            <Box
+                              key={value}
+                              onClick={() => setGarmentTier(value)}
+                              sx={{
+                                flex: 1,
+                                minWidth: 140,
+                                p: 1.5,
+                                borderRadius: '12px',
+                                border: '1px solid',
+                                borderColor: garmentTier === value ? 'primary.main' : 'divider',
+                                bgcolor: garmentTier === value ? alpha('#1e5c3a', 0.04) : 'background.paper',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease',
+                                '&:hover': { borderColor: 'primary.light', bgcolor: alpha('#1e5c3a', 0.02) },
+                              }}
+                            >
+                              <FormControlLabel
+                                value={value}
+                                control={<Radio size="small" color="primary" sx={{ p: 0.5 }} />}
+                                label={
+                                  <Box>
+                                    <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{label}</Typography>
+                                    <Typography variant="caption" sx={{ color: 'text.secondary', lineHeight: 1.3, display: 'block', mt: 0.25 }}>{description}</Typography>
+                                  </Box>
+                                }
+                                sx={{ m: 0, alignItems: 'flex-start', gap: 0.5 }}
+                              />
+                            </Box>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                      {garmentTier === 'BESPOKE' && (
+                        <Alert
+                          severity="info"
+                          sx={{ mt: 2, borderRadius: '10px', border: '1px solid', borderColor: 'info.light' }}
+                        >
+                          Bespoke orders require fitting appointments before the finishing stage.
+                        </Alert>
+                      )}
+                    </Grid>
+                  </Grid>
+                </Card>
+              </Box>
 
               {/* MOBILE TAILOR PICKER DRAWER */}
               <SwipeableDrawer
@@ -998,7 +1198,7 @@ export function NewOrderPage() {
                   </Typography>
                   <List>
                     <ListItem disablePadding>
-                      <ListItemButton 
+                      <ListItemButton
                         onClick={() => {
                           if (itemIndexForAssignment !== null) {
                             const next = [...orderItems];
@@ -1015,7 +1215,7 @@ export function NewOrderPage() {
                     </ListItem>
                     {staff?.filter(s => s.role === 'TAILOR').map((s) => (
                       <ListItem key={s.id} disablePadding>
-                        <ListItemButton 
+                        <ListItemButton
                           onClick={() => {
                             if (itemIndexForAssignment !== null) {
                               const next = [...orderItems];
@@ -1024,8 +1224,8 @@ export function NewOrderPage() {
                             }
                             setIsTailorDrawerOpen(false);
                           }}
-                          sx={{ 
-                            borderRadius: '12px', 
+                          sx={{
+                            borderRadius: '12px',
                             mb: 1,
                             bgcolor: itemIndexForAssignment !== null && orderItems[itemIndexForAssignment].assignedTailorId === s.id ? alpha('#1e5c3a', 0.05) : 'transparent',
                             '&:hover': { bgcolor: alpha('#1e5c3a', 0.08) }
@@ -1036,8 +1236,8 @@ export function NewOrderPage() {
                               {s.email[0].toUpperCase()}
                             </Avatar>
                           </ListItemAvatar>
-                          <ListItemText 
-                            primary={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{s.fullName || s.email.split('@')[0]}</Typography>} 
+                          <ListItemText
+                            primary={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{s.fullName || s.email.split('@')[0]}</Typography>}
                             secondary={s.email}
                           />
                         </ListItemButton>
@@ -1053,10 +1253,10 @@ export function NewOrderPage() {
           {step === "FABRIC_DETAILS" && (
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
               <Box sx={{ mb: 4 }}>
-                <Typography 
-                  variant="h3" 
+                <Typography
+                  variant="h3"
                   className="mobile-page-title md:text-h2"
-                  sx={{ 
+                  sx={{
                     fontSize: { xs: '1.75rem', md: 'clamp(1.5rem, 4vw, 2.25rem)' },
                     fontWeight: 800,
                     lineHeight: 1.2,
@@ -1069,14 +1269,14 @@ export function NewOrderPage() {
                 <Typography variant="body2" sx={{ color: 'text.secondary', display: { xs: 'block', md: 'none' } }}>
                   The evidence: Fabric and composition
                 </Typography>
-                <Typography 
-                  variant="h5" 
+                <Typography
+                  variant="h5"
                   sx={{ mb: 4, fontWeight: 700, color: 'text.primary', display: { xs: 'none', md: 'block' } }}
                 >
                   3. The Evidence: Fabric & Design
                 </Typography>
               </Box>
-              
+
               <Grid container spacing={4}>
                 {/* Image Upload */}
                 <Grid size={{ xs: 12, md: 5 }}>
@@ -1113,10 +1313,10 @@ export function NewOrderPage() {
                         <Typography variant="caption" sx={{ color: 'text.disabled' }}>JPEG, PNG up to 10MB</Typography>
                       </Stack>
                     ) : (
-                      <img 
-                        src={fabricDetails.fabricImageBase64} 
-                        alt="Fabric preview" 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      <img
+                        src={fabricDetails.fabricImageBase64}
+                        alt="Fabric preview"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                     )}
                     <input
@@ -1137,7 +1337,7 @@ export function NewOrderPage() {
                     />
                   </Card>
                   {fabricDetails.fabricImageBase64 && (
-                    <Button 
+                    <Button
                       fullWidth
                       variant="text"
                       onClick={() => setFabricDetails({ ...fabricDetails, fabricImageBase64: "" })}
@@ -1154,10 +1354,10 @@ export function NewOrderPage() {
                     SPECIFICATIONS
                   </Typography>
 
-                  <Card sx={{ 
-                    borderRadius: '24px', 
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.04)', 
-                    border: '1px solid', 
+                  <Card sx={{
+                    borderRadius: '24px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.04)',
+                    border: '1px solid',
                     borderColor: 'divider',
                     mb: 3,
                     p: 3
@@ -1165,11 +1365,11 @@ export function NewOrderPage() {
                     <Stack spacing={3}>
                       {/* EMPTY VAULT GUARDRAIL */}
                       {inventory !== undefined && inventory.length === 0 && (
-                        <Box sx={{ 
-                          p: 2, 
-                          bgcolor: alpha('#f59e0b', 0.1), 
-                          border: '1px solid', 
-                          borderColor: alpha('#f59e0b', 0.5), 
+                        <Box sx={{
+                          p: 2,
+                          bgcolor: alpha('#f59e0b', 0.1),
+                          border: '1px solid',
+                          borderColor: alpha('#f59e0b', 0.5),
                           borderRadius: '16px',
                           display: 'flex',
                           alignItems: 'center',
@@ -1192,8 +1392,8 @@ export function NewOrderPage() {
                             error={inventory !== undefined && inventory.length === 0}
                           >
                             <MenuItem value=""><em>-- Select Material --</em></MenuItem>
-                            {inventory?.map((m: any) => (
-                              <MenuItem key={m.materialId} value={m.materialId} disabled={m.quantityAvailable <= 0}>
+                            {inventory?.map((m: any, idx: number) => (
+                              <MenuItem key={`${m.materialId}-${idx}`} value={m.materialId} disabled={m.quantityAvailable <= 0}>
                                 {m.name} ({m.quantityAvailable} {m.unit} left)
                               </MenuItem>
                             ))}
@@ -1262,12 +1462,12 @@ export function NewOrderPage() {
               </Grid>
 
             {autoSelectedMeasurement && (
-              <Box sx={{ 
-                p: 2, 
-                mb: 3, 
-                bgcolor: alpha('#1e5c3a', 0.05), 
-                borderRadius: '12px', 
-                border: '1px solid', 
+              <Box sx={{
+                p: 2,
+                mb: 3,
+                bgcolor: alpha('#1e5c3a', 0.05),
+                borderRadius: '12px',
+                border: '1px solid',
                 borderColor: alpha('#1e5c3a', 0.2),
                 display: 'flex',
                 alignItems: 'center',
@@ -1279,8 +1479,8 @@ export function NewOrderPage() {
                     Using complete measurements from {safeLocaleDate(new Date(autoSelectedMeasurement.takenAt))}
                   </Typography>
                 </Stack>
-                <Button 
-                  size="small" 
+                <Button
+                  size="small"
                   onClick={() => {
                     setAutoSelectedMeasurement(null);
                     showToast("Intelligence Cleared", "System will now capture fresh measurements.", "success");
@@ -1294,11 +1494,11 @@ export function NewOrderPage() {
 
             <Divider sx={{ my: 4 }} />
 
-            <Stack 
-              direction="row" 
-              spacing={2} 
-              justifyContent="space-between" 
-              sx={{ 
+            <Stack
+              direction="row"
+              spacing={2}
+              justifyContent="space-between"
+              sx={{
                 pt: 8,
                 position: { xs: 'fixed', md: 'static' },
                 bottom: { xs: 'calc(64px + env(safe-area-inset-bottom, 0px))', md: 0 },
@@ -1327,10 +1527,10 @@ export function NewOrderPage() {
           {step === "MEASUREMENTS" && (
             <Box className="animate-in fade-in slide-in-from-right-4 duration-500">
               <Box sx={{ mb: 4 }}>
-                <Typography 
-                   variant="h3" 
+                <Typography
+                   variant="h3"
                    className="mobile-page-title md:text-h2"
-                   sx={{ 
+                   sx={{
                      fontSize: { xs: '1.75rem', md: 'clamp(1.5rem, 4vw, 2.25rem)' },
                      fontWeight: 800,
                      lineHeight: 1.2,
@@ -1343,36 +1543,36 @@ export function NewOrderPage() {
                 <Typography variant="body2" sx={{ color: 'text.secondary', display: { xs: 'block', md: 'none' } }}>
                   Recording primary metrics in centimeters
                 </Typography>
-                <Typography 
-                  variant="h5" 
+                <Typography
+                  variant="h5"
                   sx={{ mb: 4, fontWeight: 700, color: 'text.primary', display: { xs: 'none', md: 'block' } }}
                 >
                   4. Recording Measurements (cm)
                 </Typography>
               </Box>
-              
+
               <Grid container spacing={3}>
                 {/* Left Side: Measurement Inputs */}
                 <Grid size={{ xs: 12, md: 7 }}>
                   <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
                     LIVE LEDGER
                   </Typography>
-                  <Card sx={{ 
-                    borderRadius: '24px', 
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.04)', 
-                    border: '1px solid', 
+                  <Card sx={{
+                    borderRadius: '24px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.04)',
+                    border: '1px solid',
                     borderColor: 'divider',
                     overflow: 'hidden'
                   }}>
                     <Stack divider={<Divider />}>
                       {measurementEntries.map(entry => (
-                        <Box 
-                          key={entry.id} 
+                        <Box
+                          key={entry.id}
                           onClick={() => setActiveEntryId(entry.id)}
-                          sx={{ 
-                            p: 2.5, 
-                            display: 'flex', 
-                            alignItems: 'center', 
+                          sx={{
+                            p: 2.5,
+                            display: 'flex',
+                            alignItems: 'center',
                             justifyContent: 'space-between',
                             bgcolor: activeEntryId === entry.id ? alpha('#c49a1a', 0.04) : 'transparent',
                             transition: 'background-color 0.2s ease',
@@ -1393,7 +1593,7 @@ export function NewOrderPage() {
                               size="small"
                               value={entry.value}
                               onChange={(val) => {
-                                setMeasurementEntries(prev => prev.map(p => 
+                                setMeasurementEntries(prev => prev.map(p =>
                                   p.id === entry.id ? { ...p, value: val === "" ? "" : val.toString() } : p
                                 ));
                               }}
@@ -1401,8 +1601,8 @@ export function NewOrderPage() {
                               onEnter={() => handleEntryAutoAdvance(entry.id)}
                               inputRef={(el: any) => entryRefs.current[entry.id] = el}
                               InputProps={{
-                                sx: { 
-                                  fontWeight: 800, 
+                                sx: {
+                                  fontWeight: 800,
                                   borderRadius: '12px',
                                   bgcolor: activeEntryId === entry.id ? 'background.paper' : alpha('#000', 0.02)
                                 },
@@ -1430,9 +1630,9 @@ export function NewOrderPage() {
                         onChange={(e) => setNewMeasurementLabel(e.target.value)}
                         sx={{ bgcolor: 'white', borderRadius: '8px', flex: 1 }}
                       />
-                      <Button 
-                        variant="contained" 
-                        color="secondary" 
+                      <Button
+                        variant="contained"
+                        color="secondary"
                         onClick={handleAddCustomEntry}
                         disabled={!newMeasurementLabel.trim()}
                         sx={{ borderRadius: '8px', fontWeight: 700 }}
@@ -1448,18 +1648,18 @@ export function NewOrderPage() {
                   <Typography variant="overline" sx={{ color: 'text.disabled', fontWeight: 800, mb: 1.5, display: 'block', letterSpacing: 1.5 }}>
                     QUICK INPUT
                   </Typography>
-                  <Card sx={{ 
-                    p: 2.5, 
-                    bgcolor: 'background.paper', 
-                    borderRadius: '24px', 
-                    border: '1px solid', 
+                  <Card sx={{
+                    p: 2.5,
+                    bgcolor: 'background.paper',
+                    borderRadius: '24px',
+                    border: '1px solid',
                     borderColor: 'divider',
                     boxShadow: '0 12px 40px rgba(0,0,0,0.06)'
                   }}>
                     <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, mb: 3, display: 'block', textAlign: 'center', textTransform: 'uppercase' }}>
                       {activeMeasurementField ? `ENTER ${activeMeasurementField}` : 'SELECT A METRIC'}
                     </Typography>
-                    
+
                     <Grid container spacing={1.5}>
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, '.', 0, 'BACK'].map((val) => (
                         <Grid size={{ xs: 4 }} key={val}>
@@ -1482,7 +1682,7 @@ export function NewOrderPage() {
                                 if (currentVal.length < 5) nextVal = currentVal + val;
                               }
 
-                              setMeasurementEntries(prev => prev.map(p => 
+                              setMeasurementEntries(prev => prev.map(p =>
                                 p.id === activeEntryId ? { ...p, value: nextVal } : p
                               ));
                             }}
@@ -1509,11 +1709,11 @@ export function NewOrderPage() {
               </Grid>
 
               <Divider sx={{ my: 4 }} />
-              <Stack 
-                direction="row" 
-                spacing={2} 
-                justifyContent="space-between" 
-                sx={{ 
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="space-between"
+                sx={{
                   pt: 8,
                   position: { xs: 'fixed', md: 'static' },
                   bottom: { xs: 'calc(64px + env(safe-area-inset-bottom, 0px))', md: 0 },
@@ -1541,10 +1741,10 @@ export function NewOrderPage() {
           {step === "SUMMARY" && (
             <Box className="animate-in zoom-in-95 duration-300">
               <Box sx={{ mb: 4 }}>
-                <Typography 
-                   variant="h3" 
+                <Typography
+                   variant="h3"
                    className="mobile-page-title md:text-h2"
-                   sx={{ 
+                   sx={{
                      fontSize: { xs: '1.75rem', md: 'clamp(1.5rem, 4vw, 2.25rem)' },
                      fontWeight: 800,
                      lineHeight: 1.2,
@@ -1557,8 +1757,8 @@ export function NewOrderPage() {
                 <Typography variant="body2" sx={{ color: 'text.secondary', display: { xs: 'block', md: 'none' } }}>
                   Final review before production commitment
                 </Typography>
-                <Typography 
-                  variant="h5" 
+                <Typography
+                  variant="h5"
                   sx={{ mb: 4, fontWeight: 700, color: 'text.primary', display: { xs: 'none', md: 'block' } }}
                 >
                   5. Formalize Order
@@ -1573,7 +1773,7 @@ export function NewOrderPage() {
                       <ListItemAvatar>
                         <Avatar sx={{ bgcolor: alpha('#c49a1a', 0.1), color: 'secondary.main' }}><PersonIcon /></Avatar>
                       </ListItemAvatar>
-                      <ListItemText 
+                      <ListItemText
                         primary={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{selectedCustomer?.name || newCustomer.name}</Typography>}
                         secondary={selectedCustomer?.email || newCustomer.email || 'No email provided'}
                       />
@@ -1583,7 +1783,7 @@ export function NewOrderPage() {
                       <ListItemAvatar>
                         <Avatar sx={{ bgcolor: alpha('#c49a1a', 0.1), color: 'secondary.main' }}><TimeIcon /></Avatar>
                       </ListItemAvatar>
-                      <ListItemText 
+                      <ListItemText
                         primary={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{eventDate?.toLocaleDateString()}</Typography>}
                         secondary={`Production Deadline • ${stores?.find(s => s.id === selectedStoreId)?.name || 'Unassigned Store'}`}
                       />
@@ -1603,14 +1803,14 @@ export function NewOrderPage() {
                            <ShirtIcon sx={{ color: 'text.disabled', fontSize: 32 }} />
                         </Avatar>
                       )}
-                      <Box sx={{ 
-                        position: 'absolute', 
-                        bottom: -4, 
-                        right: -4, 
-                        width: 24, 
-                        height: 24, 
-                        borderRadius: '50%', 
-                        bgcolor: fabricDetails.colorSwatch, 
+                      <Box sx={{
+                        position: 'absolute',
+                        bottom: -4,
+                        right: -4,
+                        width: 24,
+                        height: 24,
+                        borderRadius: '50%',
+                        bgcolor: fabricDetails.colorSwatch,
                         border: '2px solid white',
                         boxShadow: '0 0 10px rgba(0,0,0,0.1)'
                       }} />
@@ -1648,10 +1848,10 @@ export function NewOrderPage() {
                   </Card>
                 </Box>
 
-                <Stack 
-                  direction="row" 
-                  spacing={2} 
-                  sx={{ 
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{
                     pt: 8,
                     position: { xs: 'fixed', md: 'static' },
                     bottom: { xs: 'calc(64px + env(safe-area-inset-bottom, 0px))', md: 0 },
@@ -1690,23 +1890,23 @@ export function NewOrderPage() {
       </Box>
 
       {/* SUCCESS MODAL */}
-      <Dialog 
-        open={Boolean(successOrder)} 
-        maxWidth="sm" 
+      <Dialog
+        open={Boolean(successOrder)}
+        maxWidth="sm"
         fullWidth
         PaperProps={{
           sx: { borderRadius: '24px', p: 4, textAlign: 'center' }
         }}
       >
         <Box sx={{ py: 2 }}>
-          <Box sx={{ 
-            width: 80, 
-            height: 80, 
-            bgcolor: alpha('#1e5c3a', 0.1), 
-            borderRadius: '50%', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
+          <Box sx={{
+            width: 80,
+            height: 80,
+            bgcolor: alpha('#1e5c3a', 0.1),
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             mx: 'auto',
             mb: 3
           }}>
@@ -1719,14 +1919,14 @@ export function NewOrderPage() {
             Order ID: <strong>{(truncateId(successOrder?.id) || '').toUpperCase()}</strong>
           </Typography>
           <Stack spacing={2}>
-            <Button 
-              variant="contained" 
-              fullWidth 
+            <Button
+              variant="contained"
+              fullWidth
               size="large"
               onClick={() => navigate(`/orders/${successOrder?.id}`)}
-              sx={{ 
-                bgcolor: 'primary.main', 
-                height: 60, 
+              sx={{
+                bgcolor: 'primary.main',
+                height: 60,
                 borderRadius: '16px',
                 fontWeight: 700,
                 '&:hover': { bgcolor: '#256b45' }
@@ -1734,13 +1934,13 @@ export function NewOrderPage() {
             >
               View Order
             </Button>
-            <Button 
-              variant="outlined" 
-              fullWidth 
+            <Button
+              variant="outlined"
+              fullWidth
               size="large"
               onClick={() => window.location.reload()}
-              sx={{ 
-                height: 60, 
+              sx={{
+                height: 60,
                 borderRadius: '16px',
                 borderColor: 'divider',
                 color: 'text.primary',

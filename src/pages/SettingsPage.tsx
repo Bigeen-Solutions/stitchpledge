@@ -10,13 +10,21 @@ import {
   useTheme,
   useMediaQuery
 } from '@mui/material';
-import { 
+import {
   Settings as SettingsIcon,
   Business as GeneralIcon,
-  AccountTree as WorkshopIcon
+  AccountTree as WorkshopIcon,
+  DataUsage as CapacityIcon,
+  Shield as ShieldIcon,
+  EventRepeat as SeasonalIcon,
 } from '@mui/icons-material';
 import { WorkshopConfiguration } from '../features/workflow/components/WorkshopConfiguration';
 import { GeneralProfileSettings } from '../features/settings/components/GeneralProfileSettings';
+import { CapacitySettingsPanel } from '../features/capacity/components/CapacitySettingsPanel';
+import { RolePermissionsMatrix } from '../features/settings/components/RolePermissionsMatrix';
+import { SeasonalOverridesPanel } from '../features/capacity/components/SeasonalOverridesPanel';
+import { ComingSoon } from '../components/feedback/ComingSoon';
+import { FEATURES } from '../config/features';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -149,9 +157,24 @@ export const SettingsPage: React.FC = () => {
               label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Workshop Config</Typography>} 
             />
             <Tab 
-              icon={<GeneralIcon sx={{ mr: 1.5, fontSize: 20 }} />} 
+              icon={<CapacityIcon sx={{ mr: 1.5, fontSize: 20 }} />} 
               iconPosition="start" 
-              label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>General Profile</Typography>} 
+              label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Capacity Management</Typography>} 
+            />
+            <Tab
+              icon={<GeneralIcon sx={{ mr: 1.5, fontSize: 20 }} />}
+              iconPosition="start"
+              label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>General Profile</Typography>}
+            />
+            <Tab
+              icon={<ShieldIcon sx={{ mr: 1.5, fontSize: 20 }} />}
+              iconPosition="start"
+              label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Role Permissions</Typography>}
+            />
+            <Tab
+              icon={<SeasonalIcon sx={{ mr: 1.5, fontSize: 20 }} />}
+              iconPosition="start"
+              label={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Seasonal Overrides</Typography>}
             />
           </Tabs>
         </Box>
@@ -162,7 +185,30 @@ export const SettingsPage: React.FC = () => {
             <WorkshopConfiguration />
           </CustomTabPanel>
           <CustomTabPanel value={activeTab} index={1}>
-            <GeneralProfileSettings />
+            {FEATURES.capacitySettingsPanel ? (
+              <CapacitySettingsPanel />
+            ) : (
+              <ComingSoon
+                title="Capacity settings coming in v1.1"
+                description="Configure workshop slot limits, per-workflow capacity budgets, and real-time utilisation targets. Seasonal overrides are available now in the tab below."
+              />
+            )}
+          </CustomTabPanel>
+          <CustomTabPanel value={activeTab} index={2}>
+            {FEATURES.generalProfileSettings ? (
+              <GeneralProfileSettings />
+            ) : (
+              <ComingSoon
+                title="Profile settings coming in v1.1"
+                description="Company name, timezone, and measurement unit preferences will be editable here once the settings persistence API is complete."
+              />
+            )}
+          </CustomTabPanel>
+          <CustomTabPanel value={activeTab} index={3}>
+            <RolePermissionsMatrix />
+          </CustomTabPanel>
+          <CustomTabPanel value={activeTab} index={4}>
+            <SeasonalOverridesPanel />
           </CustomTabPanel>
         </Box>
       </Paper>

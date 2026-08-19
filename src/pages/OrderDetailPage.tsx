@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useOrderDetail, useOrderGarments } from '../features/orders/hooks/useOrderDetail.ts';
 import { useStaffList } from '../features/auth/hooks/useStaff.ts';
-import { usePermissions } from '../features/auth/use-permissions.ts';
 import { ordersApi } from '../features/orders/orders.api.ts';
+import { useAuthStore } from '../features/auth/auth.store.ts';
 import { useToastStore } from '../components/feedback/Toast.tsx';
 import { WorkflowGraph } from '../features/workflow/components/WorkflowGraph.tsx';
+import { WorkflowStageTimeline } from '../features/workflow/components/WorkflowStageTimeline.tsx';
 import { MeasurementHistory } from '../features/measurements/components/MeasurementHistory.tsx';
 import { RecordMeasurementForm } from '../features/measurements/components/RecordMeasurementForm.tsx';
 import {
@@ -20,14 +21,41 @@ import {
   Avatar,
   Stack,
   Box,
-  Chip
+  Chip,
+  Tabs,
+  Tab,
+  alpha,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Tooltip,
+  TextField,
+  Snackbar,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SettingsIcon from '@mui/icons-material/Settings';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import ContentCutOutlinedIcon from '@mui/icons-material/ContentCutOutlined';
+import DesignServicesOutlinedIcon from '@mui/icons-material/DesignServicesOutlined';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import { RiskBadge } from '../components/ui/RiskBadge.tsx';
+import { useAvailableTransitions, useAttemptTransition } from '../features/production/hooks/useProductionMutation.ts';
 import { EditOrderModal } from '../features/orders/components/EditOrderModal.tsx';
+import { AuditTrailTimeline } from '../features/audit/components/AuditTrailTimeline.tsx';
+import { DisputePortal } from '../features/dispute/components/DisputePortal.tsx';
 
 import { truncateId } from '../utils/format.ts';
+import { PaymentPanel } from '../features/orders/components/PaymentPanel.tsx';
+import { DesignBriefPanel } from '../features/orders/components/DesignBriefPanel.tsx';
+import { FabricSealPanel } from '../features/orders/components/FabricSealPanel.tsx';
+import { CollectionChecklistPanel } from '../features/orders/components/CollectionChecklistPanel.tsx';
+import { FittingsPanel } from '../features/orders/components/FittingsPanel.tsx';
 import { MobileHeader } from '../components/layout/MobileHeader.tsx';
 
 export function OrderDetailPage() {
@@ -35,7 +63,8 @@ export function OrderDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const showToast = useToastStore((state) => state.showToast);
-  const { isCompanyAdminOrManager } = usePermissions();
+  const user = useAuthStore((state) => state.user);
+  const isCompanyAdminOrManager = user?.role === 'OWNER' || user?.role === 'MANAGER';
   const { data: detail, isLoading, isError } = useOrderDetail(id!);
   const { data: garments, isLoading: isLoadingGarments, refetch: refetchGarments } = useOrderGarments(id!);
   const { data: staff } = useStaffList({ 
@@ -44,8 +73,16 @@ export function OrderDetailPage() {
   });
   const [selectedGarmentId, setSelectedGarmentId] = useState<string | null>(null);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [workflowTab, setWorkflowTab] = useState<'graph' | 'timeline'>('graph');
+  const [showForensicProof, setShowForensicProof] = useState(false);
+  const [bypassModal, setBypassModal] = useState<{ open: boolean; targetStatus: string } | null>(null);
+  const [bypassReason, setBypassReason] = useState('');
+  const [pdfExporting, setPdfExporting] = useState(false);
+  const [pdfSnackbar, setPdfSnackbar] = useState<{ open: boolean; severity: 'error' | 'warning'; message: string } | null>(null);
 
   const tailors = staff?.filter(s => s.role === 'TAILOR') || [];
+  const { data: availableTransitions = [] } = useAvailableTransitions(selectedGarmentId ?? '');
+  const attemptTransition = useAttemptTransition();
 
   useEffect(() => {
     if (garments && garments.length > 0 && !selectedGarmentId) {
@@ -66,6 +103,7 @@ export function OrderDetailPage() {
   const { order, projection } = detail;
   const selectedGarment = garments?.find(g => g.id === selectedGarmentId);
   const isOrderCompleted = garments && garments.length > 0 && garments.every((g: any) => g.status === 'COMPLETED');
+  const isOrderLocked = !!order.lockedAt;
 
   const handleAssignTailor = async (tailorId: string) => {
     if (!selectedGarmentId) return;
@@ -75,6 +113,29 @@ export function OrderDetailPage() {
       refetchGarments();
     } catch (err) {
       showToast("Failed to update assignment", "error");
+    }
+  };
+
+  const handleExportEvidence = async () => {
+    if (!order.id) return;
+    setPdfExporting(true);
+    try {
+      const blob = await ordersApi.exportEvidencePdf(order.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `evidence-${order.id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      if (err?.response?.status === 409) {
+        const text = await err.response.data?.text?.() ?? 'Confirm fabric intake before exporting evidence';
+        setPdfSnackbar({ open: true, severity: 'warning', message: text });
+      } else {
+        setPdfSnackbar({ open: true, severity: 'error', message: 'Failed to export evidence PDF. Please try again.' });
+      }
+    } finally {
+      setPdfExporting(false);
     }
   };
 
@@ -131,12 +192,53 @@ export function OrderDetailPage() {
           </Stack>
           <Stack alignItems="flex-end" spacing={1}>
             <Stack direction="row" spacing={2} alignItems="center">
-              {!isOrderCompleted && isCompanyAdminOrManager && (
-                <Button 
-                  size="small" 
-                  variant="outlined" 
-                  color="inherit" 
-                  startIcon={<SettingsIcon />} 
+              {isCompanyAdminOrManager && (() => {
+                const fabricBlocked = order.unverifiedFlags?.includes('fabric') ?? false;
+                return (
+                  <Tooltip title={fabricBlocked ? 'Confirm fabric intake before exporting' : ''} arrow>
+                    <span>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={pdfExporting ? <CircularProgress size={14} color="inherit" /> : <PictureAsPdfOutlinedIcon />}
+                        onClick={handleExportEvidence}
+                        disabled={fabricBlocked || pdfExporting}
+                        sx={{
+                          borderRadius: 2,
+                          fontWeight: 700,
+                          fontSize: '12px',
+                          textTransform: 'none',
+                        }}
+                      >
+                        Export Evidence
+                      </Button>
+                    </span>
+                  </Tooltip>
+                );
+              })()}
+              {isCompanyAdminOrManager && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<FingerprintIcon />}
+                  onClick={() => setShowForensicProof(true)}
+                  sx={{
+                    borderRadius: 2,
+                    borderColor: alpha('#1e5c3a', 0.4),
+                    color: '#1e5c3a',
+                    fontWeight: 700,
+                    '&:hover': { borderColor: '#1e5c3a', bgcolor: alpha('#1e5c3a', 0.04) },
+                  }}
+                >
+                  Forensic Proof
+                </Button>
+              )}
+              {!isOrderCompleted && !isOrderLocked && isCompanyAdminOrManager && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="inherit"
+                  startIcon={<SettingsIcon />}
                   onClick={() => setEditModalOpen(true)}
                   sx={{ borderRadius: 2 }}
                 >
@@ -154,16 +256,18 @@ export function OrderDetailPage() {
         </Stack>
       </Card>
 
+      <DisputePortal orderId={order.id} />
+
       {/* Mobile Risk Indicator */}
       <Box sx={{ mb: 3, display: { xs: 'flex', md: 'none' }, justifyContent: 'space-between', alignItems: 'center' }}>
         <div className={`badge ${riskBadgeClass} py-1 px-3 text-xs font-bold shadow-sm`} style={{ borderRadius: '6px' }}>
           {projection.riskLevel.replace('_', ' ')}
         </div>
-        {!isOrderCompleted && isCompanyAdminOrManager && (
-          <Button 
-            size="small" 
-            variant="text" 
-            startIcon={<SettingsIcon />} 
+        {!isOrderCompleted && !isOrderLocked && isCompanyAdminOrManager && (
+          <Button
+            size="small"
+            variant="text"
+            startIcon={<SettingsIcon />}
             onClick={() => setEditModalOpen(true)}
           >
             Edit
@@ -193,6 +297,11 @@ export function OrderDetailPage() {
                 </Box>
               </Stack>
             </Card>
+
+            {/* Payment Ledger — OWNER / MANAGER only */}
+            {isCompanyAdminOrManager && (
+              <PaymentPanel orderId={order.id} />
+            )}
 
             {/* Component B: Garment Selector */}
             <Card className="sf-card" sx={{ p: 3, borderRadius: 3 }}>
@@ -236,7 +345,7 @@ export function OrderDetailPage() {
                 ))}
               </Stack>
 
-              {selectedGarment && isCompanyAdminOrManager && (
+              {selectedGarment && isCompanyAdminOrManager && !isOrderLocked && (
                 <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
                   <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
                     Production Assignment
@@ -260,6 +369,100 @@ export function OrderDetailPage() {
                   </FormControl>
                 </Box>
               )}
+              {selectedGarment && isCompanyAdminOrManager && !isOrderLocked && availableTransitions.length > 0 && (() => {
+                const flags = order.unverifiedFlags ?? [];
+                const isBlocked = flags.length > 0;
+                const isOwner = user?.role === 'OWNER';
+
+                const FLAG_META: Record<string, { icon: React.ReactElement; label: string }> = {
+                  payment: { icon: <PaymentsOutlinedIcon sx={{ fontSize: 14 }} />, label: 'Deposit required' },
+                  fabric:  { icon: <ContentCutOutlinedIcon sx={{ fontSize: 14 }} />, label: 'Fabric unconfirmed' },
+                  design:  { icon: <DesignServicesOutlinedIcon sx={{ fontSize: 14 }} />, label: 'Design pending' },
+                };
+
+                return (
+                  <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
+                      Status Transitions
+                    </Typography>
+
+                    {isBlocked && (
+                      <Stack direction="row" spacing={0.5} sx={{ mb: 1.5, flexWrap: 'wrap', gap: 0.5 }}>
+                        {flags.map(f => (
+                          <Chip
+                            key={f}
+                            icon={FLAG_META[f]?.icon}
+                            label={FLAG_META[f]?.label ?? f}
+                            size="small"
+                            sx={{
+                              height: 20,
+                              fontSize: '9px',
+                              fontWeight: 800,
+                              borderRadius: '4px',
+                              bgcolor: 'rgba(196, 154, 26, 0.1)',
+                              color: '#8a6d1a',
+                              border: '1px solid rgba(196, 154, 26, 0.25)',
+                              '& .MuiChip-icon': { color: '#8a6d1a', marginLeft: '4px' },
+                              '& .MuiChip-label': { px: 0.75 },
+                            }}
+                          />
+                        ))}
+                      </Stack>
+                    )}
+
+                    <Stack spacing={1}>
+                      {availableTransitions.map((status: string) => {
+                        const buttonDisabled = attemptTransition.isPending || (isBlocked && !isOwner);
+                        const showOwnerBypass = isBlocked && isOwner;
+
+                        const btn = (
+                          <Button
+                            key={status}
+                            fullWidth
+                            size="small"
+                            variant="outlined"
+                            disabled={buttonDisabled}
+                            onClick={() => {
+                              if (showOwnerBypass) {
+                                setBypassReason('');
+                                setBypassModal({ open: true, targetStatus: status });
+                              } else {
+                                attemptTransition.mutate({ garmentId: selectedGarment.id, targetStatus: status });
+                              }
+                            }}
+                            sx={{
+                              borderRadius: 2,
+                              fontWeight: 700,
+                              fontSize: '11px',
+                              textTransform: 'none',
+                              borderColor: isBlocked && !isOwner ? alpha('#9e9e9e', 0.4) : alpha('#1e5c3a', 0.3),
+                              color: isBlocked && !isOwner ? 'text.disabled' : '#1e5c3a',
+                              '&:hover': { borderColor: '#1e5c3a', bgcolor: alpha('#1e5c3a', 0.04) },
+                              '&.Mui-disabled': { borderColor: alpha('#9e9e9e', 0.3), color: 'text.disabled' },
+                            }}
+                          >
+                            → {status.replace(/_/g, ' ')}
+                          </Button>
+                        );
+
+                        if (isBlocked && !isOwner) {
+                          return (
+                            <Tooltip
+                              key={status}
+                              title="Complete the activation checklist to advance production"
+                              placement="top"
+                            >
+                              {/* span needed so Tooltip works on disabled button */}
+                              <span style={{ display: 'block' }}>{btn}</span>
+                            </Tooltip>
+                          );
+                        }
+                        return btn;
+                      })}
+                    </Stack>
+                  </Box>
+                );
+              })()}
             </Card>
 
             {/* Component C: Quick Actions */}
@@ -350,6 +553,29 @@ export function OrderDetailPage() {
                     </Grid>
                   </Grid>
 
+                  {/* Fabric Safety Seal */}
+                  <FabricSealPanel
+                    orderId={order.id}
+                    garmentId={selectedGarment.id}
+                  />
+
+                  {/* Design Brief */}
+                  <DesignBriefPanel
+                    orderId={order.id}
+                    garmentId={selectedGarment.id}
+                    garmentTier={order.garmentTier ?? 'STANDARD'}
+                  />
+
+                  {/* Fitting Appointments — BESPOKE orders only */}
+                  {order.garmentTier === 'BESPOKE' && garments && (
+                    <FittingsPanel
+                      orderId={order.id}
+                      garments={garments}
+                      isOrderCompleted={!!isOrderCompleted}
+                      hasAvailableTransitions={availableTransitions.length > 0}
+                    />
+                  )}
+
                   {/* Measurements Grid - Dense Key/Value format as requested */}
                   <Box>
                     <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 2, display: 'block' }}>
@@ -408,12 +634,30 @@ export function OrderDetailPage() {
 
             {/* Component B: Production Workflow */}
             <Card className="sf-card" sx={{ p: 0, borderRadius: 3, overflow: 'hidden' }}>
-              <Box sx={{ p: 3, bgcolor: 'rgba(0,0,0,0.01)', borderBottom: '1px solid', borderColor: 'divider' }}>
-                <Typography variant="h6" fontWeight={800}>Production Workflow</Typography>
+              <Box sx={{ px: 3, pt: 3, pb: 0, bgcolor: 'rgba(0,0,0,0.01)', borderBottom: '1px solid', borderColor: 'divider' }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
+                  <Typography variant="h6" fontWeight={800}>Production Workflow</Typography>
+                </Stack>
+                {selectedGarmentId && (
+                  <Tabs
+                    value={workflowTab}
+                    onChange={(_, v) => setWorkflowTab(v)}
+                    sx={{
+                      minHeight: 36,
+                      '& .MuiTab-root': { minHeight: 36, fontSize: '12px', fontWeight: 700, textTransform: 'none', py: 0.5 },
+                      '& .MuiTabs-indicator': { bgcolor: 'primary.main', height: 2 },
+                    }}
+                  >
+                    <Tab label="DAG View" value="graph" />
+                    <Tab label={<Stack direction="row" spacing={0.5} alignItems="center"><TimelineIcon sx={{ fontSize: 14 }} /><span>Stage Timeline</span></Stack>} value="timeline" />
+                  </Tabs>
+                )}
               </Box>
-              <Box sx={{ p: 2 }}>
+              <Box sx={{ p: 3 }}>
                 {selectedGarmentId ? (
-                  <WorkflowGraph garmentId={selectedGarmentId} orderId={order.id} />
+                  workflowTab === 'graph'
+                    ? <WorkflowGraph garmentId={selectedGarmentId} orderId={order.id} />
+                    : <WorkflowStageTimeline garmentId={selectedGarmentId} />
                 ) : (
                   <Box sx={{ p: 4, textAlign: 'center' }}>
                     <Typography color="text.secondary">Select a garment to view production graph</Typography>
@@ -423,6 +667,12 @@ export function OrderDetailPage() {
             </Card>
 
             {/* Component C: History Logs */}
+            <Grid size = {{xs: 12}}>
+                <Card className="sf-card" sx={{ height: '100%', borderRadius: 3, p: 3 }}>
+                  <AuditTrailTimeline targetId={order.id} />
+                </Card>
+              </Grid>
+
               <Grid size = {{xs: 12}}>
                 <Card className="sf-card" sx={{ height: '100%', borderRadius: 3, p: 3 }}>
                   <MeasurementHistory orderId={order.id} />
@@ -432,13 +682,192 @@ export function OrderDetailPage() {
         </Grid>
       </Grid>
 
+      {/* Collection Checklist — full-width below main grid */}
+      <Card className="sf-card" sx={{ p: 3, borderRadius: 3, mt: 4 }}>
+        <CollectionChecklistPanel
+          orderId={order.id}
+          isOrderCompleted={!!isOrderCompleted}
+          lockedAt={order.lockedAt}
+          canInitiate={
+            user?.role === 'OWNER' || user?.role === 'MANAGER' || user?.role === 'TAILOR'
+          }
+        />
+      </Card>
+
       {isCompanyAdminOrManager && (
-        <EditOrderModal 
-          open={isEditModalOpen} 
-          onClose={() => setEditModalOpen(false)} 
-          order={order} 
+        <EditOrderModal
+          open={isEditModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          order={order}
         />
       )}
+
+      {/* Owner Activation Bypass Dialog */}
+      {bypassModal && selectedGarment && (
+        <Dialog
+          open={bypassModal.open}
+          onClose={() => setBypassModal(null)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: '20px',
+              background: 'rgba(255, 255, 255, 0.97)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.4)',
+            },
+          }}
+        >
+          <DialogTitle sx={{ pb: 1 }}>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Box sx={{ p: 1, borderRadius: '10px', bgcolor: alpha('#e67e22', 0.1), display: 'flex', alignItems: 'center' }}>
+                <WarningAmberIcon sx={{ fontSize: 20, color: '#e67e22' }} />
+              </Box>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
+                  Owner Bypass
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                  Advance to <strong>{bypassModal.targetStatus.replace(/_/g, ' ')}</strong> despite pending activation items
+                </Typography>
+              </Box>
+            </Stack>
+          </DialogTitle>
+          <DialogContent dividers sx={{ pt: 2 }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+              The following activation items are still pending for this order:
+            </Typography>
+            <Stack spacing={1} sx={{ mb: 3 }}>
+              {(order.unverifiedFlags ?? []).map(f => {
+                const icons: Record<string, React.ReactElement> = {
+                  payment: <PaymentsOutlinedIcon sx={{ fontSize: 16, color: '#8a6d1a' }} />,
+                  fabric:  <ContentCutOutlinedIcon sx={{ fontSize: 16, color: '#8a6d1a' }} />,
+                  design:  <DesignServicesOutlinedIcon sx={{ fontSize: 16, color: '#8a6d1a' }} />,
+                };
+                const labels: Record<string, string> = {
+                  payment: 'Deposit required',
+                  fabric:  'Fabric unconfirmed',
+                  design:  'Design pending',
+                };
+                return (
+                  <Stack key={f} direction="row" spacing={1} alignItems="center" sx={{
+                    px: 2, py: 1, borderRadius: 2,
+                    bgcolor: 'rgba(196, 154, 26, 0.06)',
+                    border: '1px solid rgba(196, 154, 26, 0.2)',
+                  }}>
+                    {icons[f]}
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#8a6d1a' }}>
+                      {labels[f] ?? f}
+                    </Typography>
+                  </Stack>
+                );
+              })}
+            </Stack>
+            <TextField
+              fullWidth
+              multiline
+              minRows={3}
+              label="Bypass reason (required)"
+              placeholder="Explain why production is advancing despite pending activation items…"
+              value={bypassReason}
+              onChange={e => setBypassReason(e.target.value)}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+            />
+          </DialogContent>
+          <DialogActions sx={{ px: 3, py: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={() => setBypassModal(null)}
+              sx={{ borderRadius: 2, fontWeight: 700 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              disabled={!bypassReason.trim() || attemptTransition.isPending}
+              onClick={() => {
+                attemptTransition.mutate(
+                  { garmentId: selectedGarment.id, targetStatus: bypassModal.targetStatus, bypassReason: bypassReason.trim() },
+                  { onSuccess: () => setBypassModal(null) },
+                );
+              }}
+              sx={{
+                borderRadius: 2,
+                fontWeight: 700,
+                bgcolor: '#e67e22',
+                '&:hover': { bgcolor: '#d35400' },
+              }}
+            >
+              Bypass &amp; Advance
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
+      {/* Forensic Proof Dialog */}
+      <Dialog
+        open={showForensicProof}
+        onClose={() => setShowForensicProof(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.4)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Box sx={{
+              p: 1,
+              borderRadius: '10px',
+              bgcolor: alpha('#1e5c3a', 0.08),
+              display: 'flex',
+              alignItems: 'center',
+            }}>
+              <FingerprintIcon sx={{ fontSize: 20, color: '#1e5c3a' }} />
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: '#1a2340', lineHeight: 1.2 }}>
+                Forensic Proof
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#6b7280', fontWeight: 500 }}>
+                Immutable audit trail for #{truncateId(order.id).toUpperCase()}
+              </Typography>
+            </Box>
+          </Stack>
+        </DialogTitle>
+        <DialogContent dividers sx={{ p: 3 }}>
+          <AuditTrailTimeline targetId={order.id} />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            onClick={() => setShowForensicProof(false)}
+            variant="outlined"
+            sx={{ borderRadius: 2, fontWeight: 700 }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={pdfSnackbar?.open ?? false}
+        autoHideDuration={6000}
+        onClose={() => setPdfSnackbar(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          severity={pdfSnackbar?.severity ?? 'error'}
+          onClose={() => setPdfSnackbar(null)}
+          sx={{ fontWeight: 600 }}
+        >
+          {pdfSnackbar?.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

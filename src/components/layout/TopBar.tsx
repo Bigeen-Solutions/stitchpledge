@@ -8,24 +8,27 @@ import {
   Button,
   Avatar,
   Chip,
-  Badge,
   Menu,
   MenuItem,
   ListItemIcon,
   ListItemText,
   Divider,
+  alpha,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   CalendarMonth as Calendar,
-  Notifications as Bell,
   HelpOutline as HelpCircle,
   Download,
   Logout as LogOut,
   Person as User,
+  Search,
 } from '@mui/icons-material';
 import { useAuthStore } from '../../features/auth/auth.store';
 import { useLogout } from '../../features/auth/hooks/useAuth';
+import { Breadcrumbs } from '../navigation/Breadcrumbs';
+import { InputAdornment, TextField } from '@mui/material';
+import { NotificationBell } from '../../features/notifications/components/NotificationBell';
 
 interface TopBarProps {
   toggleSidebar: () => void;
@@ -50,7 +53,7 @@ export const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isSidebarOpen }) 
     logout.mutate();
   };
 
-  const isAdmin = user?.role === 'COMPANY_ADMIN';
+  const isAdmin = user?.role === 'OWNER';
 
   return (
     <AppBar
@@ -61,11 +64,11 @@ export const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isSidebarOpen }) 
         zIndex: (theme) => theme.zIndex.drawer + 1,
         width: {
           xs: '100%',
-          sm: isSidebarOpen ? 'calc(100% - 240px)' : '100%'
+          sm: isSidebarOpen ? 'calc(100% - var(--sidebar-width))' : '100%'
         },
         ml: {
           xs: 0,
-          sm: isSidebarOpen ? '240px' : 0
+          sm: isSidebarOpen ? 'var(--sidebar-width)' : 0
         },
       }}
     >
@@ -80,11 +83,37 @@ export const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isSidebarOpen }) 
           </IconButton>
         )}
 
-        <Typography variant="h6" sx={{ fontWeight: 800, flexGrow: 1, letterSpacing: '-0.5px' }}>
-          Dashboard
-        </Typography>
+        <Box sx={{ flexGrow: 1 }}>
+          <Breadcrumbs />
+          <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: '-0.5px', color: 'var(--color-text-primary)' }}>
+            Dashboard
+          </Typography>
+        </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 } }}>
+          <TextField
+            placeholder="Search anything..."
+            size="small"
+            sx={{
+              display: { xs: 'none', md: 'flex' },
+              width: 240,
+              '& .MuiOutlinedInput-root': {
+                height: 36,
+                borderRadius: '8px',
+                bgcolor: alpha('#000', 0.03),
+                '& fieldset': { border: 'none' },
+                '&:hover fieldset': { border: 'none' },
+                '&.Mui-focused fieldset': { border: 'none' },
+              }
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search sx={{ fontSize: 18, color: 'text.disabled' }} />
+                </InputAdornment>
+              ),
+            }}
+          />
           {isAdmin && (
             <Chip
               icon={<Calendar sx={{ fontSize: 16, color: 'var(--color-warning) !important' }} />}
@@ -106,11 +135,7 @@ export const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isSidebarOpen }) 
             />
           )}
 
-          <IconButton size="small" sx={{ color: 'var(--color-text-secondary)' }}>
-            <Badge variant="dot" color="error">
-              <Bell sx={{ fontSize: 20 }} />
-            </Badge>
-          </IconButton>
+          <NotificationBell />
 
           <IconButton size="small" sx={{ color: 'var(--color-text-secondary)', display: { xs: 'none', sm: 'flex' } }}>
             <HelpCircle sx={{ fontSize: 20 }} />

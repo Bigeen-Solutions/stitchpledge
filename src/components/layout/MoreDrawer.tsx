@@ -11,14 +11,18 @@ import {
   Divider,
   alpha
 } from '@mui/material';
-import { 
-  BarChart as BarChartIcon, 
-  People as PeopleIcon, 
-  Settings as SettingsIcon, 
+import {
+  BarChart as BarChartIcon,
+  People as PeopleIcon,
+  Settings as SettingsIcon,
   History as HistoryIcon,
   Logout as LogoutIcon,
   ChevronRight as ChevronRightIcon,
-  Inventory as InventoryIcon
+  Inventory as InventoryIcon,
+  Gavel as GavelIcon,
+  Groups as GroupsIcon,
+  AccountTree as WorkflowIcon,
+  TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../features/auth/auth.store';
@@ -34,11 +38,15 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({ open, onClose, onOpen })
   const { clearAuth, user } = useAuthStore();
 
   const menuItems = [
-    { label: 'Reports', icon: BarChartIcon, path: '/reports', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
-    { label: 'Vault', icon: InventoryIcon, path: '/inventory', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
-    { label: 'Staff Management', icon: PeopleIcon, path: '/staff', roles: ['COMPANY_ADMIN'] },
-    { label: 'Settings', icon: SettingsIcon, path: '/settings', roles: ['COMPANY_ADMIN', 'STORE_MANAGER'] },
-    { label: 'Audit Log', icon: HistoryIcon, path: '/reports/audit', roles: ['COMPANY_ADMIN'] },
+    { label: 'Reports', icon: BarChartIcon, path: '/reports', roles: ['OWNER', 'MANAGER'] },
+    { label: 'Vault', icon: InventoryIcon, path: '/inventory', roles: ['OWNER', 'MANAGER'] },
+    { label: 'Disputes', icon: GavelIcon, path: '/disputes', roles: ['OWNER', 'MANAGER'] },
+    { label: 'Group Orders', icon: GroupsIcon, path: '/group-orders', roles: ['OWNER', 'MANAGER'] },
+    { label: 'Workflow Templates', icon: WorkflowIcon, path: '/workflow-templates', roles: ['OWNER'] },
+    { label: 'StitchScore', icon: TrendingUpIcon, path: '/stitch-score', roles: ['OWNER'] },
+    { label: 'Staff Management', icon: PeopleIcon, path: '/staff', roles: ['OWNER'] },
+    { label: 'Settings', icon: SettingsIcon, path: '/settings', roles: ['OWNER', 'MANAGER'] },
+    { label: 'Audit Log', icon: HistoryIcon, path: '/reports/audit', roles: ['OWNER'] },
   ];
 
   const filteredItems = menuItems.filter(item => 

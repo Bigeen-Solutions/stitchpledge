@@ -33,13 +33,13 @@ export const inventoryApi = {
     return result;
   },
 
-  updateMaterialImage: async (materialId: string, formData: FormData): Promise<{ imageUrl: string }> => {
-    const { data } = await apiClient.patch<{ imageUrl: string }>(
-      `/inventory/materials/${materialId}/image`,
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+  updateMaterialImage: async (materialId: string, file: File) => {
+    const form = new FormData();
+    form.append('image', file);
+    const { data } = await apiClient.patch(`/inventory/materials/${materialId}/image`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return data;
-  }
+  },
 };
 

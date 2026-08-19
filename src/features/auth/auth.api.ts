@@ -12,13 +12,13 @@ export async function loginApi(dto: LoginDTO): Promise<AuthResponse> {
   return {
     accessToken: raw.accessToken,
     user: {
-      userId: raw.user.userId,
-      tenantId: raw.user.tenantId,
+      id: raw.user.id ?? raw.user.userId,
+      companyId: raw.user.companyId,
       email: raw.user.email,
       fullName: raw.user.fullName,
       role: raw.user.role,
-      storeId: raw.user.storeId,
-      permissions: raw.user.permissions ?? [],
+      capabilities: raw.user.capabilities ?? raw.user.permissions ?? [],
+      mustChangePassword: raw.user.mustChangePassword ?? false,
     },
   }
 }
@@ -34,13 +34,12 @@ export async function refreshApi(): Promise<AuthResponse> {
   return {
     accessToken: raw.accessToken,
     user: {
-      userId: raw.user.userId,
-      tenantId: raw.user.tenantId,
+      id: raw.user.id ?? raw.user.userId,
+      companyId: raw.user.companyId,
       email: raw.user.email,
       fullName: raw.user.fullName,
       role: raw.user.role,
-      storeId: raw.user.storeId,
-      permissions: raw.user.permissions ?? [],
+      capabilities: raw.user.capabilities ?? raw.user.permissions ?? [],
     },
   }
 }
@@ -50,4 +49,50 @@ export async function refreshApi(): Promise<AuthResponse> {
  */
 export async function logoutApi(): Promise<void> {
   await apiClient.post("/auth/logout")
+}
+
+export async function forgotPasswordApi(email: string): Promise<void> {
+  await apiClient.post("/auth/forgot-password", { email })
+}
+
+export async function resetPasswordApi(token: string, newPassword: string): Promise<void> {
+  await apiClient.post("/auth/reset-password", { token, newPassword })
+}
+
+export async function changePasswordApi(currentPassword: string, newPassword: string): Promise<void> {
+  await apiClient.post("/auth/change-password", { currentPassword, newPassword })
+}
+
+export interface TenantDTO {
+  storeId: string;
+  storeName: string;
+  companyId: string;
+  role: string;
+}
+
+/**
+ * List all tenants (store contexts) the current user can access.
+ */
+export async function getTenantsApi(): Promise<TenantDTO[]> {
+  const response = await apiClient.get("/auth/tenants")
+  return response.data
+}
+
+/**
+ * Switch the active store context. Returns a fresh token pair.
+ */
+export async function switchTenantApi(storeId: string): Promise<AuthResponse> {
+  const response = await apiClient.post("/auth/switch-tenant", { storeId })
+  const raw = response.data
+  return {
+    accessToken: raw.accessToken,
+    user: {
+      id: raw.user.id ?? raw.user.userId,
+      companyId: raw.user.companyId,
+      email: raw.user.email,
+      fullName: raw.user.fullName,
+      role: raw.user.role,
+      capabilities: raw.user.capabilities ?? raw.user.permissions ?? [],
+    },
+  }
 }

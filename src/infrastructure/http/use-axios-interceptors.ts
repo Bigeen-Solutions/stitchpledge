@@ -5,12 +5,19 @@ import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { apiClient } from './axios.client';
 import { useAuthStore } from '../../features/auth/auth.store';
 import { parseApiError } from '../../lib/errors/parse-api-error';
+import type { ErrorMessage } from '../../lib/errors/error-messages';
 
 // Mutex state (module scope)
 let isRefreshing = false;
-let failedQueue: any[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+interface QueuedRequest {
+  resolve: (token: string) => void;
+  reject: (error: unknown) => void;
+}
+
+let failedQueue: QueuedRequest[] = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (token) {
       prom.resolve(token);
@@ -42,7 +49,7 @@ export function useAxiosInterceptors() {
         // 1. Handle 401 Unauthorized (Session Expired or Missing)
         if (error.response?.status === 401 && !originalRequest._retry) {
           if (isRefreshing) {
-            return new Promise((resolve, reject) => {
+            return new Promise<string>((resolve, reject) => {
               failedQueue.push({ resolve, reject });
             })
               .then((token) => {
@@ -112,7 +119,7 @@ export function useAxiosInterceptors() {
 
         // 5. Attach parsed error
         const parsedError = parseApiError(error);
-        (error as any).parsedError = parsedError;
+        (error as AxiosError & { parsedError?: ErrorMessage }).parsedError = parsedError;
 
         return Promise.reject(error);
       }

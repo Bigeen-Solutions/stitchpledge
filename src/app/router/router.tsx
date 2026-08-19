@@ -15,10 +15,10 @@ import { InventoryPage } from '../../pages/InventoryPage.tsx';
 import { SettingsPage } from '../../pages/SettingsPage.tsx';
 import AuditLogPage from '../../pages/AuditLogPage.tsx';
 import { ForbiddenPage } from '../../pages/error/ForbiddenPage.tsx';
-// import { ServerErrorPage } from '../../pages/error/ServerErrorPage.tsx';
 import ReportsPage from '../../pages/ReportsPage.tsx';
+import { TrackingPage } from '../../pages/TrackingPage.tsx';
+import { DisputesPage } from '../../pages/DisputesPage.tsx';
 import { BetaFeatureGuard } from '../../components/feedback/BetaFeatureGuard.tsx';
-
 
 import { CustomerPortalLayout } from '../../features/customer/layouts/CustomerPortalLayout.tsx';
 import { CustomerOrderPage } from '../../features/customer/pages/CustomerOrderPage.tsx';
@@ -28,6 +28,23 @@ import { useAxiosInterceptors } from '../../infrastructure/http/use-axios-interc
 import { DesignSystemPage } from '../../pages/DesignSystemPage.tsx';
 
 import { SplashScreen } from '../../pages/SplashScreen.tsx';
+import { SealVerificationPage } from '../../pages/SealVerificationPage.tsx';
+import { ForgotPasswordPage } from '../../pages/ForgotPasswordPage.tsx';
+import { ResetPasswordPage } from '../../pages/ResetPasswordPage.tsx';
+import { ChangePasswordPage } from '../../pages/ChangePasswordPage.tsx';
+import { GroupCoordinatorDashboard } from '../../features/group-order/GroupCoordinatorDashboard.tsx';
+import { WorkflowTemplatesPage } from '../../pages/WorkflowTemplatesPage.tsx';
+import { GroupOrdersPage } from '../../pages/GroupOrdersPage.tsx';
+import { StitchScoreDetailPage } from '../../pages/StitchScoreDetailPage.tsx';
+import { SystemAdminGuard } from '../../features/system-admin/guards/SystemAdminGuard.tsx';
+import { SystemAdminLayout } from '../../features/system-admin/layouts/SystemAdminLayout.tsx';
+import { SystemAdminOverview } from '../../features/system-admin/pages/SystemAdminOverview.tsx';
+import { CompanyList } from '../../features/system-admin/pages/CompanyList.tsx';
+import { CreateCompany } from '../../features/system-admin/pages/CreateCompany.tsx';
+import { CompanyDetail } from '../../features/system-admin/pages/CompanyDetail.tsx';
+import { UserList } from '../../features/system-admin/pages/UserList.tsx';
+import { UserDetail } from '../../features/system-admin/pages/UserDetail.tsx';
+import { AdminAuditLog } from '../../features/system-admin/pages/AdminAuditLog.tsx';
 
 const AxiosInterceptorHandler = () => {
   useAxiosInterceptors();
@@ -43,6 +60,10 @@ export const router = createBrowserRouter([
         children: [
           { path: '/', element: <SplashScreen /> },
           { path: '/login', element: <LoginPage /> },
+          { path: '/forgot-password', element: <ForgotPasswordPage /> },
+          { path: '/reset-password', element: <ResetPasswordPage /> },
+          { path: '/track/:slug', element: <TrackingPage /> },
+          { path: '/public/seals/:code', element: <SealVerificationPage /> },
           ...(import.meta.env.DEV ? [{ path: '/design-system', element: <DesignSystemPage /> }] : []),
         ],
       },
@@ -54,10 +75,11 @@ export const router = createBrowserRouter([
         ),
         children: [
           { path: '/dashboard', element: <DashboardPage /> },
+          { path: '/change-password', element: <ChangePasswordPage /> },
           {
             path: '/orders',
             element: (
-              <ProtectedRoute requiredPermission="orders:read">
+              <ProtectedRoute requiredPermission="MANAGE_ORDERS">
                 <OrdersPage />
               </ProtectedRoute>
             )
@@ -65,7 +87,7 @@ export const router = createBrowserRouter([
           {
             path: '/orders/new',
             element: (
-              <ProtectedRoute requiredPermission="orders:write">
+              <ProtectedRoute requiredPermission="MANAGE_ORDERS">
                 <NewOrderPage />
               </ProtectedRoute>
             )
@@ -73,7 +95,7 @@ export const router = createBrowserRouter([
           {
             path: '/orders/:id',
             element: (
-              <ProtectedRoute requiredPermission="orders:read">
+              <ProtectedRoute requiredPermission="MANAGE_ORDERS">
                 <OrderDetailPage />
               </ProtectedRoute>
             )
@@ -81,7 +103,7 @@ export const router = createBrowserRouter([
           {
             path: '/staff',
             element: (
-              <ProtectedRoute allowedRoles={['COMPANY_ADMIN']}>
+              <ProtectedRoute allowedRoles={['OWNER']}>
                 <StaffManagementPage />
               </ProtectedRoute>
             )
@@ -89,7 +111,7 @@ export const router = createBrowserRouter([
           {
             path: '/customers',
             element: (
-              <ProtectedRoute requiredPermission="orders:read">
+              <ProtectedRoute requiredPermission="MANAGE_ORDERS">
                 <CustomersPage />
               </ProtectedRoute>
             )
@@ -97,7 +119,7 @@ export const router = createBrowserRouter([
           {
             path: '/customers/:id',
             element: (
-              <ProtectedRoute requiredPermission="orders:read">
+              <ProtectedRoute requiredPermission="MANAGE_ORDERS">
                 <ClientProfilePage />
               </ProtectedRoute>
             )
@@ -109,7 +131,7 @@ export const router = createBrowserRouter([
           {
             path: '/inventory',
             element: (
-              <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'STORE_MANAGER']}>
+              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
                 <InventoryPage />
               </ProtectedRoute>
             )
@@ -117,7 +139,7 @@ export const router = createBrowserRouter([
           {
             path: '/settings',
             element: (
-              <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'STORE_MANAGER']}>
+              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
                 <SettingsPage />
               </ProtectedRoute>
             )
@@ -125,7 +147,7 @@ export const router = createBrowserRouter([
           {
             path: '/reports',
             element: (
-              <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'STORE_MANAGER']}>
+              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
                 <ReportsPage />
               </ProtectedRoute>
             )
@@ -133,8 +155,24 @@ export const router = createBrowserRouter([
           {
             path: '/reports/audit',
             element: (
-              <ProtectedRoute allowedRoles={['COMPANY_ADMIN']}>
+              <ProtectedRoute allowedRoles={['OWNER']}>
                 <AuditLogPage />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: '/reports/security-audit',
+            element: (
+              <ProtectedRoute allowedRoles={['OWNER']}>
+                <BetaFeatureGuard featureName="Security Rejection Log" />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: '/disputes',
+            element: (
+              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER', 'CUSTOMER']}>
+                <DisputesPage />
               </ProtectedRoute>
             )
           },
@@ -146,11 +184,61 @@ export const router = createBrowserRouter([
             path: '/payments',
             element: <BetaFeatureGuard featureName="Payment Ledger" />
           },
+          {
+            path: '/groups/:token',
+            element: (
+              <ProtectedRoute requiredPermission="MANAGE_ORDERS">
+                <GroupCoordinatorDashboard />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/group-orders',
+            element: (
+              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
+                <GroupOrdersPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/workflow-templates',
+            element: (
+              <ProtectedRoute allowedRoles={['OWNER']}>
+                <WorkflowTemplatesPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/stitch-score',
+            element: (
+              <ProtectedRoute allowedRoles={['OWNER']}>
+                <StitchScoreDetailPage />
+              </ProtectedRoute>
+            ),
+          },
         ],
       },
       {
         element: (
-          <ProtectedRoute requiredPermission="customer:portal">
+          <ProtectedRoute>
+            <SystemAdminGuard>
+              <SystemAdminLayout />
+            </SystemAdminGuard>
+          </ProtectedRoute>
+        ),
+        children: [
+          { path: '/system-admin', element: <SystemAdminOverview /> },
+          { path: '/system-admin/companies', element: <CompanyList /> },
+          { path: '/system-admin/companies/new', element: <CreateCompany /> },
+          { path: '/system-admin/companies/:id', element: <CompanyDetail /> },
+          { path: '/system-admin/users', element: <UserList /> },
+          { path: '/system-admin/users/:id', element: <UserDetail /> },
+          { path: '/system-admin/audit-log', element: <AdminAuditLog /> },
+        ],
+      },
+      {
+        element: (
+          <ProtectedRoute allowedRoles={['CUSTOMER']}>
             <CustomerPortalLayout />
           </ProtectedRoute>
         ),

@@ -17,6 +17,7 @@ export interface ActivityItem {
 }
 
 export interface MaterialStock {
+  materialId: string;
   name: string;
   level: number;
   color: string;
@@ -31,6 +32,14 @@ export interface AnalyticsOverview {
   materialStock: MaterialStock[];
 }
 
+export interface StoreLoad {
+  storeId: string;
+  storeName: string;
+  activeOrderCount: number;
+  capacityUtilization: number;
+  uiHint: 'GREEN' | 'AMBER' | 'RED';
+}
+
 export interface AdminAnalyticsResponse {
   totalActiveOrders: number;
   highRiskGarments: number;
@@ -40,6 +49,7 @@ export interface AdminAnalyticsResponse {
   recentOrders: RecentOrderRow[];
   activityFeed: ActivityItem[];
   materialStock: MaterialStock[];
+  storeDistribution: StoreLoad[];
 }
 
 export const analyticsApi = {

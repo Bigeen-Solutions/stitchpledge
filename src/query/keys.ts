@@ -40,4 +40,32 @@ export const keys = {
     search: (query: string) => ['customers', 'search', query] as const,
     detail: (id: string) => ['customers', 'profile', id] as const,
   },
+  disputes: {
+    list: (page: number, limit: number) => ['disputes', 'list', { page, limit }] as const,
+    projection: (orderId: string) => ['disputes', 'projection', orderId] as const,
+  },
+  groupOrders: {
+    list: (page: number, limit: number) => ['groupOrders', 'list', { page, limit }] as const,
+  },
+  stitchScore: {
+    detail: (companyId: string) => ['stitchScore', companyId] as const,
+  },
+  notifications: {
+    list: ['notifications', 'list'] as const,
+  },
+  systemAdmin: {
+    stats: ['system-admin', 'stats'] as const,
+    companies: {
+      all: ['system-admin', 'companies'] as const,
+      list: (filters?: Record<string, unknown>) => ['system-admin', 'companies', 'list', filters] as const,
+      detail: (id: string) => ['system-admin', 'companies', id] as const,
+      users: (id: string) => ['system-admin', 'companies', id, 'users'] as const,
+      stores: (id: string) => ['system-admin', 'companies', id, 'stores'] as const,
+    },
+    users: {
+      all: ['system-admin', 'users'] as const,
+      list: (filters?: Record<string, unknown>) => ['system-admin', 'users', 'list', filters] as const,
+      detail: (id: string) => ['system-admin', 'users', id] as const,
+    },
+  },
 };

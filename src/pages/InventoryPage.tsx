@@ -23,7 +23,7 @@ import {
   Add as AddIcon,
   Inventory as InventoryIcon,
   LocalShipping as ShippingIcon,
-  CameraAlt as CameraIcon
+  PhotoCamera as PhotoCameraIcon,
 } from '@mui/icons-material';
 import { useInventory, useReceiveShipment, useRegisterMaterial, useUpdateMaterialImage } from '../features/inventory/useInventory';
 import { ErrorState } from '../components/feedback/ErrorState';
@@ -41,10 +41,16 @@ export function InventoryPage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Edit Image state
-  const [editImageTarget, setEditImageTarget] = useState<{ id: string; name: string; currentImageUrl?: string } | null>(null);
-  const [editImageFile, setEditImageFile] = useState<File | null>(null);
-  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const handleUpdatePhoto = (materialId: string) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) updateImageMutation.mutate({ materialId, file });
+    };
+    input.click();
+  };
 
   const handleOpenReceive = (material: { materialId: string, name: string }) => {
     setSelectedMaterial({ id: material.materialId, name: material.name });
@@ -273,7 +279,7 @@ export function InventoryPage() {
                   </Box>
 
                   {/* Actions */}
-                  <Box sx={{ mt: { xs: 1, md: 0 }, minWidth: { md: 180 } }}>
+                  <Stack spacing={1} sx={{ mt: { xs: 1, md: 0 }, minWidth: { md: 180 } }}>
                     <Button
                       variant="outlined"
                       fullWidth
@@ -283,7 +289,18 @@ export function InventoryPage() {
                     >
                       Receive Stock
                     </Button>
-                  </Box>
+                    <Button
+                      variant="text"
+                      fullWidth
+                      size="small"
+                      startIcon={<PhotoCameraIcon sx={{ fontSize: 14 }} />}
+                      onClick={() => handleUpdatePhoto(item.materialId)}
+                      disabled={updateImageMutation.isPending}
+                      sx={{ borderRadius: '12px', fontWeight: 700, fontSize: '11px', color: 'text.secondary', '&:hover': { color: '#1e5c3a' } }}
+                    >
+                      {updateImageMutation.isPending ? 'Uploading...' : 'Update Photo'}
+                    </Button>
+                  </Stack>
                 </ListItem>
                 {index < inventory.length - 1 && <Box sx={{ height: '1px', bgcolor: 'divider', ml: { xs: 2.5, sm: 3 }, mr: { xs: 2.5, sm: 3 } }} />}
               </Box>
@@ -311,7 +328,7 @@ export function InventoryPage() {
         <DialogContent>
           <Box sx={{ py: 1 }}>
             <Typography variant="subtitle2" sx={{ mb: 2 }}>
-              Logging incoming stock for: <strong style={{ color: 'var(--color-primary)' }}>{selectedMaterial?.name}</strong>
+              Logging incoming stock for: <strong style={{ color: 'var(--sf-green)' }}>{selectedMaterial?.name}</strong>
             </Typography>
 
             <Stack spacing={3}>
@@ -373,14 +390,14 @@ export function InventoryPage() {
             <Stack spacing={2.5}>
               <Box sx={{ mb: 1 }}>
                 <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', display: 'block', mb: 1 }}>
-                  Visual Verification <span style={{ color: 'var(--color-error)' }}>*</span>
+                  Visual Verification <span style={{ color: '#ef4444' }}>*</span>
                 </Typography>
                 <Stack spacing={2} alignItems="center">
                   {imagePreview ? (
-                    <Box
-                      component="img"
-                      src={imagePreview}
-                      sx={{ width: '100%', height: 160, borderRadius: '16px', objectFit: 'cover', border: '1px solid var(--color-border)' }}
+                    <Box 
+                      component="img" 
+                      src={imagePreview} 
+                      sx={{ width: '100%', height: 160, borderRadius: '16px', objectFit: 'cover', border: '1px solid var(--sf-border, rgba(0,0,0,0.12))' }}
                     />
                   ) : (
                     <Box sx={{

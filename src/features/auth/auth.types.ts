@@ -1,36 +1,34 @@
-export type Permission =
-  | 'orders:read'
-  | 'orders:write'
-  | 'workflow:read'
-  | 'workflow:write'
-  | 'materials:read'
-  | 'materials:write'
-  | 'measurements:read'
-  | 'measurements:write'
-  | 'staff:read'
-  | 'staff:write'
-  | 'capacity:read'
-  | 'reports:read'
-  | 'customer:portal'; // read-only customer role
+export type Capability = 
+  | 'MANAGE_ORDERS'
+  | 'BYPASS_CAPACITY'
+  | 'TRANSITION_STAGE'
+  | 'OVERRIDE_TRUST'
+  | 'RAISE_DISPUTE'
+  | 'RESOLVE_DISPUTE'
+  | 'THAW_DISPUTE'
+  | 'MANAGE_STAFF'
+  | 'VIEW_AUDIT_LOGS'
+  | 'SUSPEND_ACCOUNT';
 
-export type StitchfynRole = 'COMPANY_ADMIN' | 'STORE_MANAGER' | 'TAILOR' | 'CUSTOMER';
+export type StitchFynRole = 'OWNER' | 'MANAGER' | 'TAILOR' | 'FRONT_DESK' | 'CUSTOMER' | 'SYSTEM_ADMIN';
 
 export interface AuthUser {
-  userId: string;
-  tenantId: string;
+  id: string;
+  companyId: string | null;
+  storeId?: string;
   email: string;
   fullName: string;
-  role: StitchfynRole;
-  storeId?: string;
-  permissions: Permission[]; // Explicit list from backend — never derived locally
+  role: StitchFynRole;
+  capabilities: Capability[]; // Atomic claims derived from backend calculus
   avatarUrl?: string;
+  mustChangePassword?: boolean;
 }
 
 export interface AuthState {
   user: AuthUser | null;
-  accessToken: string | null; // In-memory only. NEVER localStorage.
+  accessToken: string | null;
   isAuthenticated: boolean;
-  isLoading: boolean; // True during silent refresh attempt on app boot
+  isLoading: boolean;
 }
 
 export interface LoginDTO {
@@ -41,5 +39,4 @@ export interface LoginDTO {
 export interface AuthResponse {
   accessToken: string;
   user: AuthUser;
-  // Refresh token is HttpOnly cookie — never in this response body
 }

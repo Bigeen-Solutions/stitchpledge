@@ -21,6 +21,14 @@ export const useToastStore = create<ToastState>((set) => ({
   hideToast: () => set({ toast: null }),
 }));
 
+/**
+ * Standalone showToast function for use outside of React hooks or in components
+ * that haven't been refactored to use useToastStore directly.
+ */
+export const showToast = (title: string, detail: string, type: 'success' | 'error' = 'success') => {
+  useToastStore.getState().showToast(title, detail, type);
+};
+
 export function Toast() {
   const { toast } = useToastStore();
 

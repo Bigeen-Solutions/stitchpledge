@@ -7,6 +7,7 @@ import {
 } from "@mui/lab"
 import { Card, Typography, Box, useTheme, Avatar } from "@mui/material"
 import LockIcon from "@mui/icons-material/Lock"
+import { mapTimelineEntryType } from "../utils/status-mappers"
 
 export type EntryType = "INTAKE" | "ADJUSTMENT" | "MEASUREMENT" | "LOCKED"
 
@@ -82,7 +83,7 @@ export function ImmutableTimelineEntry({
               sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
             >
               <Typography variant="overline" color="textSecondary">
-                {entryType}
+                {mapTimelineEntryType(entryType)}
               </Typography>
               <Typography variant="caption" color="textSecondary">
                 {timestamp.toLocaleString()}

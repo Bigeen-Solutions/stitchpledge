@@ -71,7 +71,7 @@ export function WorkflowGraph({ garmentId, orderId }: WorkflowGraphProps) {
           
           // An ACTIVE stage is always actionable, preserving backend-driven overrides (like Quick Update).
           // However, if a stage is legally unlocked by the chronological DAG but falls out of ACTIVE state (due to an admin override leapfrogging it), it should still be conditionally actionable to recover completion flow.
-          const isActionable = stage.status === 'ACTIVE' || (unlocked && !isCompleted);
+          const isActionable = stage.status === 'IN_PROGRESS' || (unlocked && !isCompleted);
           const isLocked = !isActionable && !isCompleted && !unlocked;
           
           return (

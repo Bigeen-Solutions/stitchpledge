@@ -37,7 +37,11 @@ export function CustomersPage() {
     
     try {
       const newCustomer = await createMutation.mutateAsync(newCustomerForm);
-      showToast("Client Created", `${newCustomerForm.name} has been added to the system.`, "success");
+      showToast(
+        "Client Created",
+        `${newCustomerForm.name} has been added${newCustomerForm.email ? `. A welcome email with login credentials has been sent to ${newCustomerForm.email}` : ' to the system'}.`,
+        "success"
+      );
       setIsAddModalOpen(false);
       setNewCustomerForm({ name: '', phone: '', email: '' });
       navigate(`/customers/${newCustomer.id}`);
@@ -250,7 +254,7 @@ export function CustomersPage() {
           </button>
           <Box sx={{ display: 'flex', alignItems: 'center', px: 2 }}>
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {page} <span style={{ color: 'var(--color-text-disabled)', fontWeight: 400 }}>/ {totalPages}</span>
+              {page} <span style={{ color: 'var(--sf-text-muted, #9ca3af)', fontWeight: 400 }}>/ {totalPages}</span>
             </Typography>
           </Box>
           <button 

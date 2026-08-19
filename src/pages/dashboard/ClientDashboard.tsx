@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Box,
   Typography,
@@ -6,9 +5,6 @@ import {
   Stack,
   Avatar,
   Chip,
-  Stepper,
-  Step,
-  StepLabel,
   Button,
   alpha,
   Divider,
@@ -19,11 +15,12 @@ import {
   ChevronRight,
 } from '@mui/icons-material';
 import { useAuthStore } from '../../features/auth/auth.store';
-
 import { useQuery } from '@tanstack/react-query';
 import { ordersApi } from '../../features/orders/orders.api';
 import { keys } from '../../query/keys';
 import { analyticsApi } from '../../features/dashboard/analytics.api';
+import { QueryLoading, QueryEmpty } from '../../components/feedback/QueryState';
+import { format } from 'date-fns';
 
 export const ClientDashboard: React.FC = () => {
   const { user } = useAuthStore();
@@ -38,23 +35,24 @@ export const ClientDashboard: React.FC = () => {
     queryFn: analyticsApi.getOverview,
   });
 
-  const activeOrders = ordersData?.items.map(order => ({
-    id: order.orderNumber || order.id.split('-')[0].toUpperCase(),
-    garmentId: order.garmentId,
-    garment: order.garmentName || 'Bespoke Garment',
-    stage: 2, // Defaulting for visual
-    stages: ['Intake', 'Production', 'Finishing', 'Delivery'],
-    estimatedDate: order.deadline || 'TBD',
-  })) || [];
+  const activeOrders = ordersData?.items ?? [];
+
+  const formatDeadline = (raw: string | undefined | null) => {
+    if (!raw) return 'TBD';
+    try { return format(new Date(raw), 'MMM d, yyyy'); } catch { return raw; }
+  };
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', pb: 8 }}>
-      {/* Greeting Card */}
+
+      {/* Greeting */}
       <Card
+        elevation={0}
         sx={{
           p: 4,
-          borderRadius: '24px',
-          bgcolor: '#163d28',
+          borderRadius: '20px',
+          backgroundImage: 'none',
+          background: 'linear-gradient(150deg, var(--sf-green) 0%, #163d28 100%)',
           color: 'white',
           mb: 4,
           display: 'flex',
@@ -64,116 +62,107 @@ export const ClientDashboard: React.FC = () => {
       >
         <Avatar
           src={user?.avatarUrl}
-          sx={{ width: 80, height: 80, border: '4px solid rgba(255,255,255,0.1)' }}
+          sx={{ width: 72, height: 72, border: '3px solid rgba(255,255,255,0.15)' }}
         />
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>
             Hello, {user?.fullName?.split(' ')[0]}
           </Typography>
-          <Typography variant="body1" sx={{ color: alpha('#ffffff', 0.7) }}>
-            You have {analytics?.totalActiveOrders || 0} active orders in production.
+          <Typography variant="body2" sx={{ color: alpha('#ffffff', 0.7) }}>
+            {analytics?.totalActiveOrders
+              ? `You have ${analytics.totalActiveOrders} order${analytics.totalActiveOrders !== 1 ? 's' : ''} in production.`
+              : 'No active orders at the moment.'}
           </Typography>
         </Box>
       </Card>
 
-      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a2340', mb: 3 }}>
-        Your Active Orders
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'text.primary', mb: 3 }}>
+        Your orders
       </Typography>
 
-      <Stack spacing={3}>
-        {isLoadingOrders ? (
-          <Typography variant="body2" sx={{ textAlign: 'center', py: 4 }}>Loading your orders...</Typography>
-        ) : activeOrders.length === 0 ? (
-          <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: '#6b7280' }}>No active orders found.</Typography>
-        ) : activeOrders.map((order) => (
-          <Card
-            key={order.garmentId}
-            sx={{
-              p: 3,
-              borderRadius: '20px',
-              border: '1px solid #e5e4e0',
-              bgcolor: '#fafaf8',
-              transition: 'all 0.2s ease',
-              '&:hover': { borderColor: '#1e5c3a', transform: 'translateY(-2px)' },
-            }}
-          >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
-              <Box>
-                <Typography variant="caption" sx={{ color: '#6b7280', fontWeight: 700, letterSpacing: 1.5 }}>
-                  #{order.id}
-                </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a2340' }}>
-                  {order.garment}
-                </Typography>
+      {isLoadingOrders ? (
+        <QueryLoading label="Loading your orders…" />
+      ) : activeOrders.length === 0 ? (
+        <QueryEmpty
+          message="No orders yet."
+          hint="Your tailor will add orders to your account — they'll appear here."
+        />
+      ) : (
+        <Stack spacing={3}>
+          {activeOrders.map((order: any) => (
+            <Card
+              key={order.garmentId ?? order.id}
+              elevation={0}
+              sx={{
+                p: 3,
+                backgroundImage: 'none',
+                bgcolor: 'var(--sf-parchment)',
+                borderRadius: '16px',
+                border: '1px solid',
+                borderColor: 'divider',
+                transition: 'all 0.2s ease',
+                '&:hover': { borderColor: 'var(--sf-green)', transform: 'translateY(-1px)' },
+              }}
+            >
+              <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 3 }}>
+                <Box>
+                  <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 700, letterSpacing: 1.2 }}>
+                    #{order.orderNumber ?? order.id?.split('-')[0].toUpperCase()}
+                  </Typography>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                    {order.garmentName ?? 'Bespoke garment'}
+                  </Typography>
+                </Box>
+                <Chip
+                  icon={<Calendar sx={{ fontSize: 13 }} />}
+                  label={`Due ${formatDeadline(order.deadline)}`}
+                  size="small"
+                  sx={{
+                    bgcolor: alpha('#1e5c3a', 0.06),
+                    color: 'var(--sf-green)',
+                    fontWeight: 600,
+                    fontSize: '0.72rem',
+                    borderRadius: '8px',
+                  }}
+                />
+              </Stack>
+
+              <Divider sx={{ mb: 2 }} />
+
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  endIcon={<ChevronRight sx={{ fontSize: 18 }} />}
+                  sx={{ color: 'var(--sf-green)', fontWeight: 700, textTransform: 'none', fontSize: '13px' }}
+                >
+                  Order details
+                </Button>
               </Box>
-              <Chip
-                icon={<Calendar sx={{ fontSize: 14 }} />}
-                label={`Estimated: ${order.estimatedDate}`}
-                sx={{
-                  bgcolor: alpha('#1e5c3a', 0.05),
-                  color: '#1e5c3a',
-                  fontWeight: 600,
-                  borderRadius: '8px',
-                }}
-              />
-            </Box>
+            </Card>
+          ))}
+        </Stack>
+      )}
 
-            <Box sx={{ px: { xs: 0, md: 2 }, mb: 4 }}>
-              <Stepper activeStep={order.stage} alternativeLabel>
-                {order.stages.map((label) => (
-                  <Step key={label}>
-                    <StepLabel
-                      StepIconProps={{
-                        sx: {
-                          '&.Mui-active': { color: '#1e5c3a' },
-                          '&.Mui-completed': { color: '#1e5c3a' },
-                        },
-                      }}
-                    >
-                      <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '10px' }}>
-                        {label}
-                      </Typography>
-                    </StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
-            </Box>
-
-            <Divider sx={{ mb: 2, borderColor: '#e5e4e0' }} />
-
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Button
-                endIcon={<ChevronRight sx={{ fontSize: 18 }} />}
-                sx={{ color: '#1e5c3a', fontWeight: 700, textTransform: 'none' }}
-              >
-                Order Details
-              </Button>
-            </Box>
-          </Card>
-        ))}
-      </Stack>
-
-      {/* Contact Section */}
+      {/* Contact section */}
       <Box sx={{ mt: 6, textAlign: 'center' }}>
-        <Typography variant="body2" sx={{ color: '#6b7280', mb: 3 }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
           Need to make a change or have a question?
         </Typography>
         <Button
           variant="contained"
           startIcon={<MessageSquare sx={{ fontSize: 20 }} />}
           sx={{
-            bgcolor: '#1e5c3a',
-            height: 52,
-            px: 6,
+            bgcolor: 'var(--sf-green)',
+            height: 48,
+            px: 5,
             borderRadius: '999px',
             textTransform: 'none',
-            fontSize: '16px',
+            fontSize: '15px',
             fontWeight: 700,
-            boxShadow: '0 4px 12px rgba(30, 92, 58, 0.2)',
-            '&:hover': { bgcolor: '#256b45', boxShadow: '0 6px 16px rgba(30, 92, 58, 0.3)' },
+            boxShadow: '0 4px 12px rgba(30,92,58,0.2)',
+            '&:hover': { bgcolor: 'var(--sf-green-dark)' },
           }}
         >
-          Contact Your Tailor
+          Contact your tailor
         </Button>
       </Box>
     </Box>

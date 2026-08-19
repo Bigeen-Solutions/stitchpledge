@@ -3,6 +3,9 @@ import { useCustomerOrder } from '../hooks/useCustomerOrder';
 import { Timeline, TimelineItem } from '../../../components/timeline/Timeline';
 import { RiskBadge } from '../../../components/ui/RiskBadge';
 import { StageStepper } from '../../../components/ui/StageStepper';
+import { PortalPaymentSummary } from '../../portal/components/PortalPaymentSummary';
+import { PortalMessageThread } from '../../portal/components/PortalMessageThread';
+import { PortalCollectionSignoff } from '../../portal/components/PortalCollectionSignoff';
 
 export function CustomerOrderPage() {
   const { id } = useParams<{ id: string }>();
@@ -70,6 +73,13 @@ export function CustomerOrderPage() {
             </Timeline>
           </div>
         </div>
+      </div>
+
+      <PortalCollectionSignoff portalToken={id || ''} />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl" style={{ marginTop: 0 }}>
+        <PortalPaymentSummary portalToken={id || ''} />
+        <PortalMessageThread portalToken={id || ''} />
       </div>
     </div>
   );

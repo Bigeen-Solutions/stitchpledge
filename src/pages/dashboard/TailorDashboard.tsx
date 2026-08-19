@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -9,76 +9,74 @@ import {
   Button,
   Chip,
   alpha,
-  keyframes,
 } from '@mui/material';
 import {
   ContentCut as Scissors,
   LocalShipping as Truck,
   Add as Plus,
+  WarningAmber as WarningAmberIcon,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '../../features/dashboard/analytics.api';
 import { keys } from '../../query/keys';
 
-const countUp = keyframes`
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
+// ─── Animated counter card ───────────────────────────────────────
 
 interface StatCardProps {
   label: string;
   value: number;
   icon: React.ElementType;
-  delay: string;
+  accentColor: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, delay }) => {
+function StatCard({ label, value, icon: Icon, accentColor }: StatCardProps) {
   const [displayValue, setDisplayValue] = useState(0);
 
   useEffect(() => {
-    const duration = 800;
-    const start = 0;
-    const end = value;
-    const increment = end / (duration / 16);
-    let current = start;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) { setDisplayValue(value); return; }
 
+    const duration = 700;
+    const increment = value / (duration / 16);
+    let current = 0;
     const timer = setInterval(() => {
       current += increment;
-      if (current >= end) {
-        setDisplayValue(end);
-        clearInterval(timer);
-      } else {
-        setDisplayValue(Math.floor(current));
-      }
+      if (current >= value) { setDisplayValue(value); clearInterval(timer); }
+      else setDisplayValue(Math.floor(current));
     }, 16);
-
     return () => clearInterval(timer);
   }, [value]);
 
   return (
     <Card
+      elevation={0}
       sx={{
         flex: 1,
         p: 3,
-        bgcolor: '#fafaf8',
-        border: '1px solid #e5e4e0',
-        borderRadius: '16px',
+        backgroundImage: 'none',
+        bgcolor: 'var(--sf-parchment)',
+        border: '1px solid',
+        borderColor: 'divider',
+        borderLeft: '3px solid',
+        borderLeftColor: accentColor,
+        borderRadius: '12px',
         textAlign: 'center',
-        animation: `${countUp} 0.5s ease both ${delay}`,
       }}
     >
-      <Box sx={{ color: '#1e5c3a', mb: 1.5, display: 'flex', justifyContent: 'center' }}>
-        <Icon sx={{ fontSize: 24 }} />
+      <Box sx={{ color: accentColor, mb: 1.5, display: 'flex', justifyContent: 'center', opacity: 0.7 }}>
+        <Icon sx={{ fontSize: 22 }} />
       </Box>
-      <Typography variant="h3" sx={{ fontWeight: 700, color: '#1a2340', mb: 0.5 }}>
+      <Typography variant="h3" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
         {displayValue}
       </Typography>
-      <Typography variant="caption" sx={{ color: '#6b7280', fontWeight: 600, letterSpacing: 1 }}>
+      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, letterSpacing: 0.6, textTransform: 'uppercase' }}>
         {label}
       </Typography>
     </Card>
   );
-};
+}
+
+// ─── Main ────────────────────────────────────────────────────────
 
 export const TailorDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -88,174 +86,79 @@ export const TailorDashboard: React.FC = () => {
     queryFn: analyticsApi.getOverview,
   });
 
-  const inProgressCount = analytics?.totalActiveOrders || 0;
-  const overdueCount = analytics?.highRiskGarments || 0;
-  const recentOrders = analytics?.recentOrders || [];
-  
-  const hasUrgent = overdueCount > 0;
-  const pendingMeasurements = analytics?.tasksByStage?.['MEASUREMENTS'] || 0;
+  const inProgressCount = analytics?.totalActiveOrders ?? 0;
+  const atRiskCount     = analytics?.highRiskGarments ?? 0;
+  const recentOrders    = analytics?.recentOrders ?? [];
+  const hasUrgent       = atRiskCount > 0;
+
+  const urgentOrders = recentOrders.filter(o => o.riskLevel === 'OVERDUE');
 
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', pb: 8 }}>
-      <Typography variant="h4" sx={{ color: '#1a2340', fontWeight: 700, mb: 4, fontSize: '28px' }}>
-        Dashboard Overview
+      <Typography variant="h4" sx={{ color: 'text.primary', fontWeight: 700, mb: 4 }}>
+        Your work today
       </Typography>
 
       <Stack spacing={3} sx={{ mb: 4 }}>
-        {/* Urgent Action Card */}
+
+        {/* Urgent action card */}
         {hasUrgent && (
           <Card
+            elevation={0}
             sx={{
-              p: 0,
-              bgcolor: '#fafaf8',
-              border: '1px solid #e5e4e0',
-              borderRadius: '20px',
-              overflow: 'hidden',
-            }}
-          >
-            <Grid container>
-              <Grid size={{ xs: 12, sm: 3 }}>
-                <Box
-                  sx={{
-                    height: { xs: 160, sm: '100%' },
-                    bgcolor: alpha('#1e5c3a', 0.05),
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 120,
-                      height: 120,
-                      borderRadius: '12px',
-                      bgcolor: '#white',
-                      border: '1px solid #e5e4e0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <Box component="img" src="https://images.unsplash.com/photo-1594932224458-db8ba8763b0b?q=80&w=200&auto=format&fit=crop" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </Box>
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 9 }}>
-                <Box sx={{ p: 3 }}>
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                    <Chip
-                      label="CRITICAL"
-                      sx={{
-                        bgcolor: '#c0392b',
-                        color: 'white',
-                        height: 20,
-                        fontSize: '10px',
-                        fontWeight: 700,
-                        borderRadius: '4px',
-                      }}
-                    />
-                    <Typography variant="caption" sx={{ color: '#6b7280', fontWeight: 500 }}>
-                      {overdueCount} Deadlines Today
-                    </Typography>
-                  </Stack>
-                  <Typography variant="h6" sx={{ color: '#1a2340', fontWeight: 700, mb: 0.5 }}>
-                    Urgent Action Required
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#6b7280', mb: 2.5 }}>
-                    {recentOrders.filter(o => o.riskLevel === 'OVERDUE').slice(0, 2).map(o => o.customerName).join(' & ')} need finishing.
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    onClick={() => navigate('/orders?filter=urgent')}
-                    sx={{
-                      bgcolor: '#1e5c3a',
-                      borderRadius: '8px',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      px: 3,
-                    }}
-                  >
-                    View Orders
-                  </Button>
-                </Box>
-              </Grid>
-            </Grid>
-          </Card>
-        )}
-
-        {/* Pending Measurements Card */}
-        {pendingMeasurements > 0 && (
-          <Card
-            sx={{
-              p: 3,
-              bgcolor: '#fafaf8',
-              border: '1px solid #e5e4e0',
-              borderLeft: '4px solid #c49a1a',
+              p: 2.5,
+              backgroundImage: 'none',
+              bgcolor: alpha('#ef4444', 0.03),
+              border: '1px solid',
+              borderColor: alpha('#ef4444', 0.2),
+              borderLeft: '3px solid #ef4444',
               borderRadius: '16px',
             }}
           >
-            <Grid container alignItems="center" spacing={2}>
-              <Grid size={{ xs: 12, sm: 8 }}>
-                <Chip
-                  label="ACTION REQUIRED"
-                  sx={{
-                    bgcolor: '#c49a1a',
-                    color: 'white',
-                    height: 20,
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    borderRadius: '4px',
-                    mb: 1.5,
-                  }}
-                />
-                <Typography variant="h6" sx={{ color: '#1a2340', fontWeight: 700, mb: 0.5, fontSize: '16px' }}>
-                  Pending Measurements
+            <Stack direction="row" spacing={2} alignItems="flex-start">
+              <Box sx={{ pt: 0.25, flexShrink: 0 }}>
+                <WarningAmberIcon sx={{ fontSize: 20, color: '#ef4444' }} />
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.75 }}>
+                  <Chip
+                    label="Overdue"
+                    sx={{ bgcolor: '#ef4444', color: 'white', height: 20, fontSize: '10px', fontWeight: 700, borderRadius: '4px' }}
+                  />
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                    {atRiskCount} garment{atRiskCount !== 1 ? 's' : ''} need attention
+                  </Typography>
+                </Stack>
+                <Typography variant="subtitle2" sx={{ color: 'text.primary', fontWeight: 700, mb: 0.5 }}>
+                  Deadlines require action
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#6b7280', mb: 2 }}>
-                  {pendingMeasurements} clients are waiting for their initial fitting sessions.
-                </Typography>
+                {urgentOrders.length > 0 && (
+                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+                    {urgentOrders.slice(0, 2).map(o => o.customerName).join(' and ')}
+                    {urgentOrders.length > 2 ? ` and ${urgentOrders.length - 2} more` : ''}.
+                  </Typography>
+                )}
                 <Button
-                  variant="outlined"
-                  onClick={() => navigate('/measurements?filter=pending')}
-                  sx={{
-                    borderColor: '#e5e4e0',
-                    color: '#1a2340',
-                    borderRadius: '8px',
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    '&:hover': { borderColor: '#1e5c3a', bgcolor: 'transparent' },
-                  }}
+                  variant="contained"
+                  size="small"
+                  onClick={() => navigate('/orders?filter=urgent')}
+                  sx={{ bgcolor: '#ef4444', borderRadius: '8px', textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: '#dc2626' } }}
                 >
-                  Open List
+                  View overdue orders
                 </Button>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 4 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Box
-                  sx={{
-                    width: 100,
-                    height: 100,
-                    borderRadius: '12px',
-                    bgcolor: 'white',
-                    border: '1px solid #e5e4e0',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <Box component="img" src="https://images.unsplash.com/photo-1598501022223-42475940eb95?q=80&w=200&auto=format&fit=crop" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </Box>
-              </Grid>
-            </Grid>
+              </Box>
+            </Stack>
           </Card>
         )}
       </Stack>
 
-      {/* Quick Stats Row */}
+      {/* Quick stats row */}
       <Grid container spacing={2}>
         <Grid size={6}>
-          <StatCard label="IN PROGRESS" value={inProgressCount} icon={Scissors} delay="100ms" />
+          <StatCard label="In progress" value={inProgressCount} icon={Scissors} accentColor="var(--sf-green)" />
         </Grid>
         <Grid size={6}>
-          <StatCard label="DUE THIS WEEK" value={overdueCount + 2} icon={Truck} delay="200ms" />
+          <StatCard label="At risk" value={atRiskCount} icon={Truck} accentColor="#ef4444" />
         </Grid>
       </Grid>
 
@@ -269,12 +172,12 @@ export const TailorDashboard: React.FC = () => {
           width: 56,
           height: 56,
           borderRadius: '50%',
-          bgcolor: '#1e5c3a',
+          bgcolor: 'var(--sf-green)',
           color: 'white',
           minWidth: 0,
           p: 0,
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          '&:hover': { bgcolor: '#256b45' },
+          '&:hover': { bgcolor: 'var(--sf-green-dark)' },
         }}
       >
         <Plus sx={{ fontSize: 28 }} />

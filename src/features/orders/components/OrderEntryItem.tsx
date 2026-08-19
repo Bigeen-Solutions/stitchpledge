@@ -1,7 +1,11 @@
 import React from 'react';
-import { Box, Typography, Stack } from '@mui/material';
-import { RiskBadge, type RiskLevel } from '../../../components/ui/RiskBadge.tsx';
+import { Box, Typography, Stack, Chip } from '@mui/material';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import ContentCutOutlinedIcon from '@mui/icons-material/ContentCutOutlined';
+import DesignServicesOutlinedIcon from '@mui/icons-material/DesignServicesOutlined';
 import { truncateId, safeFormatDistanceToNow } from '../../../utils/format.ts';
+import { DeadlineBadge } from './DeadlineBadge.tsx';
+import type { ActivationFlag } from '../orders.api.ts';
 
 interface OrderEntryItemProps {
   order: {
@@ -13,13 +17,77 @@ interface OrderEntryItemProps {
     riskLevel?: string;
     eventDate: string;
     createdAt?: string;
+    unverifiedFlags?: ActivationFlag[];
   };
   onClick?: () => void;
 }
 
+interface FlagConfig {
+  flag: ActivationFlag;
+  icon: React.ReactElement;
+  pendingLabel: string;
+  clearedLabel: string;
+}
+
+const FLAG_CONFIGS: FlagConfig[] = [
+  {
+    flag: 'payment',
+    icon: <PaymentsOutlinedIcon sx={{ fontSize: 12 }} />,
+    pendingLabel: 'Deposit required',
+    clearedLabel: 'Deposit paid',
+  },
+  {
+    flag: 'fabric',
+    icon: <ContentCutOutlinedIcon sx={{ fontSize: 12 }} />,
+    pendingLabel: 'Fabric unconfirmed',
+    clearedLabel: 'Fabric confirmed',
+  },
+  {
+    flag: 'design',
+    icon: <DesignServicesOutlinedIcon sx={{ fontSize: 12 }} />,
+    pendingLabel: 'Design pending',
+    clearedLabel: 'Design agreed',
+  },
+];
+
+const ActivationChips: React.FC<{ flags?: ActivationFlag[] }> = ({ flags }) => {
+  const pendingSet = new Set(flags ?? []);
+
+  return (
+    <Stack direction="row" spacing={0.5} sx={{ mt: 1, flexWrap: 'wrap', gap: 0.5 }}>
+      {FLAG_CONFIGS.map(({ flag, icon, pendingLabel, clearedLabel }) => {
+        const isPending = pendingSet.has(flag);
+        return (
+          <Chip
+            key={flag}
+            icon={icon}
+            label={isPending ? pendingLabel : clearedLabel}
+            size="small"
+            sx={{
+              height: 20,
+              fontSize: '9px',
+              fontWeight: 800,
+              borderRadius: '4px',
+              bgcolor: isPending ? 'rgba(196, 154, 26, 0.1)' : 'rgba(39, 174, 96, 0.08)',
+              color: isPending ? '#8a6d1a' : '#1a7a42',
+              border: '1px solid',
+              borderColor: isPending ? 'rgba(196, 154, 26, 0.25)' : 'rgba(39, 174, 96, 0.2)',
+              '& .MuiChip-icon': {
+                color: isPending ? '#8a6d1a' : '#1a7a42',
+                marginLeft: '4px',
+              },
+              '& .MuiChip-label': {
+                px: 0.75,
+              },
+            }}
+          />
+        );
+      })}
+    </Stack>
+  );
+};
+
 export const OrderEntryItem: React.FC<OrderEntryItemProps> = ({ order, onClick }) => {
-  const riskLevel = (order.status === 'COMPLETED' ? 'ON_TRACK' : (order.riskLevel || 'ON_TRACK')) as RiskLevel;
-  
   return (
     <Box onClick={onClick} className="order-entry-card">
       <div className="card-top">
@@ -32,7 +100,7 @@ export const OrderEntryItem: React.FC<OrderEntryItemProps> = ({ order, onClick }
           </Typography>
         </Stack>
         <div className="desktop-hide">
-          <RiskBadge level={riskLevel} />
+          <DeadlineBadge orderId={order.id} />
         </div>
       </div>
 
@@ -46,9 +114,10 @@ export const OrderEntryItem: React.FC<OrderEntryItemProps> = ({ order, onClick }
               {order.garmentName}
             </Typography>
           )}
+          <ActivationChips flags={order.unverifiedFlags} />
         </Stack>
         <div className="mobile-hide">
-          <RiskBadge level={riskLevel} />
+          <DeadlineBadge orderId={order.id} />
         </div>
       </div>
 
@@ -58,7 +127,7 @@ export const OrderEntryItem: React.FC<OrderEntryItemProps> = ({ order, onClick }
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, letterSpacing: 1 }}>
               DEADLINE
             </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 800, color: riskLevel === 'OVERDUE' ? 'error.main' : 'text.primary' }}>
+            <Typography variant="body2" sx={{ fontWeight: 800, color: 'text.primary' }}>
               {new Date(order.eventDate).toLocaleDateString()}
             </Typography>
           </Stack>

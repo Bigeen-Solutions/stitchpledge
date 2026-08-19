@@ -26,7 +26,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         className="main-content"
         sx={{
           ...(sidebarOpen && !isMobile && {
-            width: `calc(100% - 240px)`,
+            width: `calc(100% - var(--sidebar-width))`,
             transition: theme.transitions.create(['margin', 'width'], {
               easing: theme.transitions.easing.easeOut,
               duration: theme.transitions.duration.enteringScreen,

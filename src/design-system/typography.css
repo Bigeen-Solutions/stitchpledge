@@ -1,17 +1,26 @@
 /* src/design-system/typography.css */
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: var(--color-text-primary);
+  font-family: var(--sf-font-body);
+  color: var(--sf-text);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
+/* Page-level display headings: Cormorant Garamond for craft gravitas */
+.text-display {
+  font-family: var(--sf-font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--sf-navy);
+}
+
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--sf-font-heading);
   font-weight: 700;
-  letter-spacing: -0.025em;
-  color: var(--color-primary);
+  letter-spacing: -0.02em;
+  color: var(--sf-navy);
 }
 
 .text-title { font-size: 2.5rem; line-height: 1.2; }
@@ -22,7 +31,7 @@ h1, h2, h3, h4, h5, h6 {
 .text-sm { font-size: 0.875rem; }
 .text-xs { font-size: 0.75rem; }
 
-.text-muted { color: var(--color-text-secondary); }
+.text-muted { color: var(--sf-text-secondary); }
 .text-bold { font-weight: 600; }
 .text-center { text-align: center; }
 .text-black { color: #000000 !important; }
@@ -30,6 +39,14 @@ h1, h2, h3, h4, h5, h6 {
 .deadline-dominant {
   font-size: 1.5rem;
   font-weight: 800;
-  color: var(--color-primary);
+  color: var(--sf-green);
   letter-spacing: -0.05em;
+}
+
+/* Brand wordmark — Cormorant display treatment */
+.sf-wordmark {
+  font-family: var(--sf-font-display);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--sf-green);
 }

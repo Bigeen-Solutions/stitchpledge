@@ -1,5 +1,7 @@
 import { apiClient } from "../../infrastructure/http/axios.client"
 
+export type ActivationFlag = 'payment' | 'fabric' | 'design'
+
 export interface Order {
   id: string
   garmentId: string
@@ -16,6 +18,9 @@ export interface Order {
   isUrgent: boolean
   measurements?: Record<string, number>
   storeId?: string
+  unverifiedFlags?: ActivationFlag[]
+  garmentTier?: 'STANDARD' | 'COMPLEX' | 'BESPOKE'
+  lockedAt?: string | null
 }
 
 export interface OrderDeadlineProjection {
@@ -117,5 +122,12 @@ export const ordersApi = {
   updateOrder: async (id: string, data: { eventDate?: string, lockedMeasurementVersionId?: string }) => {
     const { data: result } = await apiClient.patch(`/orders/${id}`, data)
     return result
+  },
+
+  exportEvidencePdf: async (orderId: string): Promise<Blob> => {
+    const { data } = await apiClient.get(`/orders/${orderId}/evidence-summary/pdf`, {
+      responseType: 'blob',
+    })
+    return data
   },
 }

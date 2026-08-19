@@ -1,4 +1,4 @@
-import React from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '../features/auth/auth.store';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '../features/dashboard/analytics.api';
@@ -8,11 +8,16 @@ import { AdminDashboard } from './dashboard/AdminDashboard';
 import { TailorDashboard } from './dashboard/TailorDashboard';
 import { TailorDashboardEmpty } from './dashboard/TailorDashboardEmpty';
 import { ClientDashboard } from './dashboard/ClientDashboard';
-import { Box, CircularProgress } from '@mui/material';
+import { Box } from '@mui/material';
+import { QueryLoading } from '../components/feedback/QueryState';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
   const role = user?.role;
+
+  if (role === 'SYSTEM_ADMIN') {
+    return <Navigate to="/system-admin" replace />;
+  }
 
   const { data, isLoading } = useQuery({
     queryKey: keys.analytics.overview,
@@ -22,21 +27,21 @@ export const DashboardPage: React.FC = () => {
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-        <CircularProgress sx={{ color: '#1e5c3a' }} />
+        <QueryLoading label="Loading dashboard…" />
       </Box>
     );
   }
 
   const hasOrders = (data?.totalActiveOrders || 0) > 0;
 
-  // Role names from auth.types.ts: 'COMPANY_ADMIN' | 'STORE_MANAGER' | 'TAILOR' | 'CUSTOMER'
+  // Role names from auth.types.ts: 'OWNER' | 'MANAGER' | 'TAILOR' | 'CUSTOMER'
   
   if (role === 'TAILOR') {
     if (!hasOrders) return <TailorDashboardEmpty />;
     return <TailorDashboard />;
   }
 
-  if (role === 'COMPANY_ADMIN' || role === 'STORE_MANAGER') {
+  if (role === 'OWNER' || role === 'MANAGER') {
     return <AdminDashboard />;
   }
 
