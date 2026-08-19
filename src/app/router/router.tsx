@@ -65,6 +65,15 @@ export const router = createBrowserRouter([
           { path: '/track/:slug', element: <TrackingPage /> },
           { path: '/public/seals/:code', element: <SealVerificationPage /> },
           ...(import.meta.env.DEV ? [{ path: '/design-system', element: <DesignSystemPage /> }] : []),
+          {
+            // No login, no app download (US-6.1) — the customer portal is
+            // reached purely by portal token in the URL, same as /track/:slug.
+            // Do NOT wrap this in ProtectedRoute: customers never get accounts.
+            element: <CustomerPortalLayout />,
+            children: [
+              { path: '/portal/orders/:id', element: <CustomerOrderPage /> },
+            ],
+          },
         ],
       },
       {
@@ -234,16 +243,6 @@ export const router = createBrowserRouter([
           { path: '/system-admin/users', element: <UserList /> },
           { path: '/system-admin/users/:id', element: <UserDetail /> },
           { path: '/system-admin/audit-log', element: <AdminAuditLog /> },
-        ],
-      },
-      {
-        element: (
-          <ProtectedRoute allowedRoles={['CUSTOMER']}>
-            <CustomerPortalLayout />
-          </ProtectedRoute>
-        ),
-        children: [
-          { path: '/portal/orders/:id', element: <CustomerOrderPage /> },
         ],
       },
       { path: '/403', element: <ForbiddenPage /> },
