@@ -28,7 +28,6 @@ export interface CompanyProvisionResult {
     id: string
     email: string
     fullName: string
-    temporaryPassword: string
   }
   defaultStore: {
     id: string

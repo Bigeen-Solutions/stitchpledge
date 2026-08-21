@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCreateCompany } from '../hooks/useCompanies'
-import { TemporaryPasswordDisclosure } from '../components/TemporaryPasswordDisclosure'
+import { VerificationEmailSentNotice } from '../components/VerificationEmailSentNotice'
 import type { CreateCompanyDTO, CompanyProvisionResult } from '../types'
 
 export function CreateCompany() {
@@ -135,8 +135,8 @@ export function CreateCompany() {
       </form>
 
       {provision && (
-        <TemporaryPasswordDisclosure
-          password={provision.ownerUser.temporaryPassword}
+        <VerificationEmailSentNotice
+          ownerEmail={provision.ownerUser.email}
           onDismiss={() => {
             setProvision(null)
             navigate(`/system-admin/companies/${provision.company.id}`)
