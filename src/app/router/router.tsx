@@ -31,6 +31,7 @@ import { SplashScreen } from '../../pages/SplashScreen.tsx';
 import { SealVerificationPage } from '../../pages/SealVerificationPage.tsx';
 import { ForgotPasswordPage } from '../../pages/ForgotPasswordPage.tsx';
 import { ResetPasswordPage } from '../../pages/ResetPasswordPage.tsx';
+import { VerifyEmailPage } from '../../pages/VerifyEmailPage.tsx';
 import { ChangePasswordPage } from '../../pages/ChangePasswordPage.tsx';
 import { GroupCoordinatorDashboard } from '../../features/group-order/GroupCoordinatorDashboard.tsx';
 import { WorkflowTemplatesPage } from '../../pages/WorkflowTemplatesPage.tsx';
@@ -62,6 +63,7 @@ export const router = createBrowserRouter([
           { path: '/login', element: <LoginPage /> },
           { path: '/forgot-password', element: <ForgotPasswordPage /> },
           { path: '/reset-password', element: <ResetPasswordPage /> },
+          { path: '/verify-email', element: <VerifyEmailPage /> },
           { path: '/track/:slug', element: <TrackingPage /> },
           { path: '/public/seals/:code', element: <SealVerificationPage /> },
           ...(import.meta.env.DEV ? [{ path: '/design-system', element: <DesignSystemPage /> }] : []),

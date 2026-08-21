@@ -83,7 +83,15 @@ export function useAxiosInterceptors() {
             useAuthStore.getState().clearAuth();
 
             // Use useNavigate hook!
-            if (window.location.pathname !== "/login" && window.location.pathname !== "/") {
+            // /verify-email must stay excluded: it's a public link mailed to an
+            // unauthenticated owner (Company Owner Email Verification flow) — the
+            // silent-refresh-on-boot 401 it causes must not bounce them to /login
+            // before they get a chance to submit the token + password.
+            if (
+              window.location.pathname !== "/login" &&
+              window.location.pathname !== "/" &&
+              window.location.pathname !== "/verify-email"
+            ) {
                navigate('/login');
             }
 

@@ -59,6 +59,10 @@ export async function resetPasswordApi(token: string, newPassword: string): Prom
   await apiClient.post("/auth/reset-password", { token, newPassword })
 }
 
+export async function verifyEmailApi(token: string, newPassword: string): Promise<void> {
+  await apiClient.post("/auth/verify-email", { token, newPassword })
+}
+
 export async function changePasswordApi(currentPassword: string, newPassword: string): Promise<void> {
   await apiClient.post("/auth/change-password", { currentPassword, newPassword })
 }
