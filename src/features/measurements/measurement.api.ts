@@ -20,8 +20,8 @@ export const measurementApi = {
     return data;
   },
 
-  completeMeasurement: async (measurementId: string): Promise<MeasurementVersion> => {
-    const { data } = await apiClient.post<MeasurementVersion>(`/measurements/${measurementId}/complete`);
+  completeMeasurement: async (measurementId: string, workflowTemplateId?: string): Promise<MeasurementVersion> => {
+    const { data } = await apiClient.post<MeasurementVersion>(`/measurements/${measurementId}/complete`, { workflowTemplateId });
     return data;
   },
 };

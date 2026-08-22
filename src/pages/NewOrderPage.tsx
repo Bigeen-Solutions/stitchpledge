@@ -54,6 +54,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { useCustomerSearch, useCreateCustomer, useCreateMeasurement } from "../features/customers/hooks/useCustomerIntake";
 import { customersApi } from "../features/customers/customers.api";
+import { measurementApi } from "../features/measurements/measurement.api";
 import { useWorkflowTemplates } from "../features/workflow/hooks/useWorkflowTemplates";
 import { useAuthStore } from "../features/auth/auth.store";
 import { useStores, useStaffList } from "../features/auth/hooks/useStaff";
@@ -335,7 +336,9 @@ export function NewOrderPage() {
       let finalMeasurementVersionId = autoSelectedMeasurement?.measurementId;
 
       if (!finalMeasurementVersionId) {
-        // Validation: Verify at least one measurement is recorded
+        // Validation: at least one measurement is required UNLESS the selected
+        // template(s) genuinely require none (e.g. "General / Other") — the
+        // backend already permits an empty measurement set for that case.
         const numericMeasurements: Record<string, number> = {};
         measurementEntries.forEach(entry => {
           const val = parseFloat(entry.value);
@@ -344,19 +347,29 @@ export function NewOrderPage() {
           }
         });
 
-        if (Object.keys(numericMeasurements).length === 0) {
+        if (Object.keys(numericMeasurements).length === 0 && dynamicMeasurementFields.length > 0) {
           throw new Error("Validation Failed: At least one measurement metric is required to commit order.");
         }
 
-        showToast("Recording immutable measurements...", "Saving measurement snapshot.", "success");
+        // Measurement lifecycle integrity: order intake follows the same
+        // draft -> complete -> locked+hashed path as a standalone measurement.
+        // The Measurement domain owns this transition (completeMeasurement) —
+        // order creation only ever references the resulting locked version,
+        // it never performs the lock itself.
+        showToast("Recording measurement snapshot...", "Saving draft measurement.", "success");
         const mv = await createMeasurement.mutateAsync({
           customerId: finalCustomerId,
           measurements: numericMeasurements,
-          status: 'complete'
         });
 
         if (!mv?.id) throw new Error("Critical: Measurement version ID not returned by system.");
-        finalMeasurementVersionId = mv.id;
+
+        showToast("Locking measurement version...", "Sealing snapshot for production.", "success");
+        const primaryTemplateId = orderItems[0]?.templateId;
+        const locked = await measurementApi.completeMeasurement(mv.id, primaryTemplateId);
+
+        if (!locked?.id) throw new Error("Critical: Measurement version could not be locked.");
+        finalMeasurementVersionId = locked.id;
       }
 
       const finalStoreId = role === 'OWNER' ? selectedStoreId : userStoreId;

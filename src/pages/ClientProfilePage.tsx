@@ -289,7 +289,7 @@ export function ClientProfilePage() {
                   size="small"
                   variant="outlined"
                   startIcon={<LockIcon sx={{ fontSize: 14 }} />}
-                  onClick={() => lockMutation.mutate(latestMeasurement.id)}
+                  onClick={() => lockMutation.mutate({ measurementId: latestMeasurement.id })}
                   disabled={lockMutation.isPending}
                   sx={{
                     borderRadius: '10px',

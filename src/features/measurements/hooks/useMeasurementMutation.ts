@@ -34,7 +34,8 @@ export function useLockMeasurement(customerId: string) {
   const { handleError } = useDomainError();
 
   return useMutation({
-    mutationFn: (measurementId: string) => measurementApi.completeMeasurement(measurementId),
+    mutationFn: (args: { measurementId: string; workflowTemplateId?: string }) =>
+      measurementApi.completeMeasurement(args.measurementId, args.workflowTemplateId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.measurements.list(customerId) });
       queryClient.invalidateQueries({ queryKey: keys.customers.detail(customerId) });
