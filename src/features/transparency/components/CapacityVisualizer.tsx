@@ -6,8 +6,8 @@ export const CapacityVisualizer: React.FC = () => {
 
   if (isLoading) return <Box sx={{ height: 60, bgcolor: 'rgba(0,0,0,0.02)', borderRadius: 2 }} />;
 
-  const uiHint = data?.summary.uiHint || 'GREEN';
-  const displayStatus = data?.summary.displayStatus || 'Loading...';
+  const uiHint = data?.uiHint || 'GREEN';
+  const displayStatus = data?.displayStatus || 'Loading...';
   const utilization = data?.capacity.utilization ?? 0;
 
   const getColor = () => {
@@ -15,6 +15,7 @@ export const CapacityVisualizer: React.FC = () => {
     switch (uiHint) {
       case 'RED': return '#EF4444';
       case 'AMBER': return '#F59E0B';
+      case 'GRAY': return '#9CA3AF'; // Grey — same treatment as stale, not a fabricated nominal
       case 'GREEN':
       default: return '#10B981';
     }

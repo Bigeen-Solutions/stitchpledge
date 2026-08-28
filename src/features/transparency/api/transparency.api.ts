@@ -1,12 +1,8 @@
 import { apiClient } from '../../../infrastructure/http/axios.client';
 
-export type UiHint = 'GREEN' | 'AMBER' | 'RED';
+export type UiHint = 'GREEN' | 'AMBER' | 'RED' | 'GRAY';
 
 export interface VisibilityBundle {
-  summary: {
-    uiHint: UiHint;
-    displayStatus: string;
-  };
   capacity: {
     status: string;
     utilization?: number;
@@ -19,6 +15,8 @@ export interface VisibilityBundle {
     status: string;
     lastSealAt: string;
   };
+  uiHint: UiHint;
+  displayStatus: string;
   syncedAt: string;
 }
 

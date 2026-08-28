@@ -7,14 +7,15 @@ export const TransparencyStatus: React.FC = () => {
 
   if (isLoading) return null;
 
-  const uiHint = data?.summary.uiHint || 'GREEN';
-  const displayStatus = data?.summary.displayStatus || 'Nominal';
+  const uiHint = data?.uiHint || 'GREEN';
+  const displayStatus = data?.displayStatus || 'Nominal';
 
   const getColor = () => {
     if (isStale) return '#9CA3AF'; // Grey
     switch (uiHint) {
       case 'RED': return '#EF4444';
       case 'AMBER': return '#F59E0B';
+      case 'GRAY': return '#9CA3AF'; // Grey — same treatment as stale, not a fabricated nominal
       default: return '#10B981';
     }
   };
