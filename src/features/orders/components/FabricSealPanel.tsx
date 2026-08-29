@@ -1,14 +1,22 @@
+import { useState } from 'react';
 import {
   Box,
   Typography,
   Stack,
   Button,
   CircularProgress,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
   alpha,
 } from '@mui/material';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import SmsOutlinedIcon from '@mui/icons-material/SmsOutlined';
-import { useQuery } from '@tanstack/react-query';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sealApi } from '../seal.api';
 
 interface FabricSealPanelProps {
@@ -30,6 +38,10 @@ function handleShare(verificationCode: string) {
 }
 
 export function FabricSealPanel({ orderId, garmentId }: FabricSealPanelProps) {
+  const queryClient = useQueryClient();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [quantity, setQuantity] = useState('');
+
   const { data: seal, isLoading, error } = useQuery({
     queryKey: ['seal', orderId, garmentId],
     queryFn: () => sealApi.getGarmentSeal(orderId, garmentId),
@@ -40,6 +52,21 @@ export function FabricSealPanel({ orderId, garmentId }: FabricSealPanelProps) {
   });
 
   const is404 = (error as any)?.response?.status === 404;
+
+  const confirmMutation = useMutation({
+    mutationFn: () => sealApi.confirmFabric(garmentId, { quantity_confirmed: quantity.trim() }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seal', orderId, garmentId] });
+      queryClient.invalidateQueries({ queryKey: ['orders', orderId] });
+      setDialogOpen(false);
+      setQuantity('');
+    },
+  });
+
+  // Confirmation is permanent (DB-enforced) the instant it succeeds — once
+  // it has, the trigger stays disabled rather than racing the seal refetch
+  // to decide whether to show the button again.
+  const alreadyConfirming = confirmMutation.isPending || confirmMutation.isSuccess;
 
   return (
     <Box sx={{ pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
@@ -57,13 +84,108 @@ export function FabricSealPanel({ orderId, garmentId }: FabricSealPanelProps) {
       )}
 
       {(is404 || (!seal && !isLoading)) && (
-        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 1 }}>
-          <ShieldOutlinedIcon sx={{ fontSize: 20, color: 'text.disabled' }} />
-          <Typography variant="body2" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>
-            Seal generates automatically when the customer confirms fabric
+        <Stack spacing={1.5} sx={{ py: 1 }}>
+          <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between">
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <ShieldOutlinedIcon sx={{ fontSize: 20, color: 'text.disabled' }} />
+              <Typography variant="body2" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>
+                {alreadyConfirming ? 'Generating seal…' : 'Not yet confirmed'}
+              </Typography>
+            </Stack>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={alreadyConfirming ? <CircularProgress size={14} /> : <CheckCircleOutlinedIcon />}
+              disabled={alreadyConfirming}
+              onClick={() => setDialogOpen(true)}
+              sx={{
+                borderRadius: 2,
+                fontWeight: 700,
+                fontSize: '11px',
+                textTransform: 'none',
+                borderColor: alpha('#1e5c3a', 0.4),
+                color: '#1e5c3a',
+                '&:hover': { borderColor: '#1e5c3a', bgcolor: alpha('#1e5c3a', 0.04) },
+              }}
+            >
+              Confirm Fabric
+            </Button>
+          </Stack>
+          <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+            Customer can confirm via the portal or SMS — or confirm here for a customer standing in front of you.
           </Typography>
         </Stack>
       )}
+
+      {/* Confirmation dialog — in-person confirmation only; the customer's own
+          portal/SMS/WhatsApp channels are separate, unauthenticated flows */}
+      <Dialog
+        open={dialogOpen}
+        onClose={() => !confirmMutation.isPending && setDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            background: 'rgba(255,255,255,0.97)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.4)',
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Box sx={{ p: 1, borderRadius: '10px', bgcolor: alpha('#1e5c3a', 0.08), display: 'flex', alignItems: 'center' }}>
+              <ShieldOutlinedIcon sx={{ fontSize: 20, color: '#1e5c3a' }} />
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
+                Confirm Fabric
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                Records the customer's in-person confirmation and generates the Fabric Safety Seal
+              </Typography>
+            </Box>
+          </Stack>
+        </DialogTitle>
+        <DialogContent dividers sx={{ pt: 2 }}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Quantity Confirmed"
+            placeholder="e.g. 5 yards"
+            value={quantity}
+            disabled={confirmMutation.isPending}
+            onChange={(e) => setQuantity(e.target.value)}
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+          />
+          <Typography variant="caption" sx={{ color: 'text.disabled', mt: 1, display: 'block' }}>
+            This cannot be undone — the fabric record locks permanently once confirmed.
+          </Typography>
+          {confirmMutation.isError && (
+            <Alert severity="error" sx={{ mt: 2, borderRadius: 2 }}>
+              Failed to confirm fabric. Please try again.
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            onClick={() => setDialogOpen(false)}
+            disabled={confirmMutation.isPending}
+            sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disabled={!quantity.trim() || confirmMutation.isPending}
+            onClick={() => confirmMutation.mutate()}
+            sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none', bgcolor: '#1e5c3a', '&:hover': { bgcolor: '#256b45' } }}
+          >
+            {confirmMutation.isPending ? <CircularProgress size={16} sx={{ color: 'white' }} /> : 'Confirm Fabric'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {seal && (
         <Stack spacing={2}>

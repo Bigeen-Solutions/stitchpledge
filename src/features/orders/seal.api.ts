@@ -1,5 +1,11 @@
 import axios from 'axios';
 import { apiClient } from '../../infrastructure/http/axios.client';
+import type { Garment } from './orders.api';
+
+export interface ConfirmFabricRequest {
+  quantity_confirmed: string;
+  fabric_photo_id?: string | null;
+}
 
 export interface GarmentSeal {
   id: string;
@@ -28,6 +34,16 @@ export const sealApi = {
   getGarmentSeal: async (orderId: string, garmentId: string): Promise<GarmentSeal> => {
     const { data } = await apiClient.get<GarmentSeal>(
       `/orders/${orderId}/garments/${garmentId}/seal`,
+    );
+    return data;
+  },
+
+  // channel is deliberately omitted — the backend defaults to 'in_person'
+  // when it's not sent, which is exactly this action's purpose.
+  confirmFabric: async (garmentId: string, body: ConfirmFabricRequest): Promise<Garment> => {
+    const { data } = await apiClient.post<Garment>(
+      `/garments/${garmentId}/confirm-fabric`,
+      body,
     );
     return data;
   },

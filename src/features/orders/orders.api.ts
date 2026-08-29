@@ -50,6 +50,8 @@ export interface Garment {
   colorSwatch?: string | null
   designNotes?: string | null
   requiredMeasurements?: string[]
+  confirmedAt?: string | null
+  confirmationChannel?: string | null
 }
 
 export interface UrgentGarment {
